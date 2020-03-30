@@ -58,6 +58,11 @@ public:
 			throw std::runtime_error("Could Not Create DepthStencilView");
 	}
 
+	void Clear()
+	{
+		this->m_pDevice->GetDeviceContext()->ClearDepthStencilView(this->m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+	}
+
 	void Bind()
 	{
 		this->m_pDevice->GetDeviceContext()->OMSetRenderTargets(1u, this->m_pRenderTarget->GetRenderTarget().GetAddressOf(), this->m_pDepthStencilView.Get());
