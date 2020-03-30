@@ -20,13 +20,23 @@ void VulkanRenderAPI::SwapBuffers()
 	
 }
 
-size_t VulkanRenderAPI::CreateShaderPair(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
+size_t VulkanRenderAPI::CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
 {
-	this->m_shaderPairs.push_back({
+	this->m_renderPipelines.push_back({
 		nullptr,
 		nullptr,
 		topology
 	});
 
-	return this->m_shaderPairs.size() - 1u;
+	return this->m_renderPipelines.size() - 1u;
+}
+
+size_t VulkanRenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
+{
+	return this->m_vertexBuffers.size() - 1u;
+}
+
+size_t VulkanRenderAPI::CreateIndexBuffer(const size_t nIndices, const void* buff)
+{
+	return this->m_indexBuffers.size() - 1u;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shaders.h"
+#include "Buffers.h"
 #include "internal/Include.h"
 #include "../common/Include.h"
 #include "../../common/Include.h"
@@ -26,7 +27,10 @@ public:
 
 	virtual void SwapBuffers() override;
 
-	virtual size_t CreateShaderPair(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology = PrimitiveTopology::TRIANGLES) override;
+	virtual size_t CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology = PrimitiveTopology::TRIANGLES) override;
+
+	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
+	virtual size_t CreateIndexBuffer(const size_t nIndices, const void* buff = nullptr) override;
 
 	[[nodiscard]] std::shared_ptr<DirectX11Device> GetDevice() noexcept;
 };
