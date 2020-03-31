@@ -49,10 +49,11 @@ void DirectX11RenderAPI::InitRenderAPI(Window* pWindow)
 
 void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
-	this->m_renderPipelines[drawable.shaderPairIndex].pVertexShader->Bind();
-	this->m_renderPipelines[drawable.shaderPairIndex].pPixelShader->Bind();
+	const DirectX11RenderPipeline& pipeline = this->m_renderPipelines[drawable.shaderPairIndex];
+	pipeline.pVertexShader->Bind();
+	pipeline.pPixelShader->Bind();
 
-	this->SetPrimitiveTopology(this->m_renderPipelines[drawable.shaderPairIndex].topology);
+	this->SetPrimitiveTopology(pipeline.topology);
 
 	this->m_vertexBuffers[drawable.vertexBufferIndex]->Bind();
 	if (drawable.indexBufferIndex.has_value()) {
@@ -73,8 +74,8 @@ void DirectX11RenderAPI::SwapBuffers()
 size_t DirectX11RenderAPI::CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
 {
 	this->m_renderPipelines.push_back({
-		new DirectX11VertexShader(this->m_pDevice, vsFilename, sies),
-		new DirectX11PixelShader (this->m_pDevice, psFilename),
+		std::make_unique<DirectX11VertexShader>(this->m_pDevice, vsFilename, sies),
+		std::make_unique<DirectX11PixelShader>(this->m_pDevice, psFilename),
 		topology
 	});
 

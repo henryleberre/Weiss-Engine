@@ -8,12 +8,20 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
+struct DirectX11RenderPipeline {
+	std::unique_ptr<DirectX11VertexShader> pVertexShader;
+	std::unique_ptr<DirectX11PixelShader>  pPixelShader;
+	PrimitiveTopology topology;
+};
+
 class DirectX11RenderAPI : public RenderAPI {
 private:
 	std::shared_ptr<DirectX11Device>       m_pDevice;
 	std::shared_ptr<DirectX11SwapChain>    m_pSwapChain;
 	std::shared_ptr<DirectX11RenderTarget> m_pRenderTarget;
 	std::shared_ptr<DirectX11DepthBuffer>  m_pDepthBuffer;
+
+	std::vector<DirectX11RenderPipeline> m_renderPipelines;
 
 private:
 	void SetPrimitiveTopology(const PrimitiveTopology& topology);

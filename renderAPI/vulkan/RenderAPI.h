@@ -5,12 +5,22 @@
 #include "../common/Include.h"
 #include "../../common/Include.h"
 
+struct VulkanRenderPipeline {
+	std::unique_ptr<VulkanVertexShader> pVertexShader;
+	std::unique_ptr<VulkanPixelShader>  pPixelShader;
+	PrimitiveTopology topology;
+
+	VkPipeline pipeline;
+};
+
 class VulkanRenderAPI : public RenderAPI {
 private:
 	std::shared_ptr<VulkanDevice> m_pDevice;
 	std::shared_ptr<VulkanSurface> m_pSurface;
 	std::shared_ptr<VulkanInstance> m_pInstance;
 	std::shared_ptr<VulkanSwapChain> m_pSwapChain;
+
+	std::vector<VulkanRenderPipeline> m_renderPipelines;
 
 public:
 	VulkanRenderAPI();

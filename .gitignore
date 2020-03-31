@@ -1,0 +1,14 @@
+*.sln
+*.vcxproj
+*.filters
+*.user
+.vs/
+Debug/
+Release/
+x64/
+x86/
+Source.cpp
+*.obj
+.git/
+.vs/
+*.hlsl
