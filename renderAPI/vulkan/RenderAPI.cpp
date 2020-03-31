@@ -23,9 +23,10 @@ void VulkanRenderAPI::SwapBuffers()
 size_t VulkanRenderAPI::CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
 {
 	this->m_renderPipelines.push_back({
-		nullptr,
-		nullptr,
-		topology
+		std::make_unique<VulkanVertexShader>(this->m_pDevice, vsFilename),
+		std::make_unique<VulkanPixelShader>(this->m_pDevice, psFilename),
+		topology,
+		VK_NULL_HANDLE
 	});
 
 	return this->m_renderPipelines.size() - 1u;

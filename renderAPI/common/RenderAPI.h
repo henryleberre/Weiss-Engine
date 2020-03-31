@@ -5,27 +5,19 @@
 #include "../../common/Include.h"
 #include "../../window/Include.h"
 
-struct RenderPipeline {
-	VertexShader*     pVertexShader;
-	PixelShader*      pPixelShader;
-	PrimitiveTopology topology;
-};
-
 class RenderAPI {
 private:
 	RenderAPIName m_apiName;
 
 protected:
-	std::vector<RenderPipeline> m_renderPipelines;
-	std::vector<IndexBuffer*>   m_indexBuffers;
-	std::vector<VertexBuffer*>  m_vertexBuffers;
+	std::vector<IndexBuffer*>  m_indexBuffers;
+	std::vector<VertexBuffer*> m_vertexBuffers;
 
 public:
 	RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {  }
 
-	~RenderAPI()
+	virtual ~RenderAPI()
 	{
-		for (RenderPipeline& pipeline : this->m_renderPipelines) { delete pipeline.pVertexShader; delete pipeline.pPixelShader; }
 		for (VertexBuffer*   pVBuff   : this->m_vertexBuffers)   { delete pVBuff; }
 		for (IndexBuffer*    pIBuff   : this->m_indexBuffers)    { delete pIBuff; }
 	}
