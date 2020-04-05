@@ -30,14 +30,24 @@
 
 	// Windows DirectX 11 Includes
 	#include <d3d11.h>
+
+	// Windows DirectX 12 Includes
+	#include <d3d12.h>
+	#include <d3dx12.h> // from https://github.com/Microsoft/DirectX-Graphics-Samples/tree/master/Libraries/D3DX12
+	#include <dxgi1_6.h>
+
+	// Windows DirectX 11/12 Includes
 	#include <d3dcompiler.h>
+	#include <DirectXMath.h>
 
 	// Vulkan
 	#define VK_USE_PLATFORM_WIN32_KHR
 
 	// Linking
+	#pragma comment (lib, "dxgi.lib")
 	#pragma comment (lib, "winmm.lib")
 	#pragma comment (lib, "d3d11.lib")
+	#pragma comment (lib, "d3d12.lib")
 	#pragma comment (lib, "user32.lib")
 	#pragma comment (lib, "Ws2_32.lib")
 	#pragma comment (lib, "Mswsock.lib")
@@ -60,35 +70,6 @@
 		AllocConsole();\
 		freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);\
 	}
-
-#elif defined __APPLE__
-
-	#include <TargetConditionals.h>
-
-	#ifdef TARGET_OS_OSX
-	
-		#define __WEISS__OS_OSX
-
-	#else
-		#error The Weiss Engine Is Not Supported On Your Platform
-	#endif
-
-	//#if TARGET_IPHONE_SIMULATOR
-	//#elif TARGET_OS_IPHONE
-	//#elif TARGET_OS_MAC
-
-#elif defined __linux__
-	
-	#define __WEISS__OS_LINUX
-
-	#ifdef __ANDROID__
-		#define __WEISS__OS_ANDROID
-	#endif
-
-	#include <sys/types.h>
-	#include <sys/socket.h>
-	#include <netinet/in.h>
-	#include <netdb.h> 
 
 #else
 	#error The Weiss Engine Is Not Supported On Your Platform
