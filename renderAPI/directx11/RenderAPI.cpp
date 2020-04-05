@@ -49,7 +49,7 @@ void DirectX11RenderAPI::InitRenderAPI(Window* pWindow)
 
 void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
-	const DirectX11RenderPipeline& pipeline = this->m_renderPipelines[drawable.shaderPairIndex];
+	const DirectX11RenderPipeline& pipeline = this->m_renderPipelines[drawable.pipelineIndex];
 	pipeline.pVertexShader->Bind();
 	pipeline.pPixelShader->Bind();
 

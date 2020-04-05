@@ -15,5 +15,6 @@ enum class PrimitiveTopology {
 
 enum class RenderAPIName {
 	DIRECTX11,
+	DIRECTX12,
 	VULKAN
 };
