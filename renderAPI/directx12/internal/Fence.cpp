@@ -12,6 +12,11 @@ DirectX12Fence::DirectX12Fence(const std::shared_ptr<DirectX12Device>& pDevice, 
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Fence Event");
 }
 
+DirectX12Fence::~DirectX12Fence()
+{
+	CloseHandle(this->m_fenceEvent);
+}
+
 HANDLE DirectX12Fence::GetEvent() const noexcept
 {
 	return this->m_fenceEvent;

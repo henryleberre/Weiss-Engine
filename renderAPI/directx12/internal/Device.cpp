@@ -10,7 +10,7 @@ DirectX12Device::DirectX12Device(const std::shared_ptr<DirectX12Adapater>& pAdap
 	// Enable debug messages in debug mode.
 #if defined(_DEBUG)
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> pInfoQueue;
-	if (SUCCEEDED(d3d12Device2.As(&pInfoQueue)))
+	if (SUCCEEDED(this->m_pDevice.As(&pInfoQueue)))
 	{
 		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
 		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);

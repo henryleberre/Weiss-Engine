@@ -15,6 +15,7 @@ public:
 	DirectX12RenderTarget(const std::shared_ptr<DirectX12Device>&         pDevice,
 						  const std::shared_ptr<DirectX12SwapChain>&      pSwapChain,
 						  const std::shared_ptr<DirectX12DescriptorHeap>& pDescriptorHeap,
+						  const CD3DX12_CPU_DESCRIPTOR_HANDLE& rtvHandle,
 						  const uint16_t frameIndex);
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> Get() const noexcept;

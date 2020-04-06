@@ -65,7 +65,12 @@ void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	}
 }
 
-void DirectX11RenderAPI::SwapBuffers()
+void DirectX11RenderAPI::BeginFrame()
+{
+	this->Fill();
+}
+
+void DirectX11RenderAPI::EndFrame()
 {
 	this->m_pDepthBuffer->Clear();
 	this->m_pSwapChain->Present();
@@ -94,6 +99,11 @@ size_t DirectX11RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* 
 	this->m_indexBuffers.push_back(new DirectX11IndexBuffer(this->m_pDevice, nIndices, buff));
 
 	return this->m_indexBuffers.size() - 1u;
+}
+
+void DirectX11RenderAPI::Fill(const Colorf32& color)
+{
+	this->m_pDevice->GetDeviceContext()->ClearRenderTargetView(this->m_pRenderTarget->GetRenderTarget().Get(), (float*)&color);
 }
 
 [[nodiscard]] std::shared_ptr<DirectX11Device> DirectX11RenderAPI::GetDevice() noexcept { return this->m_pDevice; }

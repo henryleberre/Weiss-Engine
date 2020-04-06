@@ -7,6 +7,7 @@ DirectX12DescriptorHeap::DirectX12DescriptorHeap(const std::shared_ptr<DirectX12
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.NumDescriptors = numDescriptors;
 	desc.Type = type;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
 	if (pDevice->Get()->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&this->m_descriptorHeap)) != S_OK)
 		throw std::runtime_error("[DIRECTX12] Could Not Create Descriptor Heap");
