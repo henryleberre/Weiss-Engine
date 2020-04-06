@@ -11,7 +11,7 @@
 struct DirectX11RenderPipeline {
 	std::unique_ptr<DirectX11VertexShader> pVertexShader;
 	std::unique_ptr<DirectX11PixelShader>  pPixelShader;
-	PrimitiveTopology topology;
+	D3D11_PRIMITIVE_TOPOLOGY topology;
 };
 
 class DirectX11RenderAPI : public RenderAPI {
@@ -22,9 +22,6 @@ private:
 	std::shared_ptr<DirectX11DepthBuffer>  m_pDepthBuffer;
 
 	std::vector<DirectX11RenderPipeline> m_renderPipelines;
-
-private:
-	void SetPrimitiveTopology(const PrimitiveTopology& topology);
 
 public:
 	DirectX11RenderAPI();

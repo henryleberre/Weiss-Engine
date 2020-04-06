@@ -2,26 +2,6 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-void DirectX11RenderAPI::SetPrimitiveTopology(const PrimitiveTopology& topology)
-{
-	D3D11_PRIMITIVE_TOPOLOGY d3d11PrimitiveTopology;
-
-	switch (topology)
-	{
-	case PrimitiveTopology::TRIANGLES:
-		d3d11PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		break;
-	case PrimitiveTopology::TRIANGLE_STRIP:
-		d3d11PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-		break;
-	default:
-		throw std::runtime_error("The Primitive Topology Type You Resquested Is Not Supported For DirectX11");
-		break;
-	}
-
-	this->m_pDevice->GetDeviceContext()->IASetPrimitiveTopology(d3d11PrimitiveTopology);
-}
-
 DirectX11RenderAPI::DirectX11RenderAPI() : RenderAPI(RenderAPIName::DIRECTX11) {}
 
 void DirectX11RenderAPI::InitRenderAPI(Window* pWindow)
@@ -53,11 +33,15 @@ void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	pipeline.pVertexShader->Bind();
 	pipeline.pPixelShader->Bind();
 
-	this->SetPrimitiveTopology(pipeline.topology);
+	this->m_pDevice->GetDeviceContext()->IASetPrimitiveTopology(pipeline.topology);
 
-	this->m_vertexBuffers[drawable.vertexBufferIndex]->Bind();
+	DirectX11VertexBuffer& vertexBuffer = *reinterpret_cast<DirectX11VertexBuffer*>(this->m_vertexBuffers[drawable.vertexBufferIndex]);
+
+	vertexBuffer.Bind();
 	if (drawable.indexBufferIndex.has_value()) {
-		this->m_indexBuffers[drawable.indexBufferIndex.value()]->Bind();
+		DirectX11IndexBuffer& indexBuffer = *reinterpret_cast<DirectX11IndexBuffer*>(this->m_vertexBuffers[drawable.vertexBufferIndex]);
+
+		indexBuffer.Bind();
 
 		this->m_pDevice->GetDeviceContext()->DrawIndexed(static_cast<UINT>(nVertices), 0u, 0u);
 	} else {
@@ -78,10 +62,25 @@ void DirectX11RenderAPI::EndFrame()
 
 size_t DirectX11RenderAPI::CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
 {
+	D3D11_PRIMITIVE_TOPOLOGY d3d11Topology;
+
+	switch (topology)
+	{
+	case PrimitiveTopology::TRIANGLES:
+		d3d11Topology = D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		break;
+	case PrimitiveTopology::TRIANGLE_STRIP:
+		d3d11Topology = D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+		break;
+	default:
+		throw std::runtime_error("The Primitive Topology Type You Resquested Is Not Supported For DirectX11");
+		break;
+	}
+
 	this->m_renderPipelines.push_back({
 		std::make_unique<DirectX11VertexShader>(this->m_pDevice, vsFilename, sies),
 		std::make_unique<DirectX11PixelShader>(this->m_pDevice, psFilename),
-		topology
+		d3d11Topology
 	});
 
 	return this->m_renderPipelines.size() - 1u;

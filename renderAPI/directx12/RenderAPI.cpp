@@ -40,6 +40,7 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow)
 	this->m_pCommandQueue   = std::make_shared<DirectX12CommandQueue>(this->m_pDevice, D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 	this->m_pSwapChain      = std::make_shared<DirectX12SwapChain>(this->m_pDevice, this->m_pCommandQueue, pWindow, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
 	this->m_pDescriptorHeap = std::make_shared<DirectX12DescriptorHeap>(this->m_pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
+	this->m_pInputAssemblerRootSignature = std::make_shared<DirectX12RootSignature>(this->m_pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	this->CreateRenderTargets();
 
@@ -55,11 +56,30 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow)
 	}
 
 	this->currentFrameIndex = this->m_pSwapChain->Get()->GetCurrentBackBufferIndex();
-}
+
+	this->m_viewport.TopLeftX = 0;
+	this->m_viewport.TopLeftY = 0;
+	this->m_viewport.Width  = pWindow->GetClientWidth();
+	this->m_viewport.Height = pWindow->GetClientHeight();
+	this->m_viewport.MinDepth = 0.0f;
+	this->m_viewport.MaxDepth = 1.0f;
+
+	this->m_scissors.left = 0;
+	this->m_scissors.top  = 0;
+	this->m_scissors.right  = pWindow->GetClientWidth();
+	this->m_scissors.bottom = pWindow->GetClientHeight();
+}	
 
 void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
+	this->m_renderPipelines[drawable.pipelineIndex].Bind(this->m_pCommandList);
 
+	if (drawable.indexBufferIndex.has_value())
+	{
+
+	} else {
+		this->m_pCommandList->Get()->DrawInstanced(3, nVertices, 0, 0);
+	}
 }
 
 void DirectX12RenderAPI::BeginFrame()
@@ -76,6 +96,9 @@ void DirectX12RenderAPI::BeginFrame()
 	this->m_pCommandList->Get()->OMSetRenderTargets(1, &m_currentRtvHandle, FALSE, nullptr);
 
 	this->Fill();
+
+	this->m_pCommandList->Get()->RSSetViewports(1,    &this->m_viewport);
+	this->m_pCommandList->Get()->RSSetScissorRects(1, &this->m_scissors);
 }
 
 void DirectX12RenderAPI::EndFrame()
@@ -91,12 +114,13 @@ void DirectX12RenderAPI::EndFrame()
 	if (this->m_pCommandQueue->Get()->Signal(this->m_pFences[this->currentFrameIndex]->Get().Get(), this->m_expectedFenceValues[this->currentFrameIndex]) != S_OK)
 		throw std::runtime_error("[DIRECTX 12] Signaling The Command Queue Fence Failed");
 
-	if (this->m_pSwapChain->Get()->Present(0, 0) != S_OK)
-		throw std::runtime_error("[DIRECTX 12] Presentation Failed");
+	this->m_pSwapChain->Present();
 }
 
 size_t DirectX12RenderAPI::CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
 {
+	this->m_renderPipelines.push_back(DirectX12RenderPipeline(this->m_pDevice, this->m_pInputAssemblerRootSignature, vsFilename, sies, psFilename, topology));
+
 	return this->m_renderPipelines.size() - 1u;
 }
 
