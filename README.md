@@ -10,18 +10,15 @@
 
 :x: means that the feature has not yet been implemented
 
-| Render API | Status    |
-| ---------- | --------- |
-| DirectX 11 | :warning: |
-| DirectX 12 | :warning: |
-| OpenGL     | :x:       |
-| Vulkan     | :x:       |
+| Render API | Status    | Operating System | Status             |
+| ---------- | --------- | ---------------- | ------------------ |
+| DirectX 11 | :warning: | Windows          | :heavy_check_mark: |
+| DirectX 12 | :warning: | Linux            | :x:                |
+| OpenGL     | :x:       | Mac OSX          | :x:                |
+| Vulkan     | :x:       | | |
 
-| Operating System | Status             |
-| ---------------- | ------------------ |
-| Windows          | :heavy_check_mark: |
-| Linux            | :x:                |
-| Mac OSX          | :x:                |
+
+
 
 ## Getting Started
 
