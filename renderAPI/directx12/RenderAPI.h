@@ -20,12 +20,17 @@ private:
 	std::shared_ptr<DirectX12CommandQueue>   m_pCommandQueue;
 	std::shared_ptr<DirectX12SwapChain>      m_pSwapChain;
 	std::shared_ptr<DirectX12DescriptorHeap> m_pDescriptorHeap;
-	std::vector<std::shared_ptr<DirectX12RenderTarget>>     m_pRenderTargets;
-	std::vector<std::shared_ptr<DirectX12CommandAllocator>> m_pCommandAllocators;
+	std::array<std::shared_ptr<DirectX12RenderTarget>,     WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
+	std::array<std::shared_ptr<DirectX12CommandAllocator>, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
+	std::array<std::shared_ptr<DirectX12Fence>,            WEISS__FRAME_BUFFER_COUNT> m_pFences;
+	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_expectedFenceValues;
+	std::shared_ptr<DirectX12CommandList> m_pCommandList;
 	//std::shared_ptr<DirectX12RenderTarget> m_pRenderTarget;
 	//std::shared_ptr<DirectX12DepthBuffer>  m_pDepthBuffer;
 	
 	std::vector<DirectX12RenderPipeline> m_renderPipelines;
+
+	size_t currentFrameIndex = 0u;
 
 public:
 	DirectX12RenderAPI();
