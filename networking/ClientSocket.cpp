@@ -26,7 +26,7 @@ void ClientSocket::Connect(const char* host, const unsigned int port)
 		throw std::runtime_error("[CLIENT SOCKET] Failed To Connect");
 }
 
-void ClientSocket::Send(const char* data, int length = -1)
+void ClientSocket::Send(const char* data, int length)
 {
 	if (length < 0)
 		length = static_cast<int>(strlen(data) + 1u);

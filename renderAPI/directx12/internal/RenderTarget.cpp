@@ -19,8 +19,8 @@ DirectX12RenderTarget::DirectX12RenderTarget(const std::shared_ptr<DirectX12Devi
 	rtvHandle.Offset(rtvDescriptorSize);
 }
 
-Microsoft::WRL::ComPtr<ID3D12Resource> DirectX12RenderTarget::Get() const noexcept { return this->m_pSwapChain; }
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectX12RenderTarget::Get() const noexcept { return this->m_pRenderTarget; }
 
-DirectX12RenderTarget::operator Microsoft::WRL::ComPtr<ID3D12Resource>() const noexcept { return this->m_pSwapChain; }
+DirectX12RenderTarget::operator Microsoft::WRL::ComPtr<ID3D12Resource>() const noexcept { return this->m_pRenderTarget; }
 
 #endif // __WEISS__OS_WINDOWS

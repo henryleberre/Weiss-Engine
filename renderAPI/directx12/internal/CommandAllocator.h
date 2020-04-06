@@ -12,6 +12,8 @@ private:
 public:
 	DirectX12CommandAllocator(const std::shared_ptr<DirectX12Device>& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
 
+	void Reset() const;
+
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> Get() const noexcept;
 
 	operator Microsoft::WRL::ComPtr<ID3D12CommandAllocator>() const noexcept;

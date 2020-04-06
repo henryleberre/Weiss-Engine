@@ -8,6 +8,12 @@ DirectX12CommandAllocator::DirectX12CommandAllocator(const std::shared_ptr<Direc
 		throw std::runtime_error("[DIRECTX 12] Could Not Create Command Allocator");
 }
 
+void DirectX12CommandAllocator::Reset() const
+{
+	if (this->m_pCommandAllocator->Reset() != S_OK)
+		throw std::runtime_error("[DIRECTX 12] Could Not Reset Command Allocator");
+}
+
 Microsoft::WRL::ComPtr<ID3D12CommandAllocator> DirectX12CommandAllocator::Get() const noexcept
 {
 	return this->m_pCommandAllocator;

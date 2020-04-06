@@ -46,7 +46,7 @@ void ServerSocket::Bind(const unsigned int port)
 	return -1;
 }
 
-void ServerSocket::Send(const int clientID, const char* data, int length = -1)
+void ServerSocket::Send(const int clientID, const char* data, int length)
 {
 	if (length < 0)
 		length = static_cast<int>(strlen(data) + 1);
