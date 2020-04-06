@@ -5,7 +5,9 @@
 ## Current Support
 
 :heavy_check_mark: means that the feature is fully supported
+
 :warning: means that the feature is being implemented
+
 :x: means that the feature has not yet been implemented
 
 | Render API | Status    |
@@ -15,11 +17,11 @@
 | OpenGL     | :x:       |
 | Vulkan     | :x:       |
 
-| Operating System | Status    |
-| ---------------- | --------- |
-| Windows          | :warning: |
-| Linux            | :x:       |
-| Mac OSX          | :warning: |
+| Operating System | Status             |
+| ---------------- | ------------------ |
+| Windows          | :heavy_check_mark: |
+| Linux            | :x:                |
+| Mac OSX          | :x:                |
 
 ## Getting Started
 
