@@ -59,9 +59,9 @@ void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	if (drawable.indexBufferIndex.has_value()) {
 		this->m_indexBuffers[drawable.indexBufferIndex.value()]->Bind();
 
-		this->m_pDevice->GetDeviceContext()->DrawIndexed(nVertices, 0u, 0u);
+		this->m_pDevice->GetDeviceContext()->DrawIndexed(static_cast<UINT>(nVertices), 0u, 0u);
 	} else {
-		this->m_pDevice->GetDeviceContext()->Draw(nVertices, 0u);
+		this->m_pDevice->GetDeviceContext()->Draw(static_cast<UINT>(nVertices), 0u);
 	}
 }
 

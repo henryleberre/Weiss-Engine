@@ -37,6 +37,8 @@ private:
 private:
 	void WaitForNextFrame();
 
+	void CreateRenderTargets();
+
 public:
 	DirectX12RenderAPI();
 

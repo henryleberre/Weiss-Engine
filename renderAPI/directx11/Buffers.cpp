@@ -10,8 +10,8 @@ DirectX11VertexBuffer::DirectX11VertexBuffer(const std::shared_ptr<DirectX11Devi
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bd.MiscFlags = 0u;
-	bd.ByteWidth = this->m_vertexSize * this->m_vertexSize;
-	bd.StructureByteStride = this->m_vertexSize;
+	bd.ByteWidth = static_cast<UINT>(this->m_vertexSize * this->m_vertexSize);
+	bd.StructureByteStride = static_cast<UINT>(this->m_vertexSize);
 
 	D3D11_SUBRESOURCE_DATA sd = {};
 	sd.pSysMem = buff;
@@ -49,8 +49,8 @@ DirectX11IndexBuffer::DirectX11IndexBuffer(const std::shared_ptr<DirectX11Device
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bd.MiscFlags = 0u;
-	bd.ByteWidth = this->m_nIndices * sizeof(uint32_t);
-	bd.StructureByteStride = sizeof(uint32_t);
+	bd.ByteWidth = static_cast<UINT>(this->m_nIndices * sizeof(uint32_t));
+	bd.StructureByteStride = static_cast<UINT>(sizeof(uint32_t));
 
 	D3D11_SUBRESOURCE_DATA sd = {};
 	sd.pSysMem = buff;
