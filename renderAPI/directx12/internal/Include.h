@@ -7,4 +7,5 @@
 #include "CommandList.h"
 #include "CommandQueue.h"
 #include "RenderTarget.h"
+#include "RootSignature.h"
 #include "CommandAllocator.h"

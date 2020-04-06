@@ -1,17 +1,11 @@
 #pragma once
 
-#include "Shaders.h"
+#include "RenderPipeline.h"
 #include "internal/Include.h"
 #include "../common/Include.h"
 #include "../../common/Include.h"
 
 #ifdef __WEISS__OS_WINDOWS
-
-struct DirectX12RenderPipeline {
-	//std::unique_ptr<DirectX11VertexShader> pVertexShader;
-	//std::unique_ptr<DirectX11PixelShader>  pPixelShader;
-	PrimitiveTopology topology;
-};
 
 class DirectX12RenderAPI : public RenderAPI {
 private:
@@ -24,6 +18,7 @@ private:
 	std::array<std::shared_ptr<DirectX12CommandAllocator>, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
 	std::array<std::shared_ptr<DirectX12Fence>,            WEISS__FRAME_BUFFER_COUNT> m_pFences;
 	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_expectedFenceValues;
+	std::shared_ptr<DirectX12RootSignature> m_pInputAssemblerRootSignature;
 	std::shared_ptr<DirectX12CommandList> m_pCommandList;
 	//std::shared_ptr<DirectX12RenderTarget> m_pRenderTarget;
 	//std::shared_ptr<DirectX12DepthBuffer>  m_pDepthBuffer;
@@ -33,6 +28,9 @@ private:
 	size_t currentFrameIndex = 0u;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE m_currentRtvHandle;
+
+	D3D12_RECT     m_scissors;
+	D3D12_VIEWPORT m_viewport;
 
 private:
 	void WaitForNextFrame();

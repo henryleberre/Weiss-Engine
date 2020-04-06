@@ -45,4 +45,14 @@ DirectX12SwapChain::DirectX12SwapChain(const std::shared_ptr<DirectX12Device>& p
 	this->m_pSwapChain = Microsoft::WRL::ComPtr<IDXGISwapChain3>(static_cast<IDXGISwapChain3*>(tempSwapChain));
 }
 
+void DirectX12SwapChain::Present() const
+{
+	if (this->m_pSwapChain->Present(0, 0) != S_OK)
+		throw std::runtime_error("[DIRECTX 12] Presentation Failed");
+}
+
+Microsoft::WRL::ComPtr<IDXGISwapChain3> DirectX12SwapChain::Get() const noexcept { return this->m_pSwapChain; }
+
+DirectX12SwapChain::operator Microsoft::WRL::ComPtr<IDXGISwapChain3>() const noexcept { return this->m_pSwapChain; }
+
 #endif // __WEISS__OS_WINDOWS

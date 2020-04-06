@@ -4,7 +4,6 @@
 
 class VertexBuffer {
 public:
-    virtual void   Bind()     = 0;
     virtual size_t GetCount() = 0;
     virtual void   SetData(const void* buff, const size_t nVertices) = 0;
 
@@ -18,7 +17,6 @@ public:
 
 class IndexBuffer {
 public:
-    virtual void   Bind()     = 0;
     virtual size_t GetCount() = 0;
     virtual void   SetData(const uint32_t* buff, const size_t nIndices) = 0;
 
@@ -32,6 +30,5 @@ public:
 
 class ConstantBuffer {
 public:
-    virtual void Bind() = 0;
     virtual void SetData(const void* buff, const size_t bufferSize) = 0;
 };

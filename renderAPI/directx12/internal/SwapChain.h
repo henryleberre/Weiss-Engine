@@ -15,9 +15,11 @@ public:
 					   const std::shared_ptr<DirectX12CommandQueue>& pCommandQueue,
 					   const Window* pWindow, const UINT bufferCount);
 
-	Microsoft::WRL::ComPtr<IDXGISwapChain3> Get() const noexcept { return this->m_pSwapChain; }
+	void Present() const;
 
-	operator Microsoft::WRL::ComPtr<IDXGISwapChain3>() const noexcept { return this->m_pSwapChain; }
+	Microsoft::WRL::ComPtr<IDXGISwapChain3> Get() const noexcept;
+
+	operator Microsoft::WRL::ComPtr<IDXGISwapChain3>() const noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS
