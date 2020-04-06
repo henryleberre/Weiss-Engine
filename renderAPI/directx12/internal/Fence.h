@@ -13,6 +13,7 @@ private:
 
 public:
 	DirectX12Fence(const std::shared_ptr<DirectX12Device>& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags);
+	~DirectX12Fence();
 
 	HANDLE GetEvent() const noexcept;
 

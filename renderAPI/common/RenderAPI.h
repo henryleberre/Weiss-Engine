@@ -28,12 +28,15 @@ public:
 
     virtual void Draw(const Drawable& drawable, const size_t nVertices) = 0;
 
-    virtual void SwapBuffers() = 0;
+	virtual void BeginFrame() = 0;
+    virtual void EndFrame()   = 0;
 
 	virtual size_t CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology = PrimitiveTopology::TRIANGLES) = 0;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) = 0;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) = 0;
+
+	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 
 	// ----- Getter Functions ----- //
 
