@@ -48,6 +48,7 @@
 	#pragma comment (lib, "winmm.lib")
 	#pragma comment (lib, "d3d11.lib")
 	#pragma comment (lib, "d3d12.lib")
+	#pragma comment (lib, "dxguid.lib")
 	#pragma comment (lib, "user32.lib")
 	#pragma comment (lib, "Ws2_32.lib")
 	#pragma comment (lib, "Mswsock.lib")
@@ -72,7 +73,7 @@
 	}
 
 #else
-	#error The Weiss Engine Is Not Supported On Your Platform
+	#error The Weiss Engine Is Not Supported On Your Platform (Yet)
 #endif
 
 // Vulkan Includes

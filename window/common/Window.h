@@ -13,6 +13,8 @@ struct WindowDescriptor
 	bool isResizable = true;
 };
 
+struct WindowHandle;
+
 class Window {
 protected:
 	Mouse* m_pMouse = nullptr;
@@ -32,7 +34,7 @@ public:
 
 	[[nodiscard]] bool      IsRunning() const;
 	[[nodiscard]] Keyboard& GetKeyboard();
-	[[nodiscard]] Mouse& GetMouse();
+	[[nodiscard]] Mouse&    GetMouse();
 
 	[[nodiscard]] uint16_t GetWindowPositionX() const;
 	[[nodiscard]] uint16_t GetWindowPositionY() const;
@@ -55,5 +57,20 @@ public:
 
 public:
 	// To Be Defined Per Platform
-	static Window* Create(const WindowDescriptor& descriptor = WindowDescriptor{});
+	static WindowHandle Create(const WindowDescriptor& descriptor = WindowDescriptor{});
+};
+
+struct WindowHandle {
+	Window* pWindow;
+
+	~WindowHandle()
+	{
+		delete this->pWindow;
+	}
+
+	Window* operator->() noexcept { return this->pWindow; }
+
+	operator Window* () noexcept {
+		return this->pWindow;
+	}
 };

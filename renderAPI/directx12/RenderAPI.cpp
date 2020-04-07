@@ -33,7 +33,7 @@ void DirectX12RenderAPI::CreateRenderTargets()
 DirectX12RenderAPI::DirectX12RenderAPI()
 	: RenderAPI(RenderAPIName::DIRECTX12) {  }
 
-void DirectX12RenderAPI::InitRenderAPI(Window* pWindow)
+void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs)
 {
 	this->m_pAdapter        = std::make_shared<DirectX12Adapater>();
 	this->m_pDevice         = std::make_shared<DirectX12Device>(this->m_pAdapter);
@@ -68,17 +68,22 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow)
 	this->m_scissors.top  = 0;
 	this->m_scissors.right  = pWindow->GetClientWidth();
 	this->m_scissors.bottom = pWindow->GetClientHeight();
+
+	// Create Pipelines
+	for (const RenderPipelineDesc& pipelineDesc : pipelineDescs)
+		this->m_pRenderPipelines.push_back(DirectX12RenderPipeline(this->m_pDevice, this->m_pInputAssemblerRootSignature, pipelineDesc.vsFilename, pipelineDesc.sies, pipelineDesc.psFilename, pipelineDesc.topology));
 }	
 
 void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
-	this->m_renderPipelines[drawable.pipelineIndex].Bind(this->m_pCommandList);
+	this->m_pCommandList->Get()->SetGraphicsRootSignature(this->m_pInputAssemblerRootSignature->Get().Get());
+	this->m_pRenderPipelines[drawable.pipelineIndex].Bind(this->m_pCommandList);
+	this->m_pVertexBuffers[drawable.vertexBufferIndex]->Bind(this->m_pCommandList);
 
-	if (drawable.indexBufferIndex.has_value())
-	{
+	if (drawable.indexBufferIndex.has_value()) {
 
 	} else {
-		this->m_pCommandList->Get()->DrawInstanced(3, nVertices, 0, 0);
+		this->m_pCommandList->Get()->DrawInstanced(3u, nVertices / 3u, 0, 0);
 	}
 }
 
@@ -93,12 +98,12 @@ void DirectX12RenderAPI::BeginFrame()
 
 	this->m_currentRtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(this->m_pDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(this->currentFrameIndex), this->m_pDevice->Get()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
+	this->m_pCommandList->Get()->RSSetViewports(1, &this->m_viewport);
+	this->m_pCommandList->Get()->RSSetScissorRects(1, &this->m_scissors);
+
 	this->m_pCommandList->Get()->OMSetRenderTargets(1, &m_currentRtvHandle, FALSE, nullptr);
 
 	this->Fill();
-
-	this->m_pCommandList->Get()->RSSetViewports(1,    &this->m_viewport);
-	this->m_pCommandList->Get()->RSSetScissorRects(1, &this->m_scissors);
 }
 
 void DirectX12RenderAPI::EndFrame()
@@ -117,21 +122,16 @@ void DirectX12RenderAPI::EndFrame()
 	this->m_pSwapChain->Present();
 }
 
-size_t DirectX12RenderAPI::CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology)
-{
-	this->m_renderPipelines.push_back(DirectX12RenderPipeline(this->m_pDevice, this->m_pInputAssemblerRootSignature, vsFilename, sies, psFilename, topology));
-
-	return this->m_renderPipelines.size() - 1u;
-}
-
 size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
 {
-	return this->m_vertexBuffers.size() - 1u;
+	this->m_pVertexBuffers.push_back(std::make_unique<DirectX12VertexBuffer>(this->m_pDevice, this->m_pCommandList, vertexSize, nVertices, buff));
+
+	return this->m_pVertexBuffers.size() - 1u;
 }
 
 size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* buff)
 {
-	return this->m_indexBuffers.size() - 1u;
+	return this->m_pIndexBuffers.size() - 1u;
 }
 
 void DirectX12RenderAPI::Fill(const Colorf32& color)

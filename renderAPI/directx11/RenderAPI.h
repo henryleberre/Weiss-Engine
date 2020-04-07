@@ -2,17 +2,12 @@
 
 #include "Shaders.h"
 #include "Buffers.h"
+#include "RenderPipeline.h"
 #include "internal/Include.h"
 #include "../common/Include.h"
 #include "../../common/Include.h"
 
 #ifdef __WEISS__OS_WINDOWS
-
-struct DirectX11RenderPipeline {
-	std::unique_ptr<DirectX11VertexShader> pVertexShader;
-	std::unique_ptr<DirectX11PixelShader>  pPixelShader;
-	D3D11_PRIMITIVE_TOPOLOGY topology;
-};
 
 class DirectX11RenderAPI : public RenderAPI {
 private:
@@ -21,19 +16,19 @@ private:
 	std::shared_ptr<DirectX11RenderTarget> m_pRenderTarget;
 	std::shared_ptr<DirectX11DepthBuffer>  m_pDepthBuffer;
 
-	std::vector<DirectX11RenderPipeline> m_renderPipelines;
+	std::vector<std::unique_ptr<DirectX11VertexBuffer>>   m_pVertexBuffers;
+	std::vector<std::unique_ptr<DirectX11IndexBuffer>>    m_pIndexBuffers;
+	std::vector<std::unique_ptr<DirectX11RenderPipeline>> m_pRenderPipelines;
 
 public:
 	DirectX11RenderAPI();
 
-	virtual void InitRenderAPI(Window* pWindow) override;
+	virtual void InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
 	virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
 
 	virtual void BeginFrame() override;
 	virtual void EndFrame()   override;
-
-	virtual size_t CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology = PrimitiveTopology::TRIANGLES) override;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) override;

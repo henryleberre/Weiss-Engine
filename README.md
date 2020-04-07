@@ -63,33 +63,36 @@ int main()
 
 	try {
 		Window* pWindow = Window::Create();
-		RenderAPI* renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX11);
-		renderAPI->InitRenderAPI(pWindow);
-		
-		Drawable drawable;
-		drawable.pipelineIndex = renderAPI->CreateRenderPipeline("vs.hlsl", {
-			{ "POSITION", ShaderInputElementType::VECTOR_3D_FLOAT_32 },
-			{ "COLOR",    ShaderInputElementType::VECTOR_3D_FLOAT_32 }
-		}, "ps.hlsl", PrimitiveTopology::TRIANGLES);
+		RenderAPI* pRenderAPI = RenderAPI::Create(RenderAPIName::DIRECTX12);
+
+		std::vector<RenderPipelineDesc> pipelineDescs{
+			RenderPipelineDesc{"vs.hlsl", {
+				{ "POSITION", ShaderInputElementType::VECTOR_3D_FLOAT_32 },
+				{ "COLOR",    ShaderInputElementType::VECTOR_3D_FLOAT_32 }
+			}, "ps.hlsl", PrimitiveTopology::TRIANGLES}
+		};
+
+		pRenderAPI->InitRenderAPI(pWindow, pipelineDescs);
 
 		std::array<Vertex, 3u> vertices{
 			Vertex{Vec3f{+0.0f, +1.0f, 0.0f}, Vec3f{1.0f, 0.0f, 0.0f}},
 			Vertex{Vec3f{+1.0f, -1.0f, 0.0f}, Vec3f{0.0f, 1.0f, 0.0f}},
 			Vertex{Vec3f{-1.0f, -1.0f, 0.0f}, Vec3f{0.0f, 0.0f, 1.0f}}
 		};
-		drawable.vertexBufferIndex = renderAPI->CreateVertexBuffer(sizeof(Vertex), vertices.size(), vertices.data());
+		
+		Drawable drawable{0u, pRenderAPI->CreateVertexBuffer(sizeof(Vertex), vertices.size(), vertices.data()) };
 		
 		while (pWindow->IsRunning())
 		{
 			pWindow->Update();
-			renderAPI->BeginFrame();
-			renderAPI->Draw(drawable, vertices.size());
-			renderAPI->EndFrame();
+			pRenderAPI->BeginFrame();
+			pRenderAPI->Draw(drawable, vertices.size());
+			pRenderAPI->EndFrame();
 			std::this_thread::sleep_for(std::chrono::microseconds(16));
 		}
 
 		delete pWindow;
-		delete renderAPI;
+		delete pRenderAPI;
 	}
 	catch (const std::runtime_error& e) {
 		std::cout << e.what() << '\n';

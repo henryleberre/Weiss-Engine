@@ -8,9 +8,9 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(const std::shared_ptr<DirectX12
 												 const char* psFilename, const PrimitiveTopology& topology)
 {
 	// Specify Compilation Flags
-	size_t compileFlags = 0u;
+	size_t compileFlags = D3DCOMPILE_SKIP_OPTIMIZATION;
 #ifdef _DEBUG
-	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+	compileFlags = compileFlags | D3DCOMPILE_DEBUG;
 #endif // _DEBUG
 
 	// Vertex Shader
@@ -119,10 +119,12 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(const std::shared_ptr<DirectX12
 	}
 
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	psoDesc.SampleDesc.Count = 1; // same as the swap chain
+	psoDesc.SampleDesc.Count = 1;
 	psoDesc.SampleMask = 0xffffffff;
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	psoDesc.DepthStencilState.DepthEnable = FALSE;
+	psoDesc.DepthStencilState.StencilEnable = FALSE;
 	psoDesc.NumRenderTargets = 1;
 
 	// create the pso
