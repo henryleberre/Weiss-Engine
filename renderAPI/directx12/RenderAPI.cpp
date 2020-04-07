@@ -48,7 +48,6 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<Render
 		this->m_pCommandAllocators[i] = std::make_shared<DirectX12CommandAllocator>(this->m_pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
 
 	this->m_pCommandList = std::make_shared<DirectX12CommandList>(this->m_pDevice, this->m_pCommandAllocators[0], D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
-	this->m_pCommandList->Get()->Close();
 
 	for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++) {
 		this->m_pFences[i] = std::make_shared<DirectX12Fence>(this->m_pDevice, 0u, D3D12_FENCE_FLAGS::D3D12_FENCE_FLAG_NONE);
@@ -92,7 +91,7 @@ void DirectX12RenderAPI::BeginFrame()
 	this->WaitForNextFrame();
 
 	this->m_pCommandAllocators[currentFrameIndex]->Reset();
-	this->m_pCommandList->Reset(this->m_pCommandAllocators[currentFrameIndex]);
+	this->m_pCommandList->Get()->Reset(this->m_pCommandAllocators[currentFrameIndex]->Get().Get(), this->m_pRenderPipelines[0].Get().Get());
 
 	this->m_pCommandList->Get()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pRenderTargets[this->currentFrameIndex]->Get().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
@@ -124,7 +123,18 @@ void DirectX12RenderAPI::EndFrame()
 
 size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
 {
-	this->m_pVertexBuffers.push_back(std::make_unique<DirectX12VertexBuffer>(this->m_pDevice, this->m_pCommandList, vertexSize, nVertices, buff));
+	this->m_pVertexBuffers.push_back(std::make_unique<DirectX12VertexBuffer>(this->m_pDevice, this->m_pCommandList, this->m_pCommandQueue, vertexSize, nVertices, buff));
+
+	this->m_pCommandList->Get()->Close();
+
+	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList->Get().Get() };
+	this->m_pCommandQueue->Get()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	this->m_expectedFenceValues[this->currentFrameIndex]++;
+	if (this->m_pCommandQueue->Get()->Signal(this->m_pFences[currentFrameIndex]->Get().Get(), m_expectedFenceValues[currentFrameIndex]) != S_OK)
+		throw std::runtime_error("FAIL");
+
+	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u]->CreateView();
 
 	return this->m_pVertexBuffers.size() - 1u;
 }
