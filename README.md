@@ -62,8 +62,8 @@ int main()
 	ENABLE_CONSOLE();
 
 	try {
-		Window* pWindow = Window::Create();
-		RenderAPI* pRenderAPI = RenderAPI::Create(RenderAPIName::DIRECTX12);
+		WindowHandle    window    = Window::Create();
+		RenderAPIHandle renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX11);
 
 		std::vector<RenderPipelineDesc> pipelineDescs{
 			RenderPipelineDesc{"vs.hlsl", {
@@ -72,7 +72,7 @@ int main()
 			}, "ps.hlsl", PrimitiveTopology::TRIANGLES}
 		};
 
-		pRenderAPI->InitRenderAPI(pWindow, pipelineDescs);
+		renderAPI->InitRenderAPI(window, pipelineDescs);
 
 		std::array<Vertex, 3u> vertices{
 			Vertex{Vec3f{+0.0f, +1.0f, 0.0f}, Vec3f{1.0f, 0.0f, 0.0f}},
@@ -80,21 +80,16 @@ int main()
 			Vertex{Vec3f{-1.0f, -1.0f, 0.0f}, Vec3f{0.0f, 0.0f, 1.0f}}
 		};
 		
-		Drawable drawable{0u, pRenderAPI->CreateVertexBuffer(sizeof(Vertex), vertices.size(), vertices.data()) };
+		Drawable drawable{0u, renderAPI->CreateVertexBuffer(sizeof(Vertex), vertices.size(), vertices.data()) };
 		
-		while (pWindow->IsRunning())
-		{
-			pWindow->Update();
-			pRenderAPI->BeginFrame();
-			pRenderAPI->Draw(drawable, vertices.size());
-			pRenderAPI->EndFrame();
+		while (window->IsRunning()) {
+			window->Update();
+			renderAPI->BeginFrame();
+			renderAPI->Draw(drawable, vertices.size());
+			renderAPI->EndFrame();
 			std::this_thread::sleep_for(std::chrono::microseconds(16));
 		}
-
-		delete pWindow;
-		delete pRenderAPI;
-	}
-	catch (const std::runtime_error& e) {
+	} catch (const std::runtime_error& e) {
 		std::cout << e.what() << '\n';
 	}
 }
