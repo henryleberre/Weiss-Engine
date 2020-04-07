@@ -91,7 +91,7 @@ void DirectX12RenderAPI::BeginFrame()
 	this->WaitForNextFrame();
 
 	this->m_pCommandAllocators[currentFrameIndex]->Reset();
-	this->m_pCommandList->Get()->Reset(this->m_pCommandAllocators[currentFrameIndex]->Get().Get(), this->m_pRenderPipelines[0].Get().Get());
+	this->m_pCommandList->Reset(this->m_pCommandAllocators[currentFrameIndex]);
 
 	this->m_pCommandList->Get()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pRenderTargets[this->currentFrameIndex]->Get().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
