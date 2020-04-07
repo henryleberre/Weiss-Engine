@@ -7,13 +7,13 @@
 
 class DirectX12Adapater {
 private:
-	Microsoft::WRL::ComPtr<IDXGIAdapter4> m_pAdapter;
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> m_pAdapter;
 
 public:
 	DirectX12Adapater();
 
-	operator Microsoft::WRL::ComPtr<IDXGIAdapter4>() const noexcept;
-	Microsoft::WRL::ComPtr<IDXGIAdapter4> Get() const noexcept;
+	operator Microsoft::WRL::ComPtr<IDXGIAdapter1>() const noexcept;
+	Microsoft::WRL::ComPtr<IDXGIAdapter1> Get() const noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS
