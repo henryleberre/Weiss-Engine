@@ -8,16 +8,25 @@
 
 class DirectX12VertexBuffer : public VertexBuffer {
 private:
+	Microsoft::WRL::ComPtr<ID3D12Resource> m_pIntermidiate;
 	Microsoft::WRL::ComPtr<ID3D12Resource> m_pVertexBuffer;
 
 	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
 public:
-	DirectX12VertexBuffer(const std::shared_ptr<DirectX12Device>& pDevice, const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
+	DirectX12VertexBuffer(const std::shared_ptr<DirectX12Device>& pDevice, const std::shared_ptr<DirectX12CommandList>& pCommandList, const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
 
 	void Bind(const std::shared_ptr<DirectX12CommandList>& pCommandList);
 	virtual size_t GetCount() override;
 	virtual void   SetData(const void* buff, const size_t nVertices) override;
+};
+
+class DirectX12IndexBuffer : public IndexBuffer {
+public:
+	DirectX12IndexBuffer() {}
+
+	virtual size_t GetCount() override { return 0u; }
+	virtual void   SetData(const uint32_t* buff, const size_t nIndices) override {}
 };
 
 #endif // __WEISS__OS_WINDOWS

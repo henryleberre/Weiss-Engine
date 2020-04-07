@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Buffers.h"
 #include "RenderPipeline.h"
 #include "internal/Include.h"
 #include "../common/Include.h"
@@ -20,10 +21,11 @@ private:
 	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_expectedFenceValues;
 	std::shared_ptr<DirectX12RootSignature> m_pInputAssemblerRootSignature;
 	std::shared_ptr<DirectX12CommandList> m_pCommandList;
-	//std::shared_ptr<DirectX12RenderTarget> m_pRenderTarget;
-	//std::shared_ptr<DirectX12DepthBuffer>  m_pDepthBuffer;
 	
-	std::vector<DirectX12RenderPipeline> m_renderPipelines;
+	std::vector<std::unique_ptr<DirectX12VertexBuffer>> m_pVertexBuffers;
+	std::vector<std::unique_ptr<DirectX12IndexBuffer>>  m_pIndexBuffers;
+
+	std::vector<DirectX12RenderPipeline> m_pRenderPipelines;
 
 	size_t currentFrameIndex = 0u;
 
@@ -40,14 +42,12 @@ private:
 public:
 	DirectX12RenderAPI();
 
-	virtual void InitRenderAPI(Window* pWindow) override;
+	virtual void InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
 	virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
 
 	virtual void BeginFrame() override;
 	virtual void EndFrame()   override;
-
-	virtual size_t CreateRenderPipeline(const char* vsFilename, const std::vector<ShaderInputElement>& sies, const char* psFilename, const PrimitiveTopology& topology = PrimitiveTopology::TRIANGLES) override;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
 	virtual size_t CreateIndexBuffer(const size_t nIndices, const void* buff = nullptr) override;
