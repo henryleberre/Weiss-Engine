@@ -19,13 +19,13 @@ public:
 		Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
 		Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
 
-		if (pDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice)) != S_OK)
+		if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice))))
 			throw std::runtime_error("Could Not Get IDXGIDevice From D3D11Device");
 
-		if (dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf()) != S_OK)
+		if (FAILED(dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf())))
 			throw std::runtime_error("Could Not Get DXGIAdapter From DXGIDevice");
 
-		if (dxgiAdapter->GetParent(__uuidof(IDXGIFactory), &dxgiFactory) != S_OK)
+		if (FAILED(dxgiAdapter->GetParent(__uuidof(IDXGIFactory), &dxgiFactory)))
 			throw std::runtime_error("Could Not Get DXGIAdapter's Parent");
 
 		DXGI_SWAP_CHAIN_DESC scd{};
@@ -45,7 +45,14 @@ public:
 		scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		scd.Flags = 0;
 
-		dxgiFactory->CreateSwapChain(pDevice, &scd, &this->m_pObject);
+		if (FAILED(dxgiFactory->CreateSwapChain(pDevice, &scd, &this->m_pObject)))
+			throw std::runtime_error("[DIRECTX 11] Failed To Create Swap Chain");
+	}
+
+	void operator=(DirectX11SwapChain&& other) noexcept
+	{
+		this->m_pObject = other.m_pObject;
+		other.m_pObject = nullptr;
 	}
 
 	void Present()

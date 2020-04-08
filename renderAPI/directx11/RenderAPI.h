@@ -17,8 +17,8 @@ private:
 	DirectX11RenderTarget m_pRenderTarget;
 	DirectX11DepthBuffer  m_pDepthBuffer;
 
-	std::vector<DirectX11VertexBuffer>   m_pVertexBuffers;
-	std::vector<DirectX11IndexBuffer>    m_pIndexBuffers;
+	std::vector<std::unique_ptr<DirectX11VertexBuffer>> m_pVertexBuffers;
+	std::vector<std::unique_ptr<DirectX11IndexBuffer>>  m_pIndexBuffers;
 	std::vector<DirectX11RenderPipeline> m_pRenderPipelines;
 
 public:
