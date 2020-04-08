@@ -1,21 +1,19 @@
-# Weiss II
+# Weiss
 
 > Weiss II is cross-platform and api-agnostic rendering engine built with c++17. It is intended to be a wrapper around low-level apis to make the developpement of 2D and 3D applications simpler and faster.
 
 ## Current Support
 
-:heavy_check_mark: means that the feature is fully supported
+| Icon    | :heavy_check_mark:         | :x:                   | :warning:         | Triangle Rendering   |
+| ------- | -------------------------- | --------------------- | ----------------- | -------------------- |
+| Meaning | Fully Integrated & Working | Haven't Started (yet) | Being Implemented | :small_red_triangle: |
 
-:warning: means that the feature is being implemented
-
-:x: means that the feature has not yet been implemented
-
-| Render API | Status    | Operating System | Status             |
-| ---------- | --------- | ---------------- | ------------------ |
-| DirectX 11 | :warning: | Windows          | :heavy_check_mark: |
-| DirectX 12 | :warning: | Linux            | :x:                |
-| OpenGL     | :x:       | Mac OSX          | :x:                |
-| Vulkan     | :x:       | | |
+| Render API | Status                            | Operating System | Status             |
+| ---------- | --------------------------------- | ---------------- | ------------------ |
+| DirectX 11 | :warning: (:small_red_triangle:)  | Windows          | :heavy_check_mark: |
+| DirectX 12 | :warning: (:small_red_triangle:)  | Linux            | :x:                |
+| OpenGL     | :x:                               | Mac OSX          | :x:                |
+| Vulkan     | :x:                               | | |
 
 ## Getting Started
 
