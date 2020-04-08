@@ -37,10 +37,10 @@ void DirectX11RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<Render
 void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
 	this->m_pRenderPipelines[drawable.pipelineIndex].Bind(this->m_pDeviceContext);
-	this->m_pVertexBuffers[drawable.vertexBufferIndex].Bind(this->m_pDeviceContext);
+	this->m_pVertexBuffers[drawable.vertexBufferIndex]->Bind(this->m_pDeviceContext);
 	
 	if (drawable.indexBufferIndex.has_value()) {
-		this->m_pIndexBuffers[drawable.indexBufferIndex.value()].Bind(this->m_pDeviceContext);
+		this->m_pIndexBuffers[drawable.indexBufferIndex.value()]->Bind(this->m_pDeviceContext);
 		this->m_pDeviceContext->DrawIndexed(static_cast<UINT>(nVertices), 0u, 0u);
 	} else {
 		this->m_pDeviceContext->Draw(static_cast<UINT>(nVertices), 0u);
@@ -60,14 +60,14 @@ void DirectX11RenderAPI::EndFrame()
 
 size_t DirectX11RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
 {
-	this->m_pVertexBuffers.push_back(DirectX11VertexBuffer(this->m_pDevice, vertexSize, nVertices, buff));
+	this->m_pVertexBuffers.push_back(std::make_unique<DirectX11VertexBuffer>(this->m_pDevice, vertexSize, nVertices, buff));
 
 	return this->m_pVertexBuffers.size() - 1u;
 }
 
 size_t DirectX11RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* buff)
 {
-	this->m_pIndexBuffers.push_back(DirectX11IndexBuffer(this->m_pDevice, nIndices, buff));
+	this->m_pIndexBuffers.push_back(std::make_unique<DirectX11IndexBuffer>(this->m_pDevice, nIndices, buff));
 
 	return this->m_pIndexBuffers.size() - 1u;
 }

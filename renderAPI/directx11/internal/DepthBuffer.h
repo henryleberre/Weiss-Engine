@@ -29,7 +29,7 @@ public:
 		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-		if (pDevice->CreateDepthStencilState(&dsDesc, &this->m_pDepthStencilState) != S_OK)
+		if (FAILED(pDevice->CreateDepthStencilState(&dsDesc, &this->m_pDepthStencilState)))
 			throw std::runtime_error("Could Not Create DepthStencilState");
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
@@ -44,7 +44,7 @@ public:
 		descDepth.Usage = D3D11_USAGE_DEFAULT;
 		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-		if (pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil) != S_OK)
+		if (FAILED(pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil)))
 			throw std::runtime_error("Could Not Create Texture2D");
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
@@ -52,7 +52,7 @@ public:
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0u;
 
-		if (pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &this->m_pDepthStencilView) != S_OK)
+		if (FAILED(pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &this->m_pDepthStencilView)))
 			throw std::runtime_error("Could Not Create DepthStencilView");
 	}
 

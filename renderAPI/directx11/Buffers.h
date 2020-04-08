@@ -6,14 +6,17 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX11VertexBuffer {
-private:
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer;
+typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11VertexBufferObjectWrapper;
+typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11IndexBufferObjectWrapper;
 
+class DirectX11VertexBuffer : public DirectX11VertexBufferObjectWrapper {
+private:
 	size_t m_vertexSize = 0u, m_nVertices = 0u;
 
 public:
 	DirectX11VertexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
+
+	void operator=(DirectX11VertexBuffer&& other) noexcept;
 
 	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
 	size_t GetCount();
@@ -21,14 +24,14 @@ public:
 	void SetData(const void* buff, const size_t nVertices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
 };
 
-class DirectX11IndexBuffer {
+class DirectX11IndexBuffer : public DirectX11IndexBufferObjectWrapper {
 private:
-	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pIndexBuffer;
-
 	size_t m_nIndices = 0u;
 
 public:
 	DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t nIndices, const void* buff = nullptr);
+
+	void operator=(DirectX11IndexBuffer&& other) noexcept;
 
 	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
 	size_t GetCount();
