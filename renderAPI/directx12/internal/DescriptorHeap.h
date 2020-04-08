@@ -12,6 +12,8 @@ public:
 	DirectX12DescriptorHeap() {  }
 
 	DirectX12DescriptorHeap(DirectX12DeviceObjectWrapper& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE type, const uint32_t numDescriptors);
+
+	void operator=(DirectX12DescriptorHeap&& other) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

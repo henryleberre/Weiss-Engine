@@ -8,9 +8,15 @@ DirectX12CommandAllocator::DirectX12CommandAllocator(DirectX12DeviceObjectWrappe
 		throw std::runtime_error("[DIRECTX 12] Could Not Create Command Allocator");
 }
 
+void DirectX12CommandAllocator::operator=(DirectX12CommandAllocator&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
 void DirectX12CommandAllocator::Reset() const
 {
-	if (this->m_pObject->Reset() != S_OK)
+	if (FAILED(this->m_pObject->Reset()))
 		throw std::runtime_error("[DIRECTX 12] Could Not Reset Command Allocator");
 }
 

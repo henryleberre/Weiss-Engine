@@ -15,4 +15,10 @@ DirectX12RootSignature::DirectX12RootSignature(DirectX12DeviceObjectWrapper& pDe
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Root Signature");
 }
 
+void DirectX12RootSignature::operator=(DirectX12RootSignature&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
 #endif // __WEISS__OS_WINDOWS

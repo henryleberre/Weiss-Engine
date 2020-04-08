@@ -17,6 +17,8 @@ public:
 							const char* vsFilename, const std::vector<ShaderInputElement>& sies,
 							const char* psFilename, const PrimitiveTopology& topology);
 
+	void operator=(DirectX12RenderPipeline&& other) noexcept;
+
 	void Bind(DirectX12CommandListObjectWrapper& pCommandList) const noexcept;
 };
 

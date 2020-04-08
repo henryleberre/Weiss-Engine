@@ -4,10 +4,9 @@
 
 DirectX12Device::DirectX12Device(DirectX12AdapterObjectWrapper& pAdapter)
 {
-	if (D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+	if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device2), (void**)&this->m_pObject)))
 		throw std::runtime_error("[DIRECTX12] Failed To Create Device");
 
-	// Enable debug messages in debug mode.
 #if defined(_DEBUG)
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> pInfoQueue;
 	if (SUCCEEDED(this->m_pObject->QueryInterface(IID_PPV_ARGS(&pInfoQueue))))
@@ -16,20 +15,17 @@ DirectX12Device::DirectX12Device(DirectX12AdapterObjectWrapper& pAdapter)
 		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
 		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
 
-		// Suppress whole categories of messages
 		//D3D12_MESSAGE_CATEGORY Categories[] = {};
 
-		// Suppress messages based on their severity level
 		D3D12_MESSAGE_SEVERITY Severities[] =
 		{
 			D3D12_MESSAGE_SEVERITY_INFO
 		};
 
-		// Suppress individual messages by their ID
 		D3D12_MESSAGE_ID DenyIds[] = {
-			D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   // I'm really not sure how to avoid this message.
-			D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,                         // This warning occurs when using capture frame while graphics debugging.
-			D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,                       // This warning occurs when using capture frame while graphics debugging.
+			D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,   
+			D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,                         
+			D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,                      
 		};
 
 		D3D12_INFO_QUEUE_FILTER NewFilter = {};
@@ -44,6 +40,12 @@ DirectX12Device::DirectX12Device(DirectX12AdapterObjectWrapper& pAdapter)
 			throw std::runtime_error("[DIRECTX12] Could Not Push Storage FIlter");
 	}
 #endif
+}
+
+void DirectX12Device::operator=(DirectX12Device&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
 }
 
 #endif // __WEISS__OS_WINDOWS

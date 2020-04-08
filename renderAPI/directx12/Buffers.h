@@ -21,6 +21,8 @@ public:
 						  DirectX12CommandQueueObjectWrapper& pCommandQueue,
 						  const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
 
+	void operator=(DirectX12VertexBuffer&& other) noexcept;
+
 	void CreateView();
 
 	D3D12_VERTEX_BUFFER_VIEW GetView();

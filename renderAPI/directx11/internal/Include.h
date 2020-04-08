@@ -4,3 +4,4 @@
 #include "SwapChain.h"
 #include "DepthBuffer.h"
 #include "RenderTarget.h"
+#include "ObjectWrapper.h"

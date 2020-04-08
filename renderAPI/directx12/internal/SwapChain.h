@@ -12,10 +12,12 @@ class DirectX12SwapChain : public DirectX12SwapChainObjectWrapper {
 public:
 	DirectX12SwapChain() {  }
 
-	DirectX12SwapChain(const DirectX12DeviceObjectWrapper&       pDevice,
-					   const DirectX12CommandQueueObjectWrapper& pCommandQueue,
+	DirectX12SwapChain(DirectX12DeviceObjectWrapper&       pDevice,
+					   DirectX12CommandQueueObjectWrapper& pCommandQueue,
 					   const Window* pWindow, const UINT bufferCount);
 
+	void operator=(DirectX12SwapChain&& other) noexcept;
+	
 	void Present() const;
 };
 

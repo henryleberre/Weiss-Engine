@@ -10,8 +10,14 @@ DirectX12CommandQueue::DirectX12CommandQueue(DirectX12DeviceObjectWrapper& pDevi
 	desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	desc.NodeMask = 0;
 
-	if (pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+	if (FAILED(pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&this->m_pObject))))
 		throw std::runtime_error("[DIRECTX12] Could Not Create Command Queue");
+}
+
+void DirectX12CommandQueue::operator=(DirectX12CommandQueue&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
 }
 
 #endif // __WEISS__OS_WINDOWS

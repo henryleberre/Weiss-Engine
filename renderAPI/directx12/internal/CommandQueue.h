@@ -12,6 +12,8 @@ public:
 	DirectX12CommandQueue() {  }
 
 	DirectX12CommandQueue(DirectX12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
+
+	void operator=(DirectX12CommandQueue&& other) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

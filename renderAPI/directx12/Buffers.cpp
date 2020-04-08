@@ -41,6 +41,12 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 }
 
+void DirectX12VertexBuffer::operator=(DirectX12VertexBuffer&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
 void DirectX12VertexBuffer::CreateView()
 {
 	this->m_vertexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();

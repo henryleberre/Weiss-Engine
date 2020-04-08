@@ -13,6 +13,8 @@ public:
 
 	DirectX12CommandAllocator(DirectX12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
 
+	void operator=(DirectX12CommandAllocator&& other) noexcept;
+
 	void Reset() const;
 };
 

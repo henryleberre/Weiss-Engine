@@ -2,7 +2,7 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12Adapater::DirectX12Adapater()
+DirectX12Adapter::DirectX12Adapter()
 {
 	HRESULT hr;
 	IDXGIFactory4* dxgiFactory;
@@ -26,6 +26,12 @@ DirectX12Adapater::DirectX12Adapater()
 	}
 
 	throw std::runtime_error("[DIRECTX 12] Failed To Create Adapter");
+}
+
+void DirectX12Adapter::operator=(DirectX12Adapter&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
 }
 
 #endif // __WEISS__OS_WINDOWS
