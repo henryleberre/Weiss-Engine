@@ -1,25 +1,27 @@
 #pragma once
 
 #include "Device.h"
+#include "RenderTarget.h"
 #include "CommandAllocator.h"
 #include "../../../common/Include.h"
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12CommandList {
-private:
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> m_pCommandList;
+typedef DirectX12ObjectWrapper<ID3D12GraphicsCommandList> DirectX12CommandListObjectWrapper;
 
+class DirectX12CommandList : public DirectX12CommandListObjectWrapper {
 public:
-	DirectX12CommandList(const std::shared_ptr<DirectX12Device>& pDevice,
-						 const std::shared_ptr<DirectX12CommandAllocator>& pCommandAllocator,
+	DirectX12CommandList() {  }
+
+	DirectX12CommandList(DirectX12DeviceObjectWrapper& pDevice,
+						 DirectX12CommandAllocatorObjectWrapper& pCommandAllocator,
 						 const D3D12_COMMAND_LIST_TYPE& type);
 
-	void Reset(const std::shared_ptr<DirectX12CommandAllocator>& pCommandAllocator) const;
+	void Close() const;
 
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> Get() const noexcept;
+	void Reset(DirectX12CommandAllocatorObjectWrapper& pCommandAllocator) const;
 
-	operator Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>() const noexcept;
+	void TransitionResource(ID3D12Resource* pResource, const D3D12_RESOURCE_STATES& before, const D3D12_RESOURCE_STATES& after);
 };
 
 #endif // __WEISS__OS_WINDOWS

@@ -2,28 +2,30 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12CommandList::DirectX12CommandList(const std::shared_ptr<DirectX12Device>& pDevice,
-										   const std::shared_ptr<DirectX12CommandAllocator>& pCommandAllocator,
+DirectX12CommandList::DirectX12CommandList(DirectX12DeviceObjectWrapper& pDevice,
+										   DirectX12CommandAllocatorObjectWrapper& pCommandAllocator,
 										   const D3D12_COMMAND_LIST_TYPE& type)
 {
-	if (pDevice->Get()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator->Get().Get(), NULL, IID_PPV_ARGS(&this->m_pCommandList)) != S_OK)
+	if (pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, NULL, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Command List");
 }
 
-void DirectX12CommandList::Reset(const std::shared_ptr<DirectX12CommandAllocator>& pCommandAllocator) const
+void DirectX12CommandList::Close() const
 {
-	if (this->m_pCommandList->Reset(pCommandAllocator->Get().Get(), NULL) != S_OK)
+	if (FAILED(this->m_pObject->Close()))
+		throw std::runtime_error("[DIRECTX 12] Failed To Close Command List");
+}
+
+void DirectX12CommandList::Reset(DirectX12CommandAllocatorObjectWrapper& pCommandAllocator) const
+{
+	if (FAILED(this->m_pObject->Reset(pCommandAllocator, NULL)))
 		throw std::runtime_error("[DIRECTX 12] Failed To Reset Command List");
 }
 
-Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DirectX12CommandList::Get() const noexcept
+void DirectX12CommandList::TransitionResource(ID3D12Resource* pResource, const D3D12_RESOURCE_STATES& before, const D3D12_RESOURCE_STATES& after)
 {
-	return this->m_pCommandList;
+	this->m_pObject->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(pResource, before, after));
 }
 
-DirectX12CommandList::operator Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList>() const noexcept
-{
-	return this->m_pCommandList;
-}
 
 #endif // __WEISS__OS_WINDOWS

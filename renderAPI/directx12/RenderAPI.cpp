@@ -4,14 +4,14 @@
 
 void DirectX12RenderAPI::WaitForNextFrame()
 {
-	this->currentFrameIndex = this->m_pSwapChain->Get()->GetCurrentBackBufferIndex();
+	this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
 
-	if (this->m_pFences[currentFrameIndex]->Get()->GetCompletedValue() < this->m_expectedFenceValues[this->currentFrameIndex])
+	if (this->m_pFences[currentFrameIndex]->GetCompletedValue() < this->m_expectedFenceValues[this->currentFrameIndex])
 	{
-		if (this->m_pFences[currentFrameIndex]->Get()->SetEventOnCompletion(this->m_expectedFenceValues[this->currentFrameIndex], this->m_pFences[this->currentFrameIndex]->GetEvent()) != S_OK)
+		if (this->m_pFences[currentFrameIndex]->SetEventOnCompletion(this->m_expectedFenceValues[this->currentFrameIndex], this->m_pFences[this->currentFrameIndex].GetEvent()) != S_OK)
 			throw std::runtime_error("[DIRECTX 12] Failed To Set Event On Completion For Fence");
 
-		WaitForSingleObject(this->m_pFences[this->currentFrameIndex]->GetEvent(), INFINITE);
+		WaitForSingleObject(this->m_pFences[this->currentFrameIndex].GetEvent(), INFINITE);
 	}
 
 	this->m_expectedFenceValues[this->currentFrameIndex]++;
@@ -19,13 +19,13 @@ void DirectX12RenderAPI::WaitForNextFrame()
 
 void DirectX12RenderAPI::CreateRenderTargets()
 {
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(this->m_pDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(this->m_pDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	
-	UINT rtvDescriptorSize = this->m_pDevice->Get()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	UINT rtvDescriptorSize = this->m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
 	{
-		this->m_pRenderTargets[i] = std::make_shared<DirectX12RenderTarget>(this->m_pDevice, this->m_pSwapChain, this->m_pDescriptorHeap, rtvHandle, i);
+		this->m_pRenderTargets[i] = DirectX12RenderTarget(this->m_pDevice, this->m_pSwapChain, this->m_pDescriptorHeap, rtvHandle, i);
 		rtvHandle.Offset(1, rtvDescriptorSize);
 	}
 }
@@ -35,26 +35,25 @@ DirectX12RenderAPI::DirectX12RenderAPI()
 
 void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs)
 {
-	this->m_pAdapter        = std::make_shared<DirectX12Adapater>();
-	this->m_pDevice         = std::make_shared<DirectX12Device>(this->m_pAdapter);
-	this->m_pCommandQueue   = std::make_shared<DirectX12CommandQueue>(this->m_pDevice, D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
-	this->m_pSwapChain      = std::make_shared<DirectX12SwapChain>(this->m_pDevice, this->m_pCommandQueue, pWindow, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
-	this->m_pDescriptorHeap = std::make_shared<DirectX12DescriptorHeap>(this->m_pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
-	this->m_pInputAssemblerRootSignature = std::make_shared<DirectX12RootSignature>(this->m_pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	this->m_pDevice         = DirectX12Device(this->m_pAdapter);
+	this->m_pCommandQueue   = DirectX12CommandQueue(this->m_pDevice, D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
+	this->m_pSwapChain      = DirectX12SwapChain(this->m_pDevice, this->m_pCommandQueue, pWindow, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
+	this->m_pDescriptorHeap = DirectX12DescriptorHeap(this->m_pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
+	this->m_pInputAssemblerRootSignature = DirectX12RootSignature(this->m_pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	this->CreateRenderTargets();
 
 	for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
-		this->m_pCommandAllocators[i] = std::make_shared<DirectX12CommandAllocator>(this->m_pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		this->m_pCommandAllocators[i] = DirectX12CommandAllocator(this->m_pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
 
-	this->m_pCommandList = std::make_shared<DirectX12CommandList>(this->m_pDevice, this->m_pCommandAllocators[0], D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
+	this->m_pCommandList = DirectX12CommandList(this->m_pDevice, this->m_pCommandAllocators[0], D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 
 	for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++) {
-		this->m_pFences[i] = std::make_shared<DirectX12Fence>(this->m_pDevice, 0u, D3D12_FENCE_FLAGS::D3D12_FENCE_FLAG_NONE);
+		this->m_pFences[i] = DirectX12Fence(this->m_pDevice, 0u, D3D12_FENCE_FLAGS::D3D12_FENCE_FLAG_NONE);
 		this->m_expectedFenceValues[i] = 0u;
 	}
 
-	this->currentFrameIndex = this->m_pSwapChain->Get()->GetCurrentBackBufferIndex();
+	this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
 
 	this->m_viewport.TopLeftX = 0;
 	this->m_viewport.TopLeftY = 0;
@@ -75,66 +74,71 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<Render
 
 void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
-	this->m_pCommandList->Get()->SetGraphicsRootSignature(this->m_pInputAssemblerRootSignature->Get().Get());
+	this->m_pCommandList->SetGraphicsRootSignature(this->m_pInputAssemblerRootSignature);
 	this->m_pRenderPipelines[drawable.pipelineIndex].Bind(this->m_pCommandList);
-	this->m_pVertexBuffers[drawable.vertexBufferIndex]->Bind(this->m_pCommandList);
+	this->m_pVertexBuffers[drawable.vertexBufferIndex].Bind(this->m_pCommandList);
 
 	if (drawable.indexBufferIndex.has_value()) {
 
 	} else {
-		this->m_pCommandList->Get()->DrawInstanced(3u, nVertices / 3u, 0, 0);
+		this->m_pCommandList->DrawInstanced(3u, nVertices / 3u, 0, 0);
 	}
 }
 
 void DirectX12RenderAPI::BeginFrame()
 {
+	DirectX12CommandList&      commandList      = this->m_pCommandList;
+	DirectX12RenderTarget&     renderTarget     = this->m_pRenderTargets[this->currentFrameIndex];
+	DirectX12CommandAllocator& commandAllocator = this->m_pCommandAllocators[this->currentFrameIndex];
+
 	this->WaitForNextFrame();
 
-	this->m_pCommandAllocators[currentFrameIndex]->Reset();
-	this->m_pCommandList->Reset(this->m_pCommandAllocators[currentFrameIndex]);
+	commandAllocator.Reset();
+	commandList.Reset(commandAllocator);
 
-	this->m_pCommandList->Get()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pRenderTargets[this->currentFrameIndex]->Get().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	commandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	this->m_currentRtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(this->m_pDescriptorHeap->Get()->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(this->currentFrameIndex), this->m_pDevice->Get()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+	this->m_currentRtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(this->m_pDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(this->currentFrameIndex), this->m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
-	this->m_pCommandList->Get()->RSSetViewports(1, &this->m_viewport);
-	this->m_pCommandList->Get()->RSSetScissorRects(1, &this->m_scissors);
-
-	this->m_pCommandList->Get()->OMSetRenderTargets(1, &m_currentRtvHandle, FALSE, nullptr);
+	commandList->RSSetViewports(1, &this->m_viewport);
+	commandList->RSSetScissorRects(1, &this->m_scissors);
+	commandList->OMSetRenderTargets(1, &m_currentRtvHandle, FALSE, nullptr);
 
 	this->Fill();
 }
 
 void DirectX12RenderAPI::EndFrame()
 {
-	this->m_pCommandList->Get()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pRenderTargets[this->currentFrameIndex]->Get().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	DirectX12CommandList& commandList = this->m_pCommandList;
+	DirectX12RenderTarget& renderTarget = this->m_pRenderTargets[this->currentFrameIndex];
+	DirectX12CommandAllocator& commandAllocator = this->m_pCommandAllocators[this->currentFrameIndex];
 
-	if (this->m_pCommandList->Get()->Close() != S_OK)
-		throw std::runtime_error("[DIRECTX 12] Failed To Close Command List");
+	commandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	commandList.Close();
 
-	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList->Get().Get() };
-	this->m_pCommandQueue->Get()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList };
+	this->m_pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-	if (this->m_pCommandQueue->Get()->Signal(this->m_pFences[this->currentFrameIndex]->Get().Get(), this->m_expectedFenceValues[this->currentFrameIndex]) != S_OK)
+	if (this->m_pCommandQueue->Signal(this->m_pFences[this->currentFrameIndex], this->m_expectedFenceValues[this->currentFrameIndex]) != S_OK)
 		throw std::runtime_error("[DIRECTX 12] Signaling The Command Queue Fence Failed");
 
-	this->m_pSwapChain->Present();
+	this->m_pSwapChain.Present();
 }
 
 size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
 {
-	this->m_pVertexBuffers.push_back(std::make_unique<DirectX12VertexBuffer>(this->m_pDevice, this->m_pCommandList, this->m_pCommandQueue, vertexSize, nVertices, buff));
+	this->m_pVertexBuffers.push_back(DirectX12VertexBuffer(this->m_pDevice, this->m_pCommandList, this->m_pCommandQueue, vertexSize, nVertices, buff));
 
-	this->m_pCommandList->Get()->Close();
+	this->m_pCommandList->Close();
 
-	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList->Get().Get() };
-	this->m_pCommandQueue->Get()->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList };
+	this->m_pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	this->m_expectedFenceValues[this->currentFrameIndex]++;
-	if (this->m_pCommandQueue->Get()->Signal(this->m_pFences[currentFrameIndex]->Get().Get(), m_expectedFenceValues[currentFrameIndex]) != S_OK)
+	if (this->m_pCommandQueue->Signal(this->m_pFences[currentFrameIndex], m_expectedFenceValues[currentFrameIndex]) != S_OK)
 		throw std::runtime_error("FAIL");
 
-	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u]->CreateView();
+	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u].CreateView();
 
 	return this->m_pVertexBuffers.size() - 1u;
 }
@@ -146,7 +150,7 @@ size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* 
 
 void DirectX12RenderAPI::Fill(const Colorf32& color)
 {
-	this->m_pCommandList->Get()->ClearRenderTargetView(this->m_currentRtvHandle, (float*)&color, 0, nullptr);
+	this->m_pCommandList->ClearRenderTargetView(this->m_currentRtvHandle, (float*)&color, 0, nullptr);
 }
 
 #endif // __WEISS__OS_WINDOWS

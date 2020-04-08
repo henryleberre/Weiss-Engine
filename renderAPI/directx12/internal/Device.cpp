@@ -2,15 +2,15 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12Device::DirectX12Device(const std::shared_ptr<DirectX12Adapater>& pAdapter)
+DirectX12Device::DirectX12Device(DirectX12AdapterObjectWrapper& pAdapter)
 {
-	if (D3D12CreateDevice(pAdapter->Get().Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&this->m_pDevice)) != S_OK)
+	if (D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
 		throw std::runtime_error("[DIRECTX12] Failed To Create Device");
 
 	// Enable debug messages in debug mode.
 #if defined(_DEBUG)
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> pInfoQueue;
-	if (SUCCEEDED(this->m_pDevice.As(&pInfoQueue)))
+	if (SUCCEEDED(this->m_pObject->QueryInterface(IID_PPV_ARGS(&pInfoQueue))))
 	{
 		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
 		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
@@ -44,16 +44,6 @@ DirectX12Device::DirectX12Device(const std::shared_ptr<DirectX12Adapater>& pAdap
 			throw std::runtime_error("[DIRECTX12] Could Not Push Storage FIlter");
 	}
 #endif
-}
-
-DirectX12Device::operator Microsoft::WRL::ComPtr<ID3D12Device2>() const noexcept
-{
-	return this->m_pDevice;
-}
-
-Microsoft::WRL::ComPtr<ID3D12Device2> DirectX12Device::Get() const noexcept
-{
-	return this->m_pDevice;
 }
 
 #endif // __WEISS__OS_WINDOWS

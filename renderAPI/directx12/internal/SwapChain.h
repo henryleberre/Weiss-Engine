@@ -6,20 +6,17 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12SwapChain {
-private:
-	Microsoft::WRL::ComPtr<IDXGISwapChain3> m_pSwapChain;
+typedef DirectX12ObjectWrapper<IDXGISwapChain3> DirectX12SwapChainObjectWrapper;
 
+class DirectX12SwapChain : public DirectX12SwapChainObjectWrapper {
 public:
-	DirectX12SwapChain(const std::shared_ptr<DirectX12Device>& pDevice,
-					   const std::shared_ptr<DirectX12CommandQueue>& pCommandQueue,
+	DirectX12SwapChain() {  }
+
+	DirectX12SwapChain(const DirectX12DeviceObjectWrapper&       pDevice,
+					   const DirectX12CommandQueueObjectWrapper& pCommandQueue,
 					   const Window* pWindow, const UINT bufferCount);
 
 	void Present() const;
-
-	Microsoft::WRL::ComPtr<IDXGISwapChain3> Get() const noexcept;
-
-	operator Microsoft::WRL::ComPtr<IDXGISwapChain3>() const noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

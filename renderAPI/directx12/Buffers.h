@@ -6,25 +6,26 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12VertexBuffer : public VertexBuffer {
-private:
-	Microsoft::WRL::ComPtr<ID3D12Resource> m_pVertexBuffer;
+typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12VertexBufferObjectWrapper;
 
+class DirectX12VertexBuffer : public VertexBuffer,
+							  public DirectX12ObjectWrapper<ID3D12Resource> {
+private:
 	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
-	UINT m_vertexSize, m_bufferSize;
+	UINT m_vertexSize, m_bufferSize, m_nVertices;
 
 public:
-	DirectX12VertexBuffer(const std::shared_ptr<DirectX12Device>& pDevice,
-						  const std::shared_ptr<DirectX12CommandList>& pCommandList,
-						  const std::shared_ptr<DirectX12CommandQueue>& pCommandQueue,
+	DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevice,
+						  DirectX12CommandListObjectWrapper& pCommandList,
+						  DirectX12CommandQueueObjectWrapper& pCommandQueue,
 						  const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
 
 	void CreateView();
 
-	D3D12_VERTEX_BUFFER_VIEW GetView() { return this->m_vertexBufferView; }
+	D3D12_VERTEX_BUFFER_VIEW GetView();
 
-	void Bind(const std::shared_ptr<DirectX12CommandList>& pCommandList);
+	void Bind(DirectX12CommandListObjectWrapper& pCommandList);
 	virtual size_t GetCount() override;
 	virtual void   SetData(const void* buff, const size_t nVertices) override;
 };

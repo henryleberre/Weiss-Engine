@@ -10,20 +10,20 @@
 
 class DirectX12RenderAPI : public RenderAPI {
 private:
-	std::shared_ptr<DirectX12Adapater>       m_pAdapter;
-	std::shared_ptr<DirectX12Device>         m_pDevice;
-	std::shared_ptr<DirectX12CommandQueue>   m_pCommandQueue;
-	std::shared_ptr<DirectX12SwapChain>      m_pSwapChain;
-	std::shared_ptr<DirectX12DescriptorHeap> m_pDescriptorHeap;
-	std::array<std::shared_ptr<DirectX12RenderTarget>,     WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
-	std::array<std::shared_ptr<DirectX12CommandAllocator>, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
-	std::array<std::shared_ptr<DirectX12Fence>,            WEISS__FRAME_BUFFER_COUNT> m_pFences;
+	DirectX12Adapater       m_pAdapter;
+	DirectX12Device         m_pDevice;
+	DirectX12CommandQueue   m_pCommandQueue;
+	DirectX12SwapChain      m_pSwapChain;
+	DirectX12DescriptorHeap m_pDescriptorHeap;
+	std::array<DirectX12RenderTarget,     WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
+	std::array<DirectX12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
+	std::array<DirectX12Fence,            WEISS__FRAME_BUFFER_COUNT> m_pFences;
 	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_expectedFenceValues;
-	std::shared_ptr<DirectX12RootSignature> m_pInputAssemblerRootSignature;
-	std::shared_ptr<DirectX12CommandList> m_pCommandList;
+	DirectX12RootSignature m_pInputAssemblerRootSignature;
+	DirectX12CommandList m_pCommandList;
 	
-	std::vector<std::unique_ptr<DirectX12VertexBuffer>> m_pVertexBuffers;
-	std::vector<std::unique_ptr<DirectX12IndexBuffer>>  m_pIndexBuffers;
+	std::vector<DirectX12VertexBuffer> m_pVertexBuffers;
+	std::vector<DirectX12IndexBuffer>  m_pIndexBuffers;
 
 	std::vector<DirectX12RenderPipeline> m_pRenderPipelines;
 
