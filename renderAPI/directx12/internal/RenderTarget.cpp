@@ -14,4 +14,10 @@ DirectX12RenderTarget::DirectX12RenderTarget(DirectX12DeviceObjectWrapper& pDevi
 	pDevice->CreateRenderTargetView(this->m_pObject, nullptr, rtvHandle);
 }
 
+void DirectX12RenderTarget::operator=(DirectX12RenderTarget&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
 #endif // __WEISS__OS_WINDOWS

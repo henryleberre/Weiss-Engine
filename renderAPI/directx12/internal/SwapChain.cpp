@@ -2,8 +2,8 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12SwapChain::DirectX12SwapChain(const DirectX12DeviceObjectWrapper&       pDevice,
-									   const DirectX12CommandQueueObjectWrapper& pCommandQueue,
+DirectX12SwapChain::DirectX12SwapChain(DirectX12DeviceObjectWrapper&       pDevice,
+									   DirectX12CommandQueueObjectWrapper& pCommandQueue,
 									   const Window* pWindow, const UINT bufferCount)
 {
 	Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory4;
@@ -13,7 +13,7 @@ DirectX12SwapChain::DirectX12SwapChain(const DirectX12DeviceObjectWrapper&      
 	createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-	if (CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4)) != S_OK)
+	if (FAILED(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4))))
 		throw std::runtime_error("[DIRECTX12] Could Not Create DXGIFactory2");
 
 	
@@ -34,20 +34,19 @@ DirectX12SwapChain::DirectX12SwapChain(const DirectX12DeviceObjectWrapper&      
 	swapChainDesc.SampleDesc = sampleDesc;
 	swapChainDesc.Windowed = true; 
 
-	IDXGISwapChain* tempSwapChain;
+	if (FAILED(dxgiFactory4->CreateSwapChain(pCommandQueue, &swapChainDesc, (IDXGISwapChain**) &this->m_pObject)))
+		throw std::runtime_error("[DIRECTX 12] Failed To Create Swap Chain");
+}
 
-	dxgiFactory4->CreateSwapChain(
-		this->m_pObject,
-		&swapChainDesc,
-		&tempSwapChain
-	);
-
-	this->m_pObject = static_cast<IDXGISwapChain3*>(tempSwapChain);
+void DirectX12SwapChain::operator=(DirectX12SwapChain&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
 }
 
 void DirectX12SwapChain::Present() const
 {
-	if (SUCCEEDED(this->m_pObject->Present(0, 0)))
+	if (FAILED(this->m_pObject->Present(0, 0)))
 		throw std::runtime_error("[DIRECTX 12] Presentation Failed");
 }
 

@@ -6,13 +6,21 @@ DirectX12CommandList::DirectX12CommandList(DirectX12DeviceObjectWrapper& pDevice
 										   DirectX12CommandAllocatorObjectWrapper& pCommandAllocator,
 										   const D3D12_COMMAND_LIST_TYPE& type)
 {
-	if (pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, NULL, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+	if (FAILED(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, NULL, IID_PPV_ARGS(&this->m_pObject))))
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Command List");
 }
 
-void DirectX12CommandList::Close() const
+void DirectX12CommandList::operator=(DirectX12CommandList&& other) noexcept
 {
-	if (FAILED(this->m_pObject->Close()))
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
+void DirectX12CommandList::Close()
+{
+	HRESULT hr = this->m_pObject->Close();
+
+	if (FAILED(hr))
 		throw std::runtime_error("[DIRECTX 12] Failed To Close Command List");
 }
 

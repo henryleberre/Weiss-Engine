@@ -12,6 +12,8 @@ public:
 	DirectX12RootSignature() {  }
 
 	DirectX12RootSignature(DirectX12DeviceObjectWrapper& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags);
+
+	void operator=(DirectX12RootSignature&& other) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

@@ -9,12 +9,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  m_pDepthStencilView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_pDepthStencilState;
 
-	std::shared_ptr<DirectX11Device> m_pDevice;
-	std::shared_ptr<DirectX11RenderTarget> m_pRenderTarget;
-
 public:
-	DirectX11DepthBuffer(Window* pWindow, std::shared_ptr<DirectX11Device>& pDevice, std::shared_ptr<DirectX11RenderTarget>& pRenderTarget)
-		: m_pDevice(pDevice), m_pRenderTarget(pRenderTarget)
+	DirectX11DepthBuffer() {  }
+
+	DirectX11DepthBuffer(Window* pWindow, DirectX11DeviceObjectWrapper& pDevice)
 	{
 		D3D11_DEPTH_STENCIL_DESC dsDesc = {};
 		dsDesc.DepthEnable = TRUE;
@@ -31,7 +29,7 @@ public:
 		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 
-		if (this->m_pDevice->GetDevice()->CreateDepthStencilState(&dsDesc, &this->m_pDepthStencilState) != S_OK)
+		if (pDevice->CreateDepthStencilState(&dsDesc, &this->m_pDepthStencilState) != S_OK)
 			throw std::runtime_error("Could Not Create DepthStencilState");
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
@@ -46,7 +44,7 @@ public:
 		descDepth.Usage = D3D11_USAGE_DEFAULT;
 		descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-		if (this->m_pDevice->GetDevice()->CreateTexture2D(&descDepth, nullptr, &pDepthStencil) != S_OK)
+		if (pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil) != S_OK)
 			throw std::runtime_error("Could Not Create Texture2D");
 
 		D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
@@ -54,18 +52,18 @@ public:
 		descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0u;
 
-		if (this->m_pDevice->GetDevice()->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &this->m_pDepthStencilView) != S_OK)
+		if (pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &this->m_pDepthStencilView) != S_OK)
 			throw std::runtime_error("Could Not Create DepthStencilView");
 	}
 
-	void Clear()
+	void Clear(DirectX11DeviceContextObjectWrapper& pDeviceContext)
 	{
-		this->m_pDevice->GetDeviceContext()->ClearDepthStencilView(this->m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+		pDeviceContext->ClearDepthStencilView(this->m_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 	}
 
-	void Bind()
+	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext, DirectX11RenderTargetbjectWrapper& pRenderTarget)
 	{
-		this->m_pDevice->GetDeviceContext()->OMSetRenderTargets(1u, this->m_pRenderTarget->GetRenderTarget().GetAddressOf(), this->m_pDepthStencilView.Get());
-		this->m_pDevice->GetDeviceContext()->OMSetDepthStencilState(this->m_pDepthStencilState.Get(), 1u);
+		pDeviceContext->OMSetRenderTargets(1u, pRenderTarget.GetPtr(), this->m_pDepthStencilView.Get());
+		pDeviceContext->OMSetDepthStencilState(this->m_pDepthStencilState.Get(), 1u);
 	}
 };

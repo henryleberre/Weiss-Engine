@@ -7,21 +7,19 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX11SwapChain {
-private:
-	Microsoft::WRL::ComPtr<IDXGISwapChain> m_pSwapChain;
+typedef DirectX11ObjectWrapper<IDXGISwapChain> DirectX11SwapChainObjectWrapper;
 
-	std::shared_ptr<DirectX11Device> m_pDevice;
-
+class DirectX11SwapChain : public DirectX11SwapChainObjectWrapper {
 public:
-	DirectX11SwapChain(std::shared_ptr<DirectX11Device>& pDevice, Window* pWindow)
-		: m_pDevice(pDevice)
+	DirectX11SwapChain() {  }
+
+	DirectX11SwapChain(DirectX11DeviceObjectWrapper& pDevice, Window* pWindow)
 	{
 		Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
 		Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
 		Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
 
-		if (this->m_pDevice->GetDevice().As(&dxgiDevice) != S_OK)
+		if (pDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice)) != S_OK)
 			throw std::runtime_error("Could Not Get IDXGIDevice From D3D11Device");
 
 		if (dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf()) != S_OK)
@@ -47,16 +45,14 @@ public:
 		scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		scd.Flags = 0;
 
-		dxgiFactory->CreateSwapChain(this->m_pDevice->GetDevice().Get(), &scd, &this->m_pSwapChain);
+		dxgiFactory->CreateSwapChain(pDevice, &scd, &this->m_pObject);
 	}
 
 	void Present()
 	{
-		if (this->m_pSwapChain->Present(0, 0u) != S_OK)
+		if (this->m_pObject->Present(0, 0u) != S_OK)
 			throw std::runtime_error("Failed To Swap Buffers");
 	}
-
-	[[nodiscard]] Microsoft::WRL::ComPtr<IDXGISwapChain>& Get() noexcept { return this->m_pSwapChain; }
 };
 
 #endif // __WEISS__OS_WINDOWS

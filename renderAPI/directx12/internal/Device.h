@@ -14,6 +14,8 @@ public:
 	DirectX12Device() {  }
 
 	DirectX12Device(DirectX12AdapterObjectWrapper& pAdapter);
+
+	void operator=(DirectX12Device&& other) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

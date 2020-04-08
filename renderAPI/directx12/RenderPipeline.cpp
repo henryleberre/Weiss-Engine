@@ -132,6 +132,12 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 }
 
+void DirectX12RenderPipeline::operator=(DirectX12RenderPipeline&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
 void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList) const noexcept
 {
 	pCommandList->SetPipelineState(this->m_pObject);

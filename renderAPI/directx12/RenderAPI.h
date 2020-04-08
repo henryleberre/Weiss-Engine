@@ -10,22 +10,22 @@
 
 class DirectX12RenderAPI : public RenderAPI {
 private:
-	DirectX12Adapater       m_pAdapter;
+	DirectX12Adapter        m_pAdapter;
 	DirectX12Device         m_pDevice;
 	DirectX12CommandQueue   m_pCommandQueue;
 	DirectX12SwapChain      m_pSwapChain;
 	DirectX12DescriptorHeap m_pDescriptorHeap;
 	std::array<DirectX12RenderTarget,     WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
 	std::array<DirectX12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
-	std::array<DirectX12Fence,            WEISS__FRAME_BUFFER_COUNT> m_pFences;
+	std::array<std::unique_ptr<DirectX12Fence>, WEISS__FRAME_BUFFER_COUNT> m_pFences;
 	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_expectedFenceValues;
 	DirectX12RootSignature m_pInputAssemblerRootSignature;
 	DirectX12CommandList m_pCommandList;
 	
-	std::vector<DirectX12VertexBuffer> m_pVertexBuffers;
-	std::vector<DirectX12IndexBuffer>  m_pIndexBuffers;
+	std::vector<std::unique_ptr<DirectX12VertexBuffer>> m_pVertexBuffers;
+	std::vector<std::unique_ptr<DirectX12IndexBuffer>>  m_pIndexBuffers;
 
-	std::vector<DirectX12RenderPipeline> m_pRenderPipelines;
+	std::vector<std::unique_ptr<DirectX12RenderPipeline>> m_pRenderPipelines;
 
 	size_t currentFrameIndex = 0u;
 

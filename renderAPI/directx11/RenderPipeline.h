@@ -8,16 +8,14 @@
 
 class DirectX11RenderPipeline {
 private:
-	std::unique_ptr<DirectX11VertexShader> m_pVertexShader;
-	std::unique_ptr<DirectX11PixelShader>  m_pPixelShader;
+	DirectX11VertexShader m_pVertexShader;
+	DirectX11PixelShader  m_pPixelShader;
 	D3D11_PRIMITIVE_TOPOLOGY m_topology;
 
-	const std::shared_ptr<DirectX11Device> m_pDevice;
-
 public:
-	DirectX11RenderPipeline(const std::shared_ptr<DirectX11Device>& pDevice, const RenderPipelineDesc& desc);
+	DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& pDevice, const RenderPipelineDesc& desc);
 
-	void Bind() noexcept;
+	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

@@ -13,4 +13,10 @@ DirectX12DescriptorHeap::DirectX12DescriptorHeap(DirectX12DeviceObjectWrapper& p
 		throw std::runtime_error("[DIRECTX12] Could Not Create Descriptor Heap");
 }
 
+void DirectX12DescriptorHeap::operator=(DirectX12DescriptorHeap&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
 #endif // __WEISS__OS_WINDOWS

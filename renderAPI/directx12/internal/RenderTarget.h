@@ -18,6 +18,8 @@ public:
 						  DirectX12DescriptorHeapObjectWrapper& pDescriptorHeap,
 						  const CD3DX12_CPU_DESCRIPTOR_HANDLE& rtvHandle,
 						  const uint16_t frameIndex);
+
+	void operator=(DirectX12RenderTarget&& other) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

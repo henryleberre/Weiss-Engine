@@ -2,8 +2,7 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX11VertexShader::DirectX11VertexShader(const std::shared_ptr<DirectX11Device>& pDevice, const char* sourceFilename, const std::vector<ShaderInputElement>& sies)
-	: m_pDevice(pDevice)
+DirectX11VertexShader::DirectX11VertexShader(DirectX11DeviceObjectWrapper& pDevice, const char* sourceFilename, const std::vector<ShaderInputElement>& sies)
 {
 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 
@@ -14,7 +13,7 @@ DirectX11VertexShader::DirectX11VertexShader(const std::shared_ptr<DirectX11Devi
 	if (D3DCompile(sourceCode.c_str(), sourceCode.size(), NULL, NULL, NULL, "main", "vs_5_0", 0, 0, &pBlob, NULL) != S_OK)
 		throw std::runtime_error("Could Not Compile Vertex Shader");
 
-	if (this->m_pDevice->GetDevice()->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &this->m_pShader) != S_OK)
+	if (pDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &this->m_pShader) != S_OK)
 		throw std::runtime_error("Could Not Create Vertex Shader");
 
 	// Create Input Layout
@@ -49,18 +48,17 @@ DirectX11VertexShader::DirectX11VertexShader(const std::shared_ptr<DirectX11Devi
 		inputElementDescriptors[i].InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA;
 	}
 
-	if (this->m_pDevice->GetDevice()->CreateInputLayout(inputElementDescriptors.data(), (UINT)inputElementDescriptors.size(), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &this->m_pInputLayout) != S_OK)
+	if (pDevice->CreateInputLayout(inputElementDescriptors.data(), (UINT)inputElementDescriptors.size(), pBlob->GetBufferPointer(), pBlob->GetBufferSize(), &this->m_pInputLayout) != S_OK)
 		throw std::runtime_error("Could Not Create Input Layout");
 }
 
-void DirectX11VertexShader::Bind()
+void DirectX11VertexShader::Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
-	this->m_pDevice->GetDeviceContext()->IASetInputLayout(this->m_pInputLayout.Get());
-	this->m_pDevice->GetDeviceContext()->VSSetShader(this->m_pShader.Get(), nullptr, 0u);
+	pDeviceContext->IASetInputLayout(this->m_pInputLayout.Get());
+	pDeviceContext->VSSetShader(this->m_pShader.Get(), nullptr, 0u);
 }
 
-DirectX11PixelShader::DirectX11PixelShader(const std::shared_ptr<DirectX11Device>& pDevice, const char* sourceFilename)
-	: m_pDevice(pDevice)
+DirectX11PixelShader::DirectX11PixelShader(DirectX11DeviceObjectWrapper& pDevice, const char* sourceFilename)
 {
 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 
@@ -70,13 +68,13 @@ DirectX11PixelShader::DirectX11PixelShader(const std::shared_ptr<DirectX11Device
 	if (D3DCompile(sourceCode.c_str(), sourceCode.size(), NULL, NULL, NULL, "main", "ps_5_0", 0, 0, &pBlob, NULL) != S_OK)
 		throw std::runtime_error("Could Not Compile Pixel Shader");
 
-	if (this->m_pDevice->GetDevice()->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &this->m_pShader) != S_OK)
+	if (pDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &this->m_pShader) != S_OK)
 		throw std::runtime_error("Could Not Create Pixel Shader");
 }
 
-void DirectX11PixelShader::Bind()
+void DirectX11PixelShader::Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
-	this->m_pDevice->GetDeviceContext()->PSSetShader(this->m_pShader.Get(), nullptr, 0u);
+	pDeviceContext->PSSetShader(this->m_pShader.Get(), nullptr, 0u);
 }
 
 #endif // __WEISS__OS_WINDOWS

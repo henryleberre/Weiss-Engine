@@ -8,9 +8,11 @@
 
 typedef DirectX12ObjectWrapper<IDXGIAdapter1> DirectX12AdapterObjectWrapper;
 
-class DirectX12Adapater : public DirectX12AdapterObjectWrapper {
+class DirectX12Adapter : public DirectX12AdapterObjectWrapper {
 public:
-	DirectX12Adapater();
+	DirectX12Adapter();
+
+	void operator=(DirectX12Adapter&& other) noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

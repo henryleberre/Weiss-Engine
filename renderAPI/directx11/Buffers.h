@@ -6,36 +6,33 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX11VertexBuffer : public VertexBuffer {
+class DirectX11VertexBuffer {
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pVertexBuffer;
 
 	size_t m_vertexSize = 0u, m_nVertices = 0u;
 
-	std::shared_ptr<DirectX11Device> m_pDevice;
-
 public:
-	DirectX11VertexBuffer(const std::shared_ptr<DirectX11Device>& pDevice, const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
+	DirectX11VertexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t vertexSize, const size_t nVertices, const void* buff = nullptr);
 
-	void Bind();
-	virtual size_t GetCount() override;
-	virtual void   SetData(const void* buff, const size_t nVertices) override;
+	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
+	size_t GetCount();
+	
+	void SetData(const void* buff, const size_t nVertices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
 };
 
-class DirectX11IndexBuffer : public IndexBuffer {
+class DirectX11IndexBuffer {
 private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_pIndexBuffer;
 
 	size_t m_nIndices = 0u;
 
-	std::shared_ptr<DirectX11Device> m_pDevice;
-
 public:
-	DirectX11IndexBuffer(const std::shared_ptr<DirectX11Device>& pDevice, const size_t nIndices, const void* buff = nullptr);
+	DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t nIndices, const void* buff = nullptr);
 
-	void Bind();
-	virtual size_t GetCount() override;
-	virtual void   SetData(const uint32_t* buff, const size_t nIndices) override;
+	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
+	size_t GetCount();
+	void   SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
 };
 
 #endif // __WEISS__OS_WINDOWS

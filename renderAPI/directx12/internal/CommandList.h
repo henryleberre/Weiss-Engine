@@ -17,7 +17,11 @@ public:
 						 DirectX12CommandAllocatorObjectWrapper& pCommandAllocator,
 						 const D3D12_COMMAND_LIST_TYPE& type);
 
-	void Close() const;
+	~DirectX12CommandList() = default;
+
+	void operator=(DirectX12CommandList&& other) noexcept;
+
+	void Close();
 
 	void Reset(DirectX12CommandAllocatorObjectWrapper& pCommandAllocator) const;
 

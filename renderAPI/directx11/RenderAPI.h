@@ -11,14 +11,15 @@
 
 class DirectX11RenderAPI : public RenderAPI {
 private:
-	std::shared_ptr<DirectX11Device>       m_pDevice;
-	std::shared_ptr<DirectX11SwapChain>    m_pSwapChain;
-	std::shared_ptr<DirectX11RenderTarget> m_pRenderTarget;
-	std::shared_ptr<DirectX11DepthBuffer>  m_pDepthBuffer;
+	DirectX11DeviceObjectWrapper m_pDevice;
+	DirectX11DeviceContextObjectWrapper m_pDeviceContext;
+	DirectX11SwapChain    m_pSwapChain;
+	DirectX11RenderTarget m_pRenderTarget;
+	DirectX11DepthBuffer  m_pDepthBuffer;
 
-	std::vector<std::unique_ptr<DirectX11VertexBuffer>>   m_pVertexBuffers;
-	std::vector<std::unique_ptr<DirectX11IndexBuffer>>    m_pIndexBuffers;
-	std::vector<std::unique_ptr<DirectX11RenderPipeline>> m_pRenderPipelines;
+	std::vector<DirectX11VertexBuffer>   m_pVertexBuffers;
+	std::vector<DirectX11IndexBuffer>    m_pIndexBuffers;
+	std::vector<DirectX11RenderPipeline> m_pRenderPipelines;
 
 public:
 	DirectX11RenderAPI();
@@ -34,8 +35,6 @@ public:
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) override;
 
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;
-
-	[[nodiscard]] std::shared_ptr<DirectX11Device> GetDevice() noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS
