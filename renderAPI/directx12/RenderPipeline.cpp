@@ -2,8 +2,8 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12RenderPipeline::DirectX12RenderPipeline(const std::shared_ptr<DirectX12Device>& pDevice,
-												 const std::shared_ptr<DirectX12RootSignature>& pRootSignature,
+DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice,
+												 DirectX12RootSignatureObjectWrapper& pRootSignature,
 												 const char* vsFilename, const std::vector<ShaderInputElement>& sies,
 												 const char* psFilename, const PrimitiveTopology& topology)
 {
@@ -99,7 +99,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(const std::shared_ptr<DirectX12
 	// Pipeline
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 	psoDesc.InputLayout    = inputLayoutDesc;
-	psoDesc.pRootSignature = pRootSignature->Get().Get();
+	psoDesc.pRootSignature = pRootSignature;
 	psoDesc.VS = vertexShaderBytecode;
 	psoDesc.PS = pixelShaderBytecode;
 
@@ -128,24 +128,14 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(const std::shared_ptr<DirectX12
 	psoDesc.NumRenderTargets = 1;
 
 	// create the pso
-	if (pDevice->Get()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&this->m_pPipelineState)) != S_OK)
+	if (pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 }
 
-void DirectX12RenderPipeline::Bind(const std::shared_ptr<DirectX12CommandList>& pCommandList) const noexcept
+void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList) const noexcept
 {
-	pCommandList->Get()->SetPipelineState(this->m_pPipelineState.Get());
-	pCommandList->Get()->IASetPrimitiveTopology(this->m_topology);
-}
-
-Microsoft::WRL::ComPtr<ID3D12PipelineState> DirectX12RenderPipeline::Get() const noexcept
-{
-	return this->m_pPipelineState;
-}
-
-DirectX12RenderPipeline::operator Microsoft::WRL::ComPtr<ID3D12PipelineState>() const noexcept
-{
-	return this->m_pPipelineState;
+	pCommandList->SetPipelineState(this->m_pObject);
+	pCommandList->IASetPrimitiveTopology(this->m_topology);
 }
 
 #endif // __WEISS__OS_WINDOWS

@@ -6,15 +6,14 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12Device {
-private:
-	Microsoft::WRL::ComPtr<ID3D12Device2> m_pDevice;
+typedef DirectX12ObjectWrapper<ID3D12Device2> DirectX12DeviceObjectWrapper;
 
+
+class DirectX12Device : public DirectX12DeviceObjectWrapper {
 public:
-	DirectX12Device(const std::shared_ptr<DirectX12Adapater>& pAdapter);
+	DirectX12Device() {  }
 
-	operator Microsoft::WRL::ComPtr<ID3D12Device2>() const noexcept;
-	Microsoft::WRL::ComPtr<ID3D12Device2> Get() const noexcept;
+	DirectX12Device(DirectX12AdapterObjectWrapper& pAdapter);
 };
 
 #endif // __WEISS__OS_WINDOWS

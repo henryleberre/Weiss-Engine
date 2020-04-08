@@ -2,8 +2,8 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12SwapChain::DirectX12SwapChain(const std::shared_ptr<DirectX12Device>& pDevice,
-									   const std::shared_ptr<DirectX12CommandQueue>& pCommandQueue,
+DirectX12SwapChain::DirectX12SwapChain(const DirectX12DeviceObjectWrapper&       pDevice,
+									   const DirectX12CommandQueueObjectWrapper& pCommandQueue,
 									   const Window* pWindow, const UINT bufferCount)
 {
 	Microsoft::WRL::ComPtr<IDXGIFactory4> dxgiFactory4;
@@ -37,22 +37,18 @@ DirectX12SwapChain::DirectX12SwapChain(const std::shared_ptr<DirectX12Device>& p
 	IDXGISwapChain* tempSwapChain;
 
 	dxgiFactory4->CreateSwapChain(
-		pCommandQueue->Get().Get(),
+		this->m_pObject,
 		&swapChainDesc,
 		&tempSwapChain
 	);
 
-	this->m_pSwapChain = Microsoft::WRL::ComPtr<IDXGISwapChain3>(static_cast<IDXGISwapChain3*>(tempSwapChain));
+	this->m_pObject = static_cast<IDXGISwapChain3*>(tempSwapChain);
 }
 
 void DirectX12SwapChain::Present() const
 {
-	if (this->m_pSwapChain->Present(0, 0) != S_OK)
+	if (SUCCEEDED(this->m_pObject->Present(0, 0)))
 		throw std::runtime_error("[DIRECTX 12] Presentation Failed");
 }
-
-Microsoft::WRL::ComPtr<IDXGISwapChain3> DirectX12SwapChain::Get() const noexcept { return this->m_pSwapChain; }
-
-DirectX12SwapChain::operator Microsoft::WRL::ComPtr<IDXGISwapChain3>() const noexcept { return this->m_pSwapChain; }
 
 #endif // __WEISS__OS_WINDOWS

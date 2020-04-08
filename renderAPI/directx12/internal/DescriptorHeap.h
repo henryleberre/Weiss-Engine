@@ -5,15 +5,13 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12DescriptorHeap {
-private:
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_descriptorHeap;
+typedef DirectX12ObjectWrapper<ID3D12DescriptorHeap> DirectX12DescriptorHeapObjectWrapper;
 
+class DirectX12DescriptorHeap : public DirectX12DescriptorHeapObjectWrapper {
 public:
-	DirectX12DescriptorHeap(const std::shared_ptr<DirectX12Device>& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE type, const uint32_t numDescriptors);
+	DirectX12DescriptorHeap() {  }
 
-	operator Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>() const noexcept;
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> Get() const noexcept;
+	DirectX12DescriptorHeap(DirectX12DeviceObjectWrapper& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE type, const uint32_t numDescriptors);
 };
 
 #endif // __WEISS__OS_WINDOWS

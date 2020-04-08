@@ -5,16 +5,13 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12RootSignature {
-private:
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> m_pRootSignature;
+typedef DirectX12ObjectWrapper<ID3D12RootSignature> DirectX12RootSignatureObjectWrapper;
 
+class DirectX12RootSignature : public DirectX12RootSignatureObjectWrapper {
 public:
-	DirectX12RootSignature(const std::shared_ptr<DirectX12Device>& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags);
+	DirectX12RootSignature() {  }
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> Get() const noexcept;
-
-	operator Microsoft::WRL::ComPtr<ID3D12RootSignature>() const noexcept;
+	DirectX12RootSignature(DirectX12DeviceObjectWrapper& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags);
 };
 
 #endif // __WEISS__OS_WINDOWS

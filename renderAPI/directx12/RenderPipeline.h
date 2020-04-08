@@ -5,23 +5,19 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12RenderPipeline {
-private:
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pPipelineState;
+typedef DirectX12ObjectWrapper<ID3D12PipelineState> DirectX12RenderPipelineObjectWrapper;
 
+class DirectX12RenderPipeline : public DirectX12RenderPipelineObjectWrapper {
+private:
 	D3D_PRIMITIVE_TOPOLOGY m_topology;
 
 public:
-	DirectX12RenderPipeline(const std::shared_ptr<DirectX12Device>& pDevice,
-							const std::shared_ptr<DirectX12RootSignature>& pRootSignature,
+	DirectX12RenderPipeline(DirectX12DeviceObjectWrapper&        pDevice,
+							DirectX12RootSignatureObjectWrapper& pRootSignature,
 							const char* vsFilename, const std::vector<ShaderInputElement>& sies,
 							const char* psFilename, const PrimitiveTopology& topology);
 
-	void Bind(const std::shared_ptr<DirectX12CommandList>& pCommandList) const noexcept;
-
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> Get() const noexcept;
-
-	operator Microsoft::WRL::ComPtr<ID3D12PipelineState>() const noexcept;
+	void Bind(DirectX12CommandListObjectWrapper& pCommandList) const noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

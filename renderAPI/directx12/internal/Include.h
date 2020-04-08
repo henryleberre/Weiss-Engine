@@ -8,4 +8,5 @@
 #include "CommandQueue.h"
 #include "RenderTarget.h"
 #include "RootSignature.h"
+#include "ObjectWrapper.h"
 #include "CommandAllocator.h"

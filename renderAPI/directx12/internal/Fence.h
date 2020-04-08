@@ -5,21 +5,18 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12Fence {
-private:
-	Microsoft::WRL::ComPtr<ID3D12Fence> m_pFence;
+typedef DirectX12ObjectWrapper<ID3D12Fence> DirectX12FenceObjectWrapper;
 
+class DirectX12Fence : public DirectX12FenceObjectWrapper {
 	HANDLE m_fenceEvent;
 
 public:
-	DirectX12Fence(const std::shared_ptr<DirectX12Device>& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags);
+	DirectX12Fence() {  }
+
+	DirectX12Fence(DirectX12DeviceObjectWrapper& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags);
 	~DirectX12Fence();
 
 	HANDLE GetEvent() const noexcept;
-
-	Microsoft::WRL::ComPtr<ID3D12Fence> Get() const noexcept;
-
-	operator Microsoft::WRL::ComPtr<ID3D12Fence>() const noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS
