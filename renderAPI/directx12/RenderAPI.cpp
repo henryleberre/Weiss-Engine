@@ -82,9 +82,10 @@ void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	this->m_pVertexBuffers[drawable.vertexBufferIndex]->Bind(this->m_pCommandList);
 
 	if (drawable.indexBufferIndex.has_value()) {
-
+		this->m_pIndexBuffers[drawable.indexBufferIndex.value()]->Bind(this->m_pCommandList);
+		this->m_pCommandList->DrawIndexedInstanced(nVertices, 1, 0, 0, 0);
 	} else {
-		this->m_pCommandList->DrawInstanced(3u, nVertices / 3u, 0, 0);
+		this->m_pCommandList->DrawInstanced(nVertices, 1u, 0, 0);
 	}
 }
 
@@ -94,8 +95,6 @@ void DirectX12RenderAPI::BeginFrame()
 
 	DirectX12RenderTarget& renderTarget = this->m_pRenderTargets[this->currentFrameIndex];
 
-	this->m_pCommandAllocators[this->currentFrameIndex].Reset();
-	this->m_pCommandList.Reset(this->m_pCommandAllocators[this->currentFrameIndex]);
 	this->m_pCommandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	
 	this->m_currentRtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(this->m_pDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(this->currentFrameIndex), this->m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
@@ -124,6 +123,9 @@ void DirectX12RenderAPI::EndFrame()
 		throw std::runtime_error("[DIRECTX 12] Failed To Signal The Fence");
 
 	this->m_pSwapChain.Present();
+
+	this->m_pCommandAllocators[this->currentFrameIndex].Reset();
+	this->m_pCommandList.Reset(this->m_pCommandAllocators[this->currentFrameIndex]);
 }
 
 size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
@@ -141,11 +143,30 @@ size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t vertexSize, const siz
 
 	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u]->CreateView();
 
+	this->m_pCommandAllocators[this->currentFrameIndex].Reset();
+	this->m_pCommandList.Reset(this->m_pCommandAllocators[this->currentFrameIndex]);
+
 	return this->m_pVertexBuffers.size() - 1u;
 }
 
 size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* buff)
 {
+	this->m_pIndexBuffers.push_back(std::make_unique<DirectX12IndexBuffer>(this->m_pDevice, this->m_pCommandList, this->m_pCommandQueue, nIndices, buff));
+
+	this->m_pCommandList.Close();
+
+	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList };
+	this->m_pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+	this->m_expectedFenceValues[this->currentFrameIndex]++;
+	if (FAILED(this->m_pCommandQueue->Signal((*this->m_pFences[currentFrameIndex]), m_expectedFenceValues[currentFrameIndex])))
+		throw std::runtime_error("[DIRECTX 12] Failed To Signal Command Queue");
+
+	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
+
+	this->m_pCommandAllocators[this->currentFrameIndex].Reset();
+	this->m_pCommandList.Reset(this->m_pCommandAllocators[this->currentFrameIndex]);
+
 	return this->m_pIndexBuffers.size() - 1u;
 }
 
