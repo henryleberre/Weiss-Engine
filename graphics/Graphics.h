@@ -7,7 +7,7 @@
 
 class GraphicsEngine {
 private:
-	RenderAPI* m_pRenderAPI = nullptr;
+	RenderAPIHandle m_pRenderAPI;
 
 public:
 	GraphicsEngine(const RenderAPIName& apiName);
