@@ -71,7 +71,6 @@ void DirectX12RenderAPI::BeginDrawing()
 {
 	// Wait For Next Frame
 	this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
-	this->m_pGraphicsCommandSubmitter.WaitForCompletion(currentFrameIndex);
 
 	DirectX12RenderTarget& renderTarget    = this->m_pRenderTargets[this->currentFrameIndex];
 	DirectX12CommandList&  pGfxCommandList = this->m_pGraphicsCommandSubmitter.GetCommandList();
@@ -104,6 +103,7 @@ void DirectX12RenderAPI::Present(const bool vSync)
 {
 	this->m_pSwapChain.Present(vSync);
 
+	this->m_pGraphicsCommandSubmitter.WaitForCompletion(currentFrameIndex);
 	this->m_pGraphicsCommandSubmitter.Reset(this->currentFrameIndex);
 }
 
