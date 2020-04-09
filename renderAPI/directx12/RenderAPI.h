@@ -52,7 +52,10 @@ public:
 	virtual void Present(const bool vSync) override;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
-	virtual size_t CreateIndexBuffer(const size_t nIndices, const void* buff = nullptr) override;
+	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) override;
+
+	virtual void SetVertexBufferData(const size_t index, const size_t nVertices, const void* buff)     override;
+	virtual void SetIndexBufferData (const size_t index, const size_t nIndices,  const uint32_t* buff) override;
 
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;
 };

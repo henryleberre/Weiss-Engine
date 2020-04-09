@@ -12,6 +12,8 @@ class DirectX12VertexBuffer : public DirectX12ObjectWrapper<ID3D12Resource> {
 private:
 	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
+	DirectX12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
+
 	UINT m_vertexSize, m_bufferSize, m_nVertices;
 
 public:
@@ -27,8 +29,7 @@ public:
 	D3D12_VERTEX_BUFFER_VIEW GetView();
 
 	void Bind(DirectX12CommandListObjectWrapper& pCommandList);
-	size_t GetCount();
-	void   SetData(const void* buff, const size_t nVertices);
+	void SetData(const void* buff, const size_t nVertices, DirectX12CommandList& pCommandList);
 };
 
 typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12IndexBufferObjectWrapper;
@@ -36,6 +37,8 @@ typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12IndexBufferObjectWrapper
 class DirectX12IndexBuffer : public DirectX12IndexBufferObjectWrapper {
 private:
 	D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
+
+	DirectX12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
 
 	size_t m_nIndices;
 
@@ -51,8 +54,7 @@ public:
 	D3D12_INDEX_BUFFER_VIEW GetView();
 
 	void Bind(DirectX12CommandListObjectWrapper& pCommandList);
-	size_t GetCount();
-	void   SetData(const uint32_t* buff, const size_t nIndices);
+	void SetData(const uint32_t* buff, const size_t nIndices, DirectX12CommandList& pCommandList);
 };
 
 #endif // __WEISS__OS_WINDOWS

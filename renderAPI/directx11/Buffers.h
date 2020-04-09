@@ -19,7 +19,6 @@ public:
 	void operator=(DirectX11VertexBuffer&& other) noexcept;
 
 	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
-	size_t GetCount();
 	
 	void SetData(const void* buff, const size_t nVertices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
 };
@@ -34,8 +33,8 @@ public:
 	void operator=(DirectX11IndexBuffer&& other) noexcept;
 
 	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
-	size_t GetCount();
-	void   SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
+
+	void SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
 };
 
 #endif // __WEISS__OS_WINDOWS

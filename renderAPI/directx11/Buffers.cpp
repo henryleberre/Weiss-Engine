@@ -35,8 +35,6 @@ void DirectX11VertexBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceCon
 	pDeviceContext->IASetVertexBuffers(0u, 1u, &this->m_pObject, &stride, &offset);
 }
 
-size_t DirectX11VertexBuffer::GetCount() { return this->m_nVertices; }
-
 void DirectX11VertexBuffer::SetData(const void* buff, const size_t nVertices, DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
 	D3D11_MAPPED_SUBRESOURCE resource;
@@ -76,8 +74,6 @@ void DirectX11IndexBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceCont
 {
 	pDeviceContext->IASetIndexBuffer(this->m_pObject, DXGI_FORMAT_R32_UINT, 0u);
 }
-
-size_t DirectX11IndexBuffer::GetCount() { return this->m_nIndices; }
 
 void DirectX11IndexBuffer::SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {

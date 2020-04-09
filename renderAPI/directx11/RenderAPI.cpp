@@ -76,6 +76,16 @@ size_t DirectX11RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* 
 	return this->m_pIndexBuffers.size() - 1u;
 }
 
+void DirectX11RenderAPI::SetVertexBufferData(const size_t index, const size_t nVertices, const void* buff)
+{
+	this->m_pVertexBuffers[index]->SetData(buff, nVertices, this->m_pDeviceContext);
+}
+
+void DirectX11RenderAPI::SetIndexBufferData(const size_t index, const size_t nIndices, const uint32_t* buff)
+{
+	this->m_pIndexBuffers[index]->SetData(buff, nIndices, this->m_pDeviceContext);
+}
+
 void DirectX11RenderAPI::Fill(const Colorf32& color)
 {
 	this->m_pDeviceContext->ClearRenderTargetView(this->m_pRenderTarget, (float*)&color);

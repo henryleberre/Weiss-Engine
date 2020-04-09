@@ -139,6 +139,32 @@ size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* 
 	return this->m_pIndexBuffers.size() - 1u;
 }
 
+void DirectX12RenderAPI::SetVertexBufferData(const size_t index, const size_t nVertices, const void* buff)
+{
+	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
+
+	this->m_pVertexBuffers[index]->SetData(buff, nVertices, pResCommandList);
+
+	this->m_pResourceLoadingCommandSubmitter.Close();
+	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
+	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
+
+	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
+}
+
+void DirectX12RenderAPI::SetIndexBufferData(const size_t index, const size_t nIndices, const uint32_t* buff)
+{
+	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
+
+	this->m_pIndexBuffers[index]->SetData(buff, nIndices, pResCommandList);
+
+	this->m_pResourceLoadingCommandSubmitter.Close();
+	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
+	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
+
+	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
+}
+
 void DirectX12RenderAPI::Fill(const Colorf32& color)
 {
 	DirectX12CommandList& pGfxCommandList = this->m_pGraphicsCommandSubmitter.GetCommandList();
