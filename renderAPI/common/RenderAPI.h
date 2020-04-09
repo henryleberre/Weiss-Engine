@@ -32,8 +32,14 @@ public:
 
     virtual void Draw(const Drawable& drawable, const size_t nVertices) = 0;
 
-	virtual void BeginFrame() = 0;
-    virtual void EndFrame()   = 0;
+	/*
+	 * This structure is used to take advantage of recent rendering apis such as directx12 and vulkan.
+	 * By submitting draw commands to the GPU asynchronously while other functions can be called on the cpu side
+	 * (such as game logic and physics). The present method is then called to swap buffers.
+	 */
+	virtual void BeginDrawing() = 0;
+    virtual void EndDrawing()   = 0;
+	virtual void Present()      = 0;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) = 0;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) = 0;

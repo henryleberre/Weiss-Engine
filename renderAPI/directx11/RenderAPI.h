@@ -28,8 +28,9 @@ public:
 
 	virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
 
-	virtual void BeginFrame() override;
-	virtual void EndFrame()   override;
+	virtual void BeginDrawing() override;
+	virtual void EndDrawing()   override;
+	virtual void Present()      override;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) override;
