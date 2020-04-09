@@ -89,7 +89,7 @@ void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	}
 }
 
-void DirectX12RenderAPI::BeginFrame()
+void DirectX12RenderAPI::BeginDrawing()
 {
 	this->WaitForNextFrame();
 
@@ -106,7 +106,7 @@ void DirectX12RenderAPI::BeginFrame()
 	this->Fill();
 }
 
-void DirectX12RenderAPI::EndFrame()
+void DirectX12RenderAPI::EndDrawing()
 {
 	DirectX12Fence&            pFence           = *this->m_pFences[this->currentFrameIndex];
 	DirectX12RenderTarget&     renderTarget     = this->m_pRenderTargets[this->currentFrameIndex];
@@ -118,7 +118,12 @@ void DirectX12RenderAPI::EndFrame()
 
 	ID3D12CommandList* ppCommandLists[] = { this->m_pCommandList };
 	this->m_pCommandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
-	
+}
+
+void DirectX12RenderAPI::Present()
+{
+	DirectX12Fence& pFence = *this->m_pFences[this->currentFrameIndex];
+
 	if (FAILED(this->m_pCommandQueue->Signal(pFence, this->m_expectedFenceValues[this->currentFrameIndex])))
 		throw std::runtime_error("[DIRECTX 12] Failed To Signal The Fence");
 

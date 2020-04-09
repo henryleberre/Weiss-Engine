@@ -47,14 +47,18 @@ void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	}
 }
 
-void DirectX11RenderAPI::BeginFrame()
+void DirectX11RenderAPI::BeginDrawing()
 {
 	this->Fill();
 }
 
-void DirectX11RenderAPI::EndFrame()
+void DirectX11RenderAPI::EndDrawing()
 {
 	this->m_pDepthBuffer.Clear(this->m_pDeviceContext);
+}
+
+void DirectX11RenderAPI::Present()
+{
 	this->m_pSwapChain.Present();
 }
 
