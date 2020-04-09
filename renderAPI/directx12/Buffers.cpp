@@ -22,12 +22,15 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 
 	m_pUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
 
-	D3D12_SUBRESOURCE_DATA vertexData = {};
-	vertexData.pData = buff;
-	vertexData.RowPitch = m_bufferSize;
-	vertexData.SlicePitch = m_bufferSize;
+	if (buff != nullptr)
+	{
+		D3D12_SUBRESOURCE_DATA vertexData = {};
+		vertexData.pData = buff;
+		vertexData.RowPitch = m_bufferSize;
+		vertexData.SlicePitch = m_bufferSize;
 
-	UpdateSubresources(pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &vertexData);
+		UpdateSubresources(pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &vertexData);
+	}
 
 	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 }
@@ -57,6 +60,8 @@ void DirectX12VertexBuffer::Bind(DirectX12CommandListObjectWrapper& pCommandList
 
 void DirectX12VertexBuffer::SetData(const void* buff, const size_t nVertices, DirectX12CommandList& pCommandList)
 {
+	if (buff == nullptr) return;
+
 	pCommandList.TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
 
 	D3D12_SUBRESOURCE_DATA vertexData = {};
@@ -92,13 +97,16 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice
 
 	this->m_pUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
 
-	D3D12_SUBRESOURCE_DATA indexData = {};
-	indexData.pData = buff;
-	indexData.RowPitch = bufferSize;
-	indexData.SlicePitch = bufferSize;
+	if (buff != nullptr)
+	{
+		D3D12_SUBRESOURCE_DATA indexData = {};
+		indexData.pData = buff;
+		indexData.RowPitch = bufferSize;
+		indexData.SlicePitch = bufferSize;
 
-	UpdateSubresources(pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &indexData);
-
+		UpdateSubresources(pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &indexData);
+	}
+	
 	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
 }
 
@@ -127,6 +135,8 @@ D3D12_INDEX_BUFFER_VIEW DirectX12IndexBuffer::GetView()
 
 void DirectX12IndexBuffer::SetData(const uint32_t* buff, const size_t nIndices, DirectX12CommandList& pCommandList)
 {
+	if (buff == nullptr) return;
+
 	pCommandList.TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
 
 	D3D12_SUBRESOURCE_DATA indexData = {};

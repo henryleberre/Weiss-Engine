@@ -17,7 +17,7 @@ DirectX11VertexBuffer::DirectX11VertexBuffer(DirectX11DeviceObjectWrapper& pDevi
 	sd.pSysMem = buff;
 
 	const D3D11_SUBRESOURCE_DATA* pInitialData = (buff != nullptr) ? &sd : nullptr;
-	if (pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject) != S_OK)
+	if (FAILED(pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject)))
 		throw std::runtime_error("Unable To Create Vertex Buffer");
 }
 
@@ -37,8 +37,10 @@ void DirectX11VertexBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceCon
 
 void DirectX11VertexBuffer::SetData(const void* buff, const size_t nVertices, DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
+	if (buff == nullptr) return;
+
 	D3D11_MAPPED_SUBRESOURCE resource;
-	if (pDeviceContext->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource) != S_OK)
+	if (FAILED(pDeviceContext->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
 		throw std::runtime_error("Could Not Map Vertex Buffer Memory");
 
 	std::memcpy(resource.pData, buff, nVertices * this->m_vertexSize);
@@ -60,7 +62,7 @@ DirectX11IndexBuffer::DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice
 	sd.pSysMem = buff;
 
 	const D3D11_SUBRESOURCE_DATA* pInitialData = (buff != nullptr) ? &sd : nullptr;
-	if (pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject) != S_OK)
+	if (FAILED(pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject)))
 		throw std::runtime_error("Unable To Create Index Buffer");
 }
 
@@ -77,8 +79,10 @@ void DirectX11IndexBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceCont
 
 void DirectX11IndexBuffer::SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
+	if (buff == nullptr) return;
+
 	D3D11_MAPPED_SUBRESOURCE resource;
-	if (pDeviceContext->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource) != S_OK)
+	if (FAILED(pDeviceContext->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
 		throw std::runtime_error("Could Not Map Index Buffer Memory");
 
 	std::memcpy(resource.pData, buff, nIndices * sizeof(uint32_t));
