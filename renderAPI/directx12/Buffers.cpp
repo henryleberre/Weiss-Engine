@@ -9,7 +9,7 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 	: m_vertexSize(vertexSize), m_bufferSize(vertexSize* nVertices), m_nVertices(nVertices)
 {
 	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
-												&CD3DX12_RESOURCE_DESC::Buffer(m_bufferSize), D3D12_RESOURCE_STATE_COPY_DEST,
+												&CD3DX12_RESOURCE_DESC::Buffer(m_bufferSize), (buff != nullptr) ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
 												nullptr, IID_PPV_ARGS(&this->m_pObject))))
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Vertex Buffer Resource");
 
@@ -30,9 +30,9 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 		vertexData.SlicePitch = m_bufferSize;
 
 		UpdateSubresources(pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &vertexData);
-	}
 
-	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+		pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	}
 }
 
 void DirectX12VertexBuffer::operator=(DirectX12VertexBuffer&& other) noexcept
@@ -84,7 +84,7 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice
 	const UINT bufferSize = nIndices * sizeof(uint32_t);
 
 	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
-												&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_COPY_DEST,
+												&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), (buff != nullptr) ? D3D12_RESOURCE_STATE_COPY_DEST : D3D12_RESOURCE_STATE_INDEX_BUFFER,
 												nullptr, IID_PPV_ARGS(&this->m_pObject))))
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Index Buffer Resource");
 
@@ -105,9 +105,9 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice
 		indexData.SlicePitch = bufferSize;
 
 		UpdateSubresources(pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &indexData);
+
+		pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
 	}
-	
-	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
 }
 
 void DirectX12IndexBuffer::operator=(DirectX12IndexBuffer&& other) noexcept
