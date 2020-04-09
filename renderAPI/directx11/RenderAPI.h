@@ -30,7 +30,7 @@ public:
 
 	virtual void BeginDrawing() override;
 	virtual void EndDrawing()   override;
-	virtual void Present()      override;
+	virtual void Present(const bool vSync) override;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) override;

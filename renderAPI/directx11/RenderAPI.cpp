@@ -57,9 +57,9 @@ void DirectX11RenderAPI::EndDrawing()
 	this->m_pDepthBuffer.Clear(this->m_pDeviceContext);
 }
 
-void DirectX11RenderAPI::Present()
+void DirectX11RenderAPI::Present(const bool vSync)
 {
-	this->m_pSwapChain.Present();
+	this->m_pSwapChain.Present(vSync);
 }
 
 size_t DirectX11RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
