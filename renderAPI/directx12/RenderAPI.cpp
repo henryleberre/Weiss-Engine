@@ -22,6 +22,7 @@ DirectX12RenderAPI::DirectX12RenderAPI()
 void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs)
 {
 	this->m_pDevice         = DirectX12Device(this->m_pAdapter);
+	this->m_pDepthBuffer    = DirectX12DepthBuffer(this->m_pDevice, pWindow);
 	this->m_pCommandQueue   = DirectX12CommandQueue(this->m_pDevice, D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 	this->m_pSwapChain      = DirectX12SwapChain(this->m_pDevice, this->m_pCommandQueue, pWindow, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
 	this->m_pDescriptorHeap = DirectX12DescriptorHeap(this->m_pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
@@ -79,9 +80,10 @@ void DirectX12RenderAPI::BeginDrawing()
 	
 	this->m_currentRtvHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(this->m_pDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(this->currentFrameIndex), this->m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 	
+	this->m_pDepthBuffer.Clear(pGfxCommandList);
 	pGfxCommandList->RSSetViewports    (1u, &this->m_viewport);
 	pGfxCommandList->RSSetScissorRects (1u, &this->m_scissors);
-	pGfxCommandList->OMSetRenderTargets(1u, &m_currentRtvHandle, FALSE, nullptr);
+	pGfxCommandList->OMSetRenderTargets(1u, &m_currentRtvHandle, FALSE, this->m_pDepthBuffer);
 	
 	this->Fill();
 }

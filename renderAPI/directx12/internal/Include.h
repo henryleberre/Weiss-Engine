@@ -4,6 +4,7 @@
 #include "Device.h"
 #include "Adapter.h"
 #include "SwapChain.h"
+#include "DepthBuffer.h"
 #include "CommandList.h"
 #include "CommandQueue.h"
 #include "RenderTarget.h"

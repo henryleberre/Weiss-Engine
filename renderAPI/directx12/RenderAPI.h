@@ -16,6 +16,8 @@ private:
 	DirectX12CommandQueue   m_pCommandQueue;
 	DirectX12SwapChain      m_pSwapChain;
 	DirectX12DescriptorHeap m_pDescriptorHeap;
+	DirectX12DepthBuffer    m_pDepthBuffer;
+
 	std::array<DirectX12RenderTarget, WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
 
 	DirectX12CommandSubmitter m_pGraphicsCommandSubmitter;

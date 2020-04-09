@@ -7,5 +7,5 @@ GraphicsEngine::GraphicsEngine(const RenderAPIName& apiName)
 
 GraphicsEngine::~GraphicsEngine()
 {
-	delete this->m_pRenderAPI;
+
 }
