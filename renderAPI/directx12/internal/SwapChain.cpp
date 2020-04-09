@@ -44,9 +44,9 @@ void DirectX12SwapChain::operator=(DirectX12SwapChain&& other) noexcept
 	other.m_pObject = nullptr;
 }
 
-void DirectX12SwapChain::Present() const
+void DirectX12SwapChain::Present(const bool vSync) const
 {
-	if (FAILED(this->m_pObject->Present(0, 0)))
+	if (FAILED(this->m_pObject->Present(vSync ? 1 : 0u, 0u)))
 		throw std::runtime_error("[DIRECTX 12] Presentation Failed");
 }
 

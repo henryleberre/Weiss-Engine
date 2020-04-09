@@ -39,7 +39,7 @@ public:
 	 */
 	virtual void BeginDrawing() = 0;
     virtual void EndDrawing()   = 0;
-	virtual void Present()      = 0;
+	virtual void Present(const bool vSync) = 0;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) = 0;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) = 0;

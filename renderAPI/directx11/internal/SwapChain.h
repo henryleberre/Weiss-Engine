@@ -55,9 +55,9 @@ public:
 		other.m_pObject = nullptr;
 	}
 
-	void Present()
+	void Present(const bool vSync)
 	{
-		if (this->m_pObject->Present(0, 0u) != S_OK)
+		if (this->m_pObject->Present(vSync ? 1u : 0u, 0u) != S_OK)
 			throw std::runtime_error("Failed To Swap Buffers");
 	}
 };

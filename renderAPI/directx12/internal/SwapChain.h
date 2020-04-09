@@ -18,7 +18,7 @@ public:
 
 	void operator=(DirectX12SwapChain&& other) noexcept;
 	
-	void Present() const;
+	void Present(const bool vSync) const;
 };
 
 #endif // __WEISS__OS_WINDOWS

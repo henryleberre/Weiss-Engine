@@ -3,6 +3,7 @@
 #include "Buffers.h"
 #include "RenderPipeline.h"
 #include "internal/Include.h"
+#include "CommandSubmitter.h"
 #include "../common/Include.h"
 #include "../../common/Include.h"
 
@@ -15,12 +16,12 @@ private:
 	DirectX12CommandQueue   m_pCommandQueue;
 	DirectX12SwapChain      m_pSwapChain;
 	DirectX12DescriptorHeap m_pDescriptorHeap;
-	std::array<DirectX12RenderTarget,     WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
-	std::array<DirectX12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
-	std::array<std::unique_ptr<DirectX12Fence>, WEISS__FRAME_BUFFER_COUNT> m_pFences;
-	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_expectedFenceValues;
-	DirectX12RootSignature m_pInputAssemblerRootSignature;
-	DirectX12CommandList m_pCommandList;
+	std::array<DirectX12RenderTarget, WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
+
+	DirectX12CommandSubmitter m_pGraphicsCommandSubmitter;
+	DirectX12CommandSubmitter m_pResourceLoadingCommandSubmitter;
+
+	DirectX12RootSignature    m_pInputAssemblerRootSignature;
 	
 	std::vector<std::unique_ptr<DirectX12VertexBuffer>> m_pVertexBuffers;
 	std::vector<std::unique_ptr<DirectX12IndexBuffer>>  m_pIndexBuffers;
@@ -35,8 +36,6 @@ private:
 	D3D12_VIEWPORT m_viewport;
 
 private:
-	void WaitForNextFrame();
-
 	void CreateRenderTargets();
 
 public:
@@ -48,7 +47,7 @@ public:
 
 	virtual void BeginDrawing() override;
 	virtual void EndDrawing()   override;
-	virtual void Present()      override;
+	virtual void Present(const bool vSync) override;
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
 	virtual size_t CreateIndexBuffer(const size_t nIndices, const void* buff = nullptr) override;
