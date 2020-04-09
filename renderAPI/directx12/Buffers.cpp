@@ -8,26 +8,18 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 											 const size_t vertexSize, const size_t nVertices, const void* buff)
 	: m_vertexSize(vertexSize), m_bufferSize(vertexSize* nVertices), m_nVertices(nVertices)
 {
-	if (pDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(m_bufferSize),
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		nullptr, 
-		IID_PPV_ARGS(&this->m_pObject)) != S_OK)
-		throw std::runtime_error("FAIL");
+	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
+												&CD3DX12_RESOURCE_DESC::Buffer(m_bufferSize), D3D12_RESOURCE_STATE_COPY_DEST,
+												nullptr, IID_PPV_ARGS(&this->m_pObject))))
+		throw std::runtime_error("[DIRECTX 12] Failed To Create Vertex Buffer Resource");
 
 	this->m_pObject->SetName(L"Vertex Buffer Resource Heap");
 
 	ID3D12Resource* vBufferUploadHeap;
-	if (pDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(m_bufferSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&vBufferUploadHeap)) != S_OK)
-		throw std::runtime_error("FAIL");
+	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
+												&CD3DX12_RESOURCE_DESC::Buffer(m_bufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
+												nullptr, IID_PPV_ARGS(&vBufferUploadHeap))))
+		throw std::runtime_error("[DIRECTX 12] Failed To Create Vertex Buffer Upload Heap");
 
 	vBufferUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
 
@@ -70,6 +62,73 @@ size_t DirectX12VertexBuffer::GetCount()
 }
 
 void   DirectX12VertexBuffer::SetData(const void* buff, const size_t nVertices)
+{
+
+}
+
+
+DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice,
+										   DirectX12CommandListObjectWrapper& pCommandList,
+										   DirectX12CommandQueueObjectWrapper& pCommandQueue,
+										   const size_t nIndices, const void* buff)
+	: m_nIndices(nIndices)
+{
+	const UINT bufferSize = nIndices * sizeof(uint32_t);
+
+	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
+												&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_COPY_DEST,
+												nullptr, IID_PPV_ARGS(&this->m_pObject))))
+		throw std::runtime_error("[DIRECTX 12] Failed To Create Index Buffer Resource");
+
+	this->m_pObject->SetName(L"Index Buffer Resource Heap");
+
+	ID3D12Resource* iBufferUploadHeap;
+	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
+												&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
+												nullptr, IID_PPV_ARGS(&iBufferUploadHeap))))
+		throw std::runtime_error("[DIRECTX 12] Failed To Create Index Buffer Upload Heap");
+
+	iBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
+
+	D3D12_SUBRESOURCE_DATA indexData = {};
+	indexData.pData = buff;
+	indexData.RowPitch = bufferSize;
+	indexData.SlicePitch = bufferSize;
+
+	UpdateSubresources(pCommandList, this->m_pObject, iBufferUploadHeap, 0, 0, 1, &indexData);
+
+	pCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+}
+
+void DirectX12IndexBuffer::operator=(DirectX12IndexBuffer&& other) noexcept
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+}
+
+void DirectX12IndexBuffer::CreateView()
+{
+	this->m_indexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
+	this->m_indexBufferView.Format         = DXGI_FORMAT_R32_UINT;
+	this->m_indexBufferView.SizeInBytes    = m_nIndices * sizeof(uint32_t);
+}
+
+void DirectX12IndexBuffer::Bind(DirectX12CommandListObjectWrapper& pCommandList)
+{
+	pCommandList->IASetIndexBuffer(&this->m_indexBufferView);
+}
+
+size_t DirectX12IndexBuffer::GetCount()
+{
+	return this->m_nIndices;
+}
+
+D3D12_INDEX_BUFFER_VIEW DirectX12IndexBuffer::GetView()
+{
+	return this->m_indexBufferView;
+}
+
+void   DirectX12IndexBuffer::SetData(const uint32_t* buff, const size_t nIndices)
 {
 
 }

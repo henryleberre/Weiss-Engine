@@ -8,8 +8,7 @@
 
 typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12VertexBufferObjectWrapper;
 
-class DirectX12VertexBuffer : public VertexBuffer,
-							  public DirectX12ObjectWrapper<ID3D12Resource> {
+class DirectX12VertexBuffer : public DirectX12ObjectWrapper<ID3D12Resource> {
 private:
 	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
@@ -28,16 +27,32 @@ public:
 	D3D12_VERTEX_BUFFER_VIEW GetView();
 
 	void Bind(DirectX12CommandListObjectWrapper& pCommandList);
-	virtual size_t GetCount() override;
-	virtual void   SetData(const void* buff, const size_t nVertices) override;
+	size_t GetCount();
+	void   SetData(const void* buff, const size_t nVertices);
 };
 
-class DirectX12IndexBuffer : public IndexBuffer {
-public:
-	DirectX12IndexBuffer() {}
+typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12IndexBufferObjectWrapper;
 
-	virtual size_t GetCount() override { return 0u; }
-	virtual void   SetData(const uint32_t* buff, const size_t nIndices) override {}
+class DirectX12IndexBuffer : public DirectX12IndexBufferObjectWrapper {
+private:
+	D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
+
+	size_t m_nIndices;
+
+public:
+	DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice,
+						 DirectX12CommandListObjectWrapper& pCommandList,
+						 DirectX12CommandQueueObjectWrapper& pCommandQueue,
+						 const size_t nIndices, const void* buff = nullptr);
+
+	void operator=(DirectX12IndexBuffer&& other) noexcept;
+
+	void CreateView();
+	D3D12_INDEX_BUFFER_VIEW GetView();
+
+	void Bind(DirectX12CommandListObjectWrapper& pCommandList);
+	size_t GetCount();
+	void   SetData(const uint32_t* buff, const size_t nIndices);
 };
 
 #endif // __WEISS__OS_WINDOWS
