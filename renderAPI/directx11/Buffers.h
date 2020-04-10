@@ -8,6 +8,7 @@
 
 typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11VertexBufferObjectWrapper;
 typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11IndexBufferObjectWrapper;
+typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11ConstantBufferObjectWrapper;
 
 class DirectX11VertexBuffer : public DirectX11VertexBufferObjectWrapper {
 private:
@@ -35,6 +36,24 @@ public:
 	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
 
 	void SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext);
+};
+
+class DirectX11ConstantBuffer : public DirectX11ConstantBufferObjectWrapper {
+private:
+	size_t m_objSize = 0u;
+
+	size_t m_slotVS = 0u, m_slotPS = 0u;
+
+	ShaderBindingType m_shaderBindingType;
+
+public:
+	DirectX11ConstantBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* data = nullptr);
+
+	void operator=(DirectX11ConstantBuffer&& other) noexcept;
+
+	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext);
+
+	void SetData(const void* data, DirectX11DeviceContextObjectWrapper& pDeviceContext);
 };
 
 #endif // __WEISS__OS_WINDOWS

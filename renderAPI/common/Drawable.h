@@ -7,4 +7,6 @@ struct Drawable {
 	size_t vertexBufferIndex;
 
 	std::optional<size_t> indexBufferIndex;
+
+	std::vector<size_t> constantBufferIndices;
 };

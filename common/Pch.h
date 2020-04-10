@@ -89,6 +89,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <bitset>
 #include <variant>
 #include <fstream>
 #include <sstream>

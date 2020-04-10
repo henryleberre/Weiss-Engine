@@ -39,8 +39,12 @@ void DirectX11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	this->m_pRenderPipelines[drawable.pipelineIndex].Bind(this->m_pDeviceContext);
 	this->m_pVertexBuffers[drawable.vertexBufferIndex]->Bind(this->m_pDeviceContext);
 	
+	for (const size_t constantBufferIndex : drawable.constantBufferIndices)
+		this->m_pConstantBuffers[constantBufferIndex]->Bind(this->m_pDeviceContext);
+
 	if (drawable.indexBufferIndex.has_value()) {
 		this->m_pIndexBuffers[drawable.indexBufferIndex.value()]->Bind(this->m_pDeviceContext);
+
 		this->m_pDeviceContext->DrawIndexed(static_cast<UINT>(nVertices), 0u, 0u);
 	} else {
 		this->m_pDeviceContext->Draw(static_cast<UINT>(nVertices), 0u);
@@ -76,6 +80,13 @@ size_t DirectX11RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* 
 	return this->m_pIndexBuffers.size() - 1u;
 }
 
+size_t DirectX11RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* data)
+{
+	this->m_pConstantBuffers.push_back(std::make_unique<DirectX11ConstantBuffer>(this->m_pDevice, objSize, slotVS, slotPS, shaderBindingType, data));
+
+	return this->m_pConstantBuffers.size() - 1u;
+}
+
 void DirectX11RenderAPI::SetVertexBufferData(const size_t index, const size_t nVertices, const void* buff)
 {
 	this->m_pVertexBuffers[index]->SetData(buff, nVertices, this->m_pDeviceContext);
@@ -84,6 +95,11 @@ void DirectX11RenderAPI::SetVertexBufferData(const size_t index, const size_t nV
 void DirectX11RenderAPI::SetIndexBufferData(const size_t index, const size_t nIndices, const uint32_t* buff)
 {
 	this->m_pIndexBuffers[index]->SetData(buff, nIndices, this->m_pDeviceContext);
+}
+
+void DirectX11RenderAPI::SetConstantBufferData(const size_t index, const void* data)
+{
+	this->m_pConstantBuffers[index]->SetData(data, this->m_pDeviceContext);
 }
 
 void DirectX11RenderAPI::Fill(const Colorf32& color)

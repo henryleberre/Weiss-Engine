@@ -43,13 +43,21 @@ public:
 
 	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) = 0;
 	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) = 0;
+	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* buff = nullptr) = 0;
 
 	virtual void SetVertexBufferData(const size_t index, const size_t nVertices, const void*     buff) = 0;
 	virtual void SetIndexBufferData (const size_t index, const size_t nIndices,  const uint32_t* buff) = 0;
+	virtual void SetConstantBufferData(const size_t index, const void* data) = 0;
 
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 
 	// ----- Functions That Use The Virtual Functions ----- //
+
+	template <typename T>
+	inline size_t CreateConstantBuffer(const T& data, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+	{
+		return this->CreateConstantBuffer(sizeof(T), slotVS, slotPS, shaderBindingType, &data);
+	}
 
 	template <typename CONTAINER>
 	inline size_t CreateVertexBuffer(const CONTAINER& vertices)
