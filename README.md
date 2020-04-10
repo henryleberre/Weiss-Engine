@@ -55,13 +55,12 @@ struct Vertex {
 	Vec3f color;
 };
 
-int main()
-{
+int main() {
 	ENABLE_CONSOLE();
 
 	try {
-		WindowHandle    window    = Window::Create();
-		RenderAPIHandle renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX11);
+		WindowHandle    window = Window::Create();
+		RenderAPIHandle renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX12);
 
 		std::vector<RenderPipelineDesc> pipelineDescs{
 			RenderPipelineDesc{"vs.hlsl", {
@@ -72,20 +71,22 @@ int main()
 
 		renderAPI->InitRenderAPI(window, pipelineDescs);
 
-		std::array<Vertex, 3u> vertices{
-			Vertex{Vec3f{+0.0f, +1.0f, 0.0f}, Vec3f{1.0f, 0.0f, 0.0f}},
-			Vertex{Vec3f{+1.0f, -1.0f, 0.0f}, Vec3f{0.0f, 1.0f, 0.0f}},
-			Vertex{Vec3f{-1.0f, -1.0f, 0.0f}, Vec3f{0.0f, 0.0f, 1.0f}}
+		std::array<Vertex, 4u> vertices{
+			Vertex{Vec3f{+0.0f, +0.5f, 0.5f}, Vec3f{1.0f, 0.0f, 0.0f}},
+			Vertex{Vec3f{+0.5f, -0.5f, 0.5f}, Vec3f{0.0f, 1.0f, 0.0f}},
+			Vertex{Vec3f{-0.5f, -0.5f, 0.5f}, Vec3f{0.0f, 0.0f, 1.0f}},
 		};
-		
-		Drawable drawable{0u, renderAPI->CreateVertexBuffer(sizeof(Vertex), vertices.size(), vertices.data()) };
-		
+
+		std::array<uint32_t, 3u> indices{ 0u, 1u, 2u };
+
+		Drawable drawable{ 0u, renderAPI->CreateVertexBuffer(vertices), renderAPI->CreateIndexBuffer(indices) };
+
 		while (window->IsRunning()) {
 			window->Update();
-			renderAPI->BeginFrame();
+			renderAPI->BeginDrawing();
 			renderAPI->Draw(drawable, vertices.size());
-			renderAPI->EndFrame();
-			std::this_thread::sleep_for(std::chrono::microseconds(16));
+			renderAPI->EndDrawing();
+			renderAPI->Present(true);
 		}
 	} catch (const std::runtime_error& e) {
 		std::cout << e.what() << '\n';
