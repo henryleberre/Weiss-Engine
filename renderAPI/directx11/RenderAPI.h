@@ -34,10 +34,6 @@ public:
 	virtual size_t CreateIndexBuffer (const size_t nIndices) override;
 	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) override;
 
-	virtual void UpdateVertexBuffer(const size_t index) override;
-	virtual void UpdateIndexBuffer (const size_t index) override;
-	virtual void UpdateConstantBuffer(const size_t index) override;
-
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;
 };
 
