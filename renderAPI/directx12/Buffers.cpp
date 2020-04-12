@@ -149,4 +149,34 @@ void DirectX12IndexBuffer::SetData(const uint32_t* buff, const size_t nIndices, 
 	pCommandList.TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 }
 
+DirectX12ConstantBuffer::DirectX12ConstantBuffer(DirectX12DeviceObjectWrapper& pDevice,
+												 DirectX12CommandListObjectWrapper& pCommandList,
+												 DirectX12CommandQueueObjectWrapper& pCommandQueue,
+												 const size_t objSize, const size_t slotVS, const size_t slotPS,
+												 const ShaderBindingType& shaderBindingType, const void* data)
+	: m_objSize(objSize), m_slotVS(slotVS), m_slotPS(slotPS), m_shaderBindingType(shaderBindingType)
+{
+
+}
+
+void DirectX12ConstantBuffer::CreateView()
+{
+
+}
+
+D3D12_CONSTANT_BUFFER_VIEW_DESC DirectX12ConstantBuffer::GetView()
+{
+	return this->m_constantBufferView;
+}
+
+void DirectX12ConstantBuffer::Bind(DirectX12CommandListObjectWrapper& pCommandList)
+{
+
+}
+
+void DirectX12ConstantBuffer::SetData(const void* data, DirectX12CommandList& pCommandList)
+{
+
+}
+
 #endif // __WEISS__OS_WINDOWS
