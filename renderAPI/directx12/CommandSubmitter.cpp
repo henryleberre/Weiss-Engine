@@ -8,7 +8,9 @@ DirectX12CommandSubmitter::DirectX12CommandSubmitter()
 DirectX12CommandSubmitter::DirectX12CommandSubmitter(DirectX12DeviceObjectWrapper& pDevice)
 {
 	for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
+	{
 		this->m_pCommandAllocators[i] = DirectX12CommandAllocator(pDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	}
 
 	this->m_pCommandList = DirectX12CommandList(pDevice, this->m_pCommandAllocators[0], D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
 
@@ -25,10 +27,8 @@ void DirectX12CommandSubmitter::Close()
 
 void DirectX12CommandSubmitter::Reset(const size_t frameIndex)
 {
-	DirectX12CommandAllocator& pCommandAllocator = this->m_pCommandAllocators[frameIndex];
-
-	pCommandAllocator.Reset();
-	this->m_pCommandList.Reset(pCommandAllocator);
+	this->m_pCommandAllocators[frameIndex].Reset();
+	this->m_pCommandList.Reset(this->m_pCommandAllocators[frameIndex]);
 }
 
 void DirectX12CommandSubmitter::Execute(DirectX12CommandQueueObjectWrapper& pCommandQueue, const size_t frameIndex)
