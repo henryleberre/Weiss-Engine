@@ -6,11 +6,5 @@
 #include "../renderAPI/Include.h"
 
 class GraphicsEngine {
-private:
-	RenderAPIHandle m_pRenderAPI;
 
-public:
-	GraphicsEngine(const RenderAPIName& apiName);
-
-	~GraphicsEngine();
 };

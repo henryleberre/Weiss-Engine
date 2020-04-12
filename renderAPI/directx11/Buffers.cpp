@@ -2,22 +2,21 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX11VertexBuffer::DirectX11VertexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t vertexSize, const size_t nVertices, const void* buff)
-	: m_vertexSize(vertexSize), m_nVertices(nVertices)
+DirectX11VertexBuffer::DirectX11VertexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t nVertices, const size_t vertexSize)
+	: m_vertexSize(vertexSize)
 {
 	D3D11_BUFFER_DESC bd = {};
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bd.MiscFlags = 0u;
-	bd.ByteWidth = static_cast<UINT>(this->m_vertexSize * this->m_vertexSize);
+	bd.ByteWidth = static_cast<UINT>(nVertices * this->m_vertexSize);
 	bd.StructureByteStride = static_cast<UINT>(this->m_vertexSize);
 
-	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = buff;
+	this->m_vertexData.resize(bd.ByteWidth);
+	std::memset(this->m_vertexData.data(), 0, bd.ByteWidth);
 
-	const D3D11_SUBRESOURCE_DATA* pInitialData = (buff != nullptr) ? &sd : nullptr;
-	if (FAILED(pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject)))
+	if (FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
 		throw std::runtime_error("Unable To Create Vertex Buffer");
 }
 
@@ -35,19 +34,17 @@ void DirectX11VertexBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceCon
 	pDeviceContext->IASetVertexBuffers(0u, 1u, &this->m_pObject, &stride, &offset);
 }
 
-void DirectX11VertexBuffer::SetData(const void* buff, const size_t nVertices, DirectX11DeviceContextObjectWrapper& pDeviceContext)
+void DirectX11VertexBuffer::Update(DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
-	if (buff == nullptr) return;
-
 	D3D11_MAPPED_SUBRESOURCE resource;
 	if (FAILED(pDeviceContext->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
 		throw std::runtime_error("Could Not Map Vertex Buffer Memory");
 
-	std::memcpy(resource.pData, buff, nVertices * this->m_vertexSize);
+	std::memcpy(resource.pData, this->m_vertexData.data(), this->m_vertexData.size());
 	pDeviceContext->Unmap(this->m_pObject, 0);
 }
 
-DirectX11IndexBuffer::DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t nIndices, const void* buff)
+DirectX11IndexBuffer::DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t nIndices)
 	: m_nIndices(nIndices)
 {
 	D3D11_BUFFER_DESC bd = {};
@@ -58,11 +55,10 @@ DirectX11IndexBuffer::DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice
 	bd.ByteWidth = static_cast<UINT>(this->m_nIndices * sizeof(uint32_t));
 	bd.StructureByteStride = static_cast<UINT>(sizeof(uint32_t));
 
-	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = buff;
+	this->m_indexData.resize(bd.ByteWidth);
+	std::memset(this->m_indexData.data(), 0, bd.ByteWidth);
 
-	const D3D11_SUBRESOURCE_DATA* pInitialData = (buff != nullptr) ? &sd : nullptr;
-	if (FAILED(pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject)))
+	if (FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
 		throw std::runtime_error("Unable To Create Index Buffer");
 }
 
@@ -77,19 +73,17 @@ void DirectX11IndexBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceCont
 	pDeviceContext->IASetIndexBuffer(this->m_pObject, DXGI_FORMAT_R32_UINT, 0u);
 }
 
-void DirectX11IndexBuffer::SetData(const uint32_t* buff, const size_t nIndices, DirectX11DeviceContextObjectWrapper& pDeviceContext)
+void DirectX11IndexBuffer::Update(DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
-	if (buff == nullptr) return;
-
 	D3D11_MAPPED_SUBRESOURCE resource;
 	if (FAILED(pDeviceContext->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
 		throw std::runtime_error("Could Not Map Index Buffer Memory");
 
-	std::memcpy(resource.pData, buff, nIndices * sizeof(uint32_t));
+	std::memcpy(resource.pData, this->m_indexData.data(), this->m_indexData.size());
 	pDeviceContext->Unmap(this->m_pObject, 0);
 }
 
-DirectX11ConstantBuffer::DirectX11ConstantBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* data)
+DirectX11ConstantBuffer::DirectX11ConstantBuffer(DirectX11DeviceObjectWrapper& pDevice, const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
 	: m_objSize(objSize), m_slotVS(slotVS), m_slotPS(slotPS), m_shaderBindingType(shaderBindingType)
 {
 	D3D11_BUFFER_DESC bd = {};
@@ -99,11 +93,10 @@ DirectX11ConstantBuffer::DirectX11ConstantBuffer(DirectX11DeviceObjectWrapper& p
 	bd.MiscFlags = 0u;
 	bd.ByteWidth = this->m_objSize;
 
-	D3D11_SUBRESOURCE_DATA sd = {};
-	sd.pSysMem = data;
+	this->m_constantBufferData.resize(bd.ByteWidth);
+	std::memset(this->m_constantBufferData.data(), 0, bd.ByteWidth);
 
-	const D3D11_SUBRESOURCE_DATA* pInitialData = (data != nullptr) ? &sd : nullptr;
-	if (FAILED(pDevice->CreateBuffer(&bd, pInitialData, &this->m_pObject)))
+	if (FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
 		throw std::runtime_error("[DIRECTX 11] Unable To Create Constant Buffer");
 }
 
@@ -122,15 +115,13 @@ void DirectX11ConstantBuffer::Bind(DirectX11DeviceContextObjectWrapper& pDeviceC
 		pDeviceContext->PSSetConstantBuffers(this->m_slotPS, 1u, &this->m_pObject);
 }
 
-void DirectX11ConstantBuffer::SetData(const void* data, DirectX11DeviceContextObjectWrapper& pDeviceContext)
+void DirectX11ConstantBuffer::Update(DirectX11DeviceContextObjectWrapper& pDeviceContext)
 {
-	if (data == nullptr) return;
-
 	D3D11_MAPPED_SUBRESOURCE resource;
 	if (FAILED(pDeviceContext->Map(this->m_pObject, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &resource)))
 		throw std::runtime_error("[DIRECTX 11] Failed To Map Constant Buffer Memory");
 
-	std::memcpy(resource.pData, data, this->m_objSize);
+	std::memcpy(resource.pData, this->m_constantBufferData.data(), this->m_objSize);
 	pDeviceContext->Unmap(this->m_pObject, 0u);
 }
 

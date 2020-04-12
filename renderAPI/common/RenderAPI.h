@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Shaders.h"
+#include "Buffers.h"
 #include "Drawable.h"
 #include "../../common/Include.h"
 #include "../../window/Include.h"
@@ -14,17 +15,20 @@ struct RenderPipelineDesc {
 
 struct RenderAPIHandle;
 
+template <typename VB, typename IB, typename CB>
 class RenderAPI {
 private:
 	RenderAPIName m_apiName;
 
-public:
-	RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {  }
+protected:
+	std::vector<std::unique_ptr<VB>> m_pVertexBuffers;
+	std::vector<std::unique_ptr<IB>> m_pIndexBuffers;
+	std::vector<std::unique_ptr<CB>> m_pConstantBuffers;
 
-	virtual ~RenderAPI()
-	{
-		
-	}
+public:
+	RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {}
+
+	virtual ~RenderAPI() {  }
 
 	// ----- Virtual Functions ----- //
 
@@ -41,68 +45,78 @@ public:
     virtual void EndDrawing()   = 0;
 	virtual void Present(const bool vSync) = 0;
 
-	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) = 0;
-	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) = 0;
-	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* buff = nullptr) = 0;
+	virtual size_t CreateVertexBuffer(const size_t nVertices, const size_t vertexSize) = 0;
+	virtual size_t CreateIndexBuffer (const size_t nIndices) = 0;
+	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) = 0;
 
-	virtual void SetVertexBufferData(const size_t index, const size_t nVertices, const void*     buff) = 0;
-	virtual void SetIndexBufferData (const size_t index, const size_t nIndices,  const uint32_t* buff) = 0;
-	virtual void SetConstantBufferData(const size_t index, const void* data) = 0;
+	virtual void UpdateVertexBuffer(const size_t index) = 0;
+	virtual void UpdateIndexBuffer (const size_t index) = 0;
+	virtual void UpdateConstantBuffer(const size_t index) = 0;
 
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 
-	// ----- Functions That Use The Virtual Functions ----- //
+	// ----- Non-Virtual Functions ----- //
+
+	inline VertexBufferData* GetVertexBuffer(const size_t vertexBufferIndex)
+	{
+		return dynamic_cast<VertexBufferData*>(this->m_pVertexBuffers[vertexBufferIndex].get());
+	}
+
+	inline IndexBufferData* GetIndexBuffer(const size_t indexBufferIndex)
+	{
+		return dynamic_cast<IndexBufferData*>(this->m_pIndexBuffers[indexBufferIndex].get());
+	}
+
+	inline ConstantBufferData* GetConstantBuffer(const size_t constantBufferIndex)
+	{
+		return dynamic_cast<ConstantBufferData*>(this->m_pConstantBuffers[constantBufferIndex].get());
+	}
+
+	// ----- Non-Virtual Virtual Overloads ----- //
+
+	inline size_t CreateVertexBuffer(const void* buff, const size_t nVertices, const size_t vertexSize)
+	{
+		const size_t i = this->CreateVertexBuffer(nVertices, vertexSize);
+
+		this->GetVertexBuffer(i)->Set(buff, nVertices * vertexSize);
+		this->UpdateVertexBuffer(i);
+
+		return i;
+	}
+
+	template <typename CONTAINER>
+	inline size_t CreateVertexBuffer(const CONTAINER& container)
+	{
+		return this->CreateVertexBuffer(container.data(), container.size() * sizeof(container[0]), sizeof(container[0]));
+	}
+
+	inline size_t CreateIndexBuffer(const void* buff, const size_t nIndices)
+	{
+		const size_t i = this->CreateIndexBuffer(nIndices);
+
+		this->GetIndexBuffer(i)->Set(buff, nIndices);
+		this->UpdateIndexBuffer(i);
+
+		return i;
+	}
+
+	template <typename CONTAINER>
+	inline size_t CreateIndexBuffer(const CONTAINER& container)
+	{
+		return this->CreateIndexBuffer(container.data(), container.size());
+	}
 
 	template <typename T>
-	inline size_t CreateConstantBuffer(const T& data, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+	inline size_t CreateConstantBuffer(const T& obj, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
 	{
-		return this->CreateConstantBuffer(sizeof(T), slotVS, slotPS, shaderBindingType, &data);
-	}
+		const size_t constantBufferIndex = this->CreateConstantBuffer(sizeof(T), slotVS, slotPS, shaderBindingType);
+		this->GetConstantBuffer(constantBufferIndex)->Set(obj);
+		this->UpdateConstantBuffer(constantBufferIndex);
 
-	template <typename CONTAINER>
-	inline size_t CreateVertexBuffer(const CONTAINER& vertices)
-	{
-		return this->CreateVertexBuffer(sizeof(vertices[0]), vertices.size(), vertices.data());
-	}
-
-	template <typename CONTAINER>
-	inline size_t CreateIndexBuffer(const CONTAINER& indices)
-	{
-		return this->CreateIndexBuffer(indices.size(), indices.data());
-	}
-
-	template <typename CONTAINER>
-	inline void SetVertexBufferData(const size_t index, const CONTAINER& vertices)
-	{
-		this->SetVertexBufferData(index, vertices.size(), vertices.data());
-	}
-
-	template <typename CONTAINER>
-	inline void SetIndexBufferData(const size_t index, const CONTAINER& indices)
-	{
-		this->SetIndexBufferData(index, indices.size(), indices.data());
+		return constantBufferIndex;
 	}
 
 	// ----- Getter Functions ----- //
 
 	[[nodiscard]] RenderAPIName GetRenderAPIName() const noexcept { return this->m_apiName; }
-
-public:
-    // Defined Per Render API
-    static RenderAPIHandle Create(const RenderAPIName& renderAPIName);
-};
-
-struct RenderAPIHandle {
-	RenderAPI* pRenderAPI;
-
-	~RenderAPIHandle()
-	{
-		delete this->pRenderAPI;
-	}
-
-	RenderAPI* operator->() noexcept { return this->pRenderAPI; }
-
-	operator RenderAPI* () noexcept {
-		return this->pRenderAPI;
-	}
 };
