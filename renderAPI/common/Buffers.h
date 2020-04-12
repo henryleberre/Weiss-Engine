@@ -2,11 +2,13 @@
 
 #include "../../common/Include.h"
 
-class VertexBufferData {
+class VertexBuffer {
 protected:
 	std::vector<int8_t> m_vertexData;
 
 public:
+    virtual void Update() = 0;
+
     inline void Set(const void* buff, const size_t bufferSize) noexcept
     {
         std::memcpy(this->m_vertexData.data(), buff, bufferSize);
@@ -31,11 +33,13 @@ public:
     }
 };
 
-class IndexBufferData {
+class IndexBuffer {
 protected:
 	std::vector<uint32_t> m_indexData;
 
 public:
+    virtual void Update() = 0;
+
     inline void Set(const void* buff, const size_t nIndices) noexcept
     {
         std::memcpy(this->m_indexData.data(), buff, nIndices * sizeof(uint32_t));
@@ -58,11 +62,13 @@ public:
     }
 };
 
-class ConstantBufferData {
+class ConstantBuffer {
 protected:
     std::vector<int8_t> m_constantBufferData;
 
 public:
+    virtual void Update() = 0;
+
     template <typename T>
     inline T& Get()
     {

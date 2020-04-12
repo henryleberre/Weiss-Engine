@@ -21,9 +21,9 @@ private:
 	RenderAPIName m_apiName;
 
 protected:
-	std::vector<std::unique_ptr<VB>> m_pVertexBuffers;
-	std::vector<std::unique_ptr<IB>> m_pIndexBuffers;
-	std::vector<std::unique_ptr<CB>> m_pConstantBuffers;
+	std::vector<VB> m_pVertexBuffers;
+	std::vector<IB> m_pIndexBuffers;
+	std::vector<CB> m_pConstantBuffers;
 
 public:
 	RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {}
@@ -49,27 +49,23 @@ public:
 	virtual size_t CreateIndexBuffer (const size_t nIndices) = 0;
 	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) = 0;
 
-	virtual void UpdateVertexBuffer(const size_t index) = 0;
-	virtual void UpdateIndexBuffer (const size_t index) = 0;
-	virtual void UpdateConstantBuffer(const size_t index) = 0;
-
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 
 	// ----- Non-Virtual Functions ----- //
 
-	inline VertexBufferData* GetVertexBuffer(const size_t vertexBufferIndex)
+	inline VertexBuffer& GetVertexBuffer(const size_t vertexBufferIndex) noexcept
 	{
-		return dynamic_cast<VertexBufferData*>(this->m_pVertexBuffers[vertexBufferIndex].get());
+		return dynamic_cast<VertexBuffer&>(this->m_pVertexBuffers[vertexBufferIndex]);
 	}
 
-	inline IndexBufferData* GetIndexBuffer(const size_t indexBufferIndex)
+	inline IndexBuffer& GetIndexBuffer(const size_t indexBufferIndex) noexcept
 	{
-		return dynamic_cast<IndexBufferData*>(this->m_pIndexBuffers[indexBufferIndex].get());
+		return dynamic_cast<IndexBuffer&>(this->m_pIndexBuffers[indexBufferIndex]);
 	}
 
-	inline ConstantBufferData* GetConstantBuffer(const size_t constantBufferIndex)
+	inline ConstantBuffer& GetConstantBuffer(const size_t constantBufferIndex) noexcept
 	{
-		return dynamic_cast<ConstantBufferData*>(this->m_pConstantBuffers[constantBufferIndex].get());
+		return dynamic_cast<ConstantBuffer&>(this->m_pConstantBuffers[constantBufferIndex]);
 	}
 
 	// ----- Non-Virtual Virtual Overloads ----- //
@@ -78,8 +74,8 @@ public:
 	{
 		const size_t i = this->CreateVertexBuffer(nVertices, vertexSize);
 
-		this->GetVertexBuffer(i)->Set(buff, nVertices * vertexSize);
-		this->UpdateVertexBuffer(i);
+		this->GetVertexBuffer(i).Set(buff, nVertices * vertexSize);
+		this->GetVertexBuffer(i).Update();
 
 		return i;
 	}
@@ -94,8 +90,8 @@ public:
 	{
 		const size_t i = this->CreateIndexBuffer(nIndices);
 
-		this->GetIndexBuffer(i)->Set(buff, nIndices);
-		this->UpdateIndexBuffer(i);
+		this->GetIndexBuffer(i).Set(buff, nIndices);
+		this->GetIndexBuffer(i).Update();
 
 		return i;
 	}
@@ -110,8 +106,8 @@ public:
 	inline size_t CreateConstantBuffer(const T& obj, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
 	{
 		const size_t constantBufferIndex = this->CreateConstantBuffer(sizeof(T), slotVS, slotPS, shaderBindingType);
-		this->GetConstantBuffer(constantBufferIndex)->Set(obj);
-		this->UpdateConstantBuffer(constantBufferIndex);
+		this->GetConstantBuffer(constantBufferIndex).Set(obj);
+		this->GetConstantBuffer(constantBufferIndex).Update();
 
 		return constantBufferIndex;
 	}

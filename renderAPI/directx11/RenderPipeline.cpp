@@ -2,7 +2,10 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX11RenderPipeline::DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& pDevice, const RenderPipelineDesc& desc)
+DirectX11RenderPipeline::DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& pDevice,
+												 DirectX11DeviceContextObjectWrapper* pDeviceContext,
+												 const RenderPipelineDesc& desc)
+	: m_pDeviceContext(pDeviceContext)
 {
 	switch (desc.topology)
 	{
@@ -17,16 +20,16 @@ DirectX11RenderPipeline::DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& p
 		break;
 	}
 
-	this->m_pVertexShader = DirectX11VertexShader(pDevice, desc.vsFilename, desc.sies);
-	this->m_pPixelShader  = DirectX11PixelShader (pDevice, desc.psFilename);
+	this->m_pVertexShader = DirectX11VertexShader(pDevice, pDeviceContext, desc.vsFilename, desc.sies);
+	this->m_pPixelShader  = DirectX11PixelShader (pDevice, pDeviceContext, desc.psFilename);
 }
 
-void DirectX11RenderPipeline::Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext) noexcept
+void DirectX11RenderPipeline::Bind() noexcept
 {
-	this->m_pVertexShader.Bind(pDeviceContext);
-	this->m_pPixelShader.Bind(pDeviceContext);
+	this->m_pVertexShader.Bind();
+	this->m_pPixelShader.Bind();
 
-	pDeviceContext->IASetPrimitiveTopology(this->m_topology);
+	(*this->m_pDeviceContext)->IASetPrimitiveTopology(this->m_topology);
 }
 
 #endif // __WEISS__OS_WINDOWS

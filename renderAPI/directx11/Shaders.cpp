@@ -2,7 +2,10 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX11VertexShader::DirectX11VertexShader(DirectX11DeviceObjectWrapper& pDevice, const char* sourceFilename, const std::vector<ShaderInputElement>& sies)
+DirectX11VertexShader::DirectX11VertexShader(DirectX11DeviceObjectWrapper& pDevice,
+											 DirectX11DeviceContextObjectWrapper* pDeviceContext,
+											 const char* sourceFilename, const std::vector<ShaderInputElement>& sies)
+	: m_pDeviceContext(pDeviceContext)
 {
 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 
@@ -52,13 +55,16 @@ DirectX11VertexShader::DirectX11VertexShader(DirectX11DeviceObjectWrapper& pDevi
 		throw std::runtime_error("Could Not Create Input Layout");
 }
 
-void DirectX11VertexShader::Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext)
+void DirectX11VertexShader::Bind() const noexcept
 {
-	pDeviceContext->IASetInputLayout(this->m_pInputLayout.Get());
-	pDeviceContext->VSSetShader(this->m_pShader.Get(), nullptr, 0u);
+	(*this->m_pDeviceContext)->IASetInputLayout(this->m_pInputLayout.Get());
+	(*this->m_pDeviceContext)->VSSetShader(this->m_pShader.Get(), nullptr, 0u);
 }
 
-DirectX11PixelShader::DirectX11PixelShader(DirectX11DeviceObjectWrapper& pDevice, const char* sourceFilename)
+DirectX11PixelShader::DirectX11PixelShader(DirectX11DeviceObjectWrapper& pDevice,
+										   DirectX11DeviceContextObjectWrapper* pDeviceContext,
+										   const char* sourceFilename)
+	: m_pDeviceContext(pDeviceContext)
 {
 	Microsoft::WRL::ComPtr<ID3DBlob> pBlob;
 
@@ -72,9 +78,9 @@ DirectX11PixelShader::DirectX11PixelShader(DirectX11DeviceObjectWrapper& pDevice
 		throw std::runtime_error("Could Not Create Pixel Shader");
 }
 
-void DirectX11PixelShader::Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext)
+void DirectX11PixelShader::Bind() const noexcept
 {
-	pDeviceContext->PSSetShader(this->m_pShader.Get(), nullptr, 0u);
+	(*this->m_pDeviceContext)->PSSetShader(this->m_pShader.Get(), nullptr, 0u);
 }
 
 #endif // __WEISS__OS_WINDOWS

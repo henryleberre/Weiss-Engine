@@ -12,10 +12,14 @@ private:
 	DirectX11PixelShader  m_pPixelShader;
 	D3D11_PRIMITIVE_TOPOLOGY m_topology;
 
-public:
-	DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& pDevice, const RenderPipelineDesc& desc);
+	DirectX11DeviceContextObjectWrapper* m_pDeviceContext;
 
-	void Bind(DirectX11DeviceContextObjectWrapper& pDeviceContext) noexcept;
+public:
+	DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& pDevice,
+							DirectX11DeviceContextObjectWrapper* m_pDeviceContext,
+							const RenderPipelineDesc& desc);
+
+	void Bind() noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS
