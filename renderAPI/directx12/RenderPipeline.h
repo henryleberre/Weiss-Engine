@@ -12,6 +12,10 @@ private:
 	D3D_PRIMITIVE_TOPOLOGY m_topology;
 
 public:
+	DirectX12RenderPipeline();
+
+	DirectX12RenderPipeline(DirectX12RenderPipeline&& other);
+
 	DirectX12RenderPipeline(DirectX12DeviceObjectWrapper&        pDevice,
 							DirectX12RootSignatureObjectWrapper& pRootSignature,
 							const char* vsFilename, const std::vector<ShaderInputElement>& sies,

@@ -30,8 +30,8 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<Render
 
 	this->CreateRenderTargets();
 
-	this->m_pGraphicsCommandSubmitter        = DirectX12CommandSubmitter(this->m_pDevice);
-	this->m_pResourceLoadingCommandSubmitter = DirectX12CommandSubmitter(this->m_pDevice);
+	this->m_bvcSubmitter     = DirectX12CommandSubmitter(this->m_pDevice);
+	this->m_commandSubmitter = DirectX12CommandSubmitter(this->m_pDevice);
 
 	this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
 
@@ -49,19 +49,19 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<Render
 
 	// Create Pipelines
 	for (const RenderPipelineDesc& pipelineDesc : pipelineDescs)
-		this->m_pRenderPipelines.push_back(std::make_unique<DirectX12RenderPipeline>(this->m_pDevice, this->m_pInputAssemblerRootSignature, pipelineDesc.vsFilename, pipelineDesc.sies, pipelineDesc.psFilename, pipelineDesc.topology));
+		this->m_renderPipelines.emplace_back(this->m_pDevice, this->m_pInputAssemblerRootSignature, pipelineDesc.vsFilename, pipelineDesc.sies, pipelineDesc.psFilename, pipelineDesc.topology);
 }	
 
 void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
-	DirectX12CommandList& pGfxCommandList = this->m_pGraphicsCommandSubmitter.GetCommandList();
+	DirectX12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
 	pGfxCommandList->SetGraphicsRootSignature(this->m_pInputAssemblerRootSignature);
-	this->m_pRenderPipelines[drawable.pipelineIndex]->Bind(pGfxCommandList);
-	this->m_pVertexBuffers[drawable.vertexBufferIndex]->Bind(pGfxCommandList);
+	this->m_renderPipelines[drawable.pipelineIndex].Bind(pGfxCommandList);
+	this->m_pVertexBuffers[drawable.vertexBufferIndex].Bind();
 
 	if (drawable.indexBufferIndex.has_value()) {
-		this->m_pIndexBuffers[drawable.indexBufferIndex.value()]->Bind(pGfxCommandList);
+		this->m_pIndexBuffers[drawable.indexBufferIndex.value()].Bind();
 		pGfxCommandList->DrawIndexedInstanced(nVertices, 1, 0, 0, 0);
 	} else {
 		pGfxCommandList->DrawInstanced(nVertices, 1u, 0, 0);
@@ -74,7 +74,7 @@ void DirectX12RenderAPI::BeginDrawing()
 	this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
 
 	DirectX12RenderTarget& renderTarget    = this->m_pRenderTargets[this->currentFrameIndex];
-	DirectX12CommandList&  pGfxCommandList = this->m_pGraphicsCommandSubmitter.GetCommandList();
+	DirectX12CommandList&  pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
 	pGfxCommandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	
@@ -90,102 +90,69 @@ void DirectX12RenderAPI::BeginDrawing()
 
 void DirectX12RenderAPI::EndDrawing()
 {
-	DirectX12RenderTarget&     renderTarget     = this->m_pRenderTargets[this->currentFrameIndex];
-	DirectX12CommandList&      pGfxCommandList  = this->m_pGraphicsCommandSubmitter.GetCommandList();
-	DirectX12Fence&            pFence           = this->m_pGraphicsCommandSubmitter.GetFence(this->currentFrameIndex);
-	DirectX12CommandAllocator& commandAllocator = this->m_pGraphicsCommandSubmitter.GetCommandAllocator(this->currentFrameIndex);
+	DirectX12RenderTarget& renderTarget     = this->m_pRenderTargets[this->currentFrameIndex];
+	DirectX12CommandList&  pGfxCommandList  = this->m_commandSubmitter.GetCommandList();
+	DirectX12Fence&        pFence           = this->m_commandSubmitter.GetFence(this->currentFrameIndex);
+
+	this->m_newVertexBufferIndices.clear();
+	this->m_newIndexBufferIndices.clear();
 
 	pGfxCommandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	pGfxCommandList.Close();
 
-	this->m_pGraphicsCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
+	this->m_commandSubmitter.Close();
+	this->m_commandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
 }
 
 void DirectX12RenderAPI::Present(const bool vSync)
 {
 	this->m_pSwapChain.Present(vSync);
 
-	this->m_pGraphicsCommandSubmitter.WaitForCompletion(currentFrameIndex);
-	this->m_pGraphicsCommandSubmitter.Reset(this->currentFrameIndex);
+	this->m_commandSubmitter.WaitForCompletion(currentFrameIndex);
+	this->m_commandSubmitter.Reset(this->currentFrameIndex);
 }
 
-size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff)
+size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t nVertices, const size_t vertexSize)
 {
-	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
+	const size_t vertexBufferIndex = this->m_pVertexBuffers.size();
 
-	this->m_pVertexBuffers.push_back(std::make_unique<DirectX12VertexBuffer>(this->m_pDevice, pResCommandList, this->m_pCommandQueue, vertexSize, nVertices, buff));
+	this->m_pVertexBuffers.emplace_back(this->m_pDevice, &this->m_commandSubmitter.GetCommandList(), vertexSize, nVertices);
+	this->m_newVertexBufferIndices.push_back(vertexBufferIndex);
 
-	this->m_pResourceLoadingCommandSubmitter.Close();
-	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u]->CreateView();
+	this->m_commandSubmitter.Close();
+	this->m_commandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
+	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u].CreateView();
 
-	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
+	this->m_commandSubmitter.Reset(this->currentFrameIndex);
 
-	return this->m_pVertexBuffers.size() - 1u;
+	return vertexBufferIndex;
 }
 
-size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices, const void* buff)
+size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices)
 {
-	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
+	const size_t indexBufferIndex = this->m_pIndexBuffers.size();
 
-	this->m_pIndexBuffers.push_back(std::make_unique<DirectX12IndexBuffer>(this->m_pDevice, pResCommandList, this->m_pCommandQueue, nIndices, buff));
+	this->m_pIndexBuffers.emplace_back(this->m_pDevice, &this->m_commandSubmitter.GetCommandList(), nIndices);
+	this->m_newIndexBufferIndices.push_back(indexBufferIndex);
 
-	this->m_pResourceLoadingCommandSubmitter.Close();
-	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
+	this->m_commandSubmitter.Close();
+	this->m_commandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
+	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u].CreateView();
 
-	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
+	this->m_commandSubmitter.Reset(this->currentFrameIndex);
 
-	return this->m_pIndexBuffers.size() - 1u;
+	return indexBufferIndex;
 }
 
-size_t DirectX12RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* buff)
-{
-	return 0u;
-}
+size_t DirectX12RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+{	
+	this->m_pConstantBuffers.emplace_back(this->m_pDevice, &this->m_bvcSubmitter.GetCommandList(), objSize, slotVS, slotPS, shaderBindingType);
 
-void DirectX12RenderAPI::SetVertexBufferData(const size_t index, const size_t nVertices, const void* buff)
-{
-	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
-
-	this->m_pVertexBuffers[index]->SetData(buff, nVertices, pResCommandList);
-
-	this->m_pResourceLoadingCommandSubmitter.Close();
-	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
-
-	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
-}
-
-void DirectX12RenderAPI::SetIndexBufferData(const size_t index, const size_t nIndices, const uint32_t* buff)
-{
-	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
-
-	this->m_pIndexBuffers[index]->SetData(buff, nIndices, pResCommandList);
-
-	this->m_pResourceLoadingCommandSubmitter.Close();
-	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
-
-	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
-}
-
-void DirectX12RenderAPI::SetConstantBufferData(const size_t index, const void* data)
-{
-	DirectX12CommandList& pResCommandList = this->m_pResourceLoadingCommandSubmitter.GetCommandList();
-
-	this->m_pConstantBuffers[index]->SetData(data, pResCommandList);
-
-	this->m_pResourceLoadingCommandSubmitter.Close();
-	this->m_pResourceLoadingCommandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u]->CreateView();
-
-	this->m_pResourceLoadingCommandSubmitter.Reset(this->currentFrameIndex);
+	return this->m_pConstantBuffers.size() - 1u;
 }
 
 void DirectX12RenderAPI::Fill(const Colorf32& color)
 {
-	DirectX12CommandList& pGfxCommandList = this->m_pGraphicsCommandSubmitter.GetCommandList();
+	DirectX12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
 	pGfxCommandList->ClearRenderTargetView(this->m_currentRtvHandle, (float*)&color, 0, nullptr);
 }

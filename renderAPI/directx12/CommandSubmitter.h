@@ -8,8 +8,10 @@
 class DirectX12CommandSubmitter {
 private:
 	DirectX12CommandList m_pCommandList;
-	std::array<std::unique_ptr<DirectX12Fence>, WEISS__FRAME_BUFFER_COUNT> m_pFences;
+
 	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_fenceValues;
+	std::array<std::unique_ptr<DirectX12Fence>, WEISS__FRAME_BUFFER_COUNT> m_pFences;
+
 	std::array<DirectX12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
 
 public:
@@ -23,7 +25,6 @@ public:
 
 	void WaitForCompletion(const size_t frameIndex);
 
-	DirectX12CommandList&      GetCommandList()                             { return this->m_pCommandList;         }
-	DirectX12Fence&            GetFence(const size_t frameIndex)            { return *this->m_pFences[frameIndex]; }
-	DirectX12CommandAllocator& GetCommandAllocator(const size_t frameIndex) { return this->m_pCommandAllocators[frameIndex]; }
+	DirectX12CommandList& GetCommandList() { return this->m_pCommandList; }
+	DirectX12Fence&       GetFence(const size_t frameIndex) { return *this->m_pFences[frameIndex]; }
 };

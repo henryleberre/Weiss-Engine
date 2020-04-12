@@ -23,13 +23,13 @@ public:
     template <typename T>
     inline T& GetVertex(const size_t vertexIndex) noexcept
     {
-        return *(static_cast<T*>(this->m_vertexData.data()) + vertexIndex);
+        return *(((T*)(this->m_vertexData.data())) + vertexIndex);
     }
 
     template <typename T>
     inline void SetVertex(const size_t vertexIndex, const T& vertex) noexcept
     {
-        this->GetVertex(vertexIndex) = vertex;
+        this->GetVertex<T>(vertexIndex) = vertex;
     }
 };
 

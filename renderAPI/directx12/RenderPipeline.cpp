@@ -2,6 +2,19 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
+DirectX12RenderPipeline::DirectX12RenderPipeline()
+{
+
+}
+
+DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12RenderPipeline&& other)
+{
+	this->m_pObject = other.m_pObject;
+	other.m_pObject = nullptr;
+
+	this->m_topology = other.m_topology;
+}
+
 DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice,
 												 DirectX12RootSignatureObjectWrapper& pRootSignature,
 												 const char* vsFilename, const std::vector<ShaderInputElement>& sies,
@@ -128,7 +141,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	psoDesc.NumRenderTargets = 1;
 
 	// create the pso
-	if (pDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+	if (FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 }
 

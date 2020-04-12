@@ -9,7 +9,7 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12RenderAPI : public RenderAPI {
+class DirectX12RenderAPI : public RenderAPI<DirectX12VertexBuffer, DirectX12IndexBuffer, DirectX12ConstantBuffer> {
 private:
 	DirectX12Adapter        m_pAdapter;
 	DirectX12Device         m_pDevice;
@@ -20,16 +20,12 @@ private:
 
 	std::array<DirectX12RenderTarget, WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
 
-	DirectX12CommandSubmitter m_pGraphicsCommandSubmitter;
-	DirectX12CommandSubmitter m_pResourceLoadingCommandSubmitter;
+	DirectX12CommandSubmitter m_commandSubmitter;
+	DirectX12CommandSubmitter m_bvcSubmitter;
 
 	DirectX12RootSignature    m_pInputAssemblerRootSignature;
-	
-	std::vector<std::unique_ptr<DirectX12VertexBuffer>>   m_pVertexBuffers;
-	std::vector<std::unique_ptr<DirectX12IndexBuffer>>    m_pIndexBuffers;
-	std::vector<std::unique_ptr<DirectX12ConstantBuffer>> m_pConstantBuffers;
 
-	std::vector<std::unique_ptr<DirectX12RenderPipeline>> m_pRenderPipelines;
+	std::vector<DirectX12RenderPipeline> m_renderPipelines;
 
 	size_t currentFrameIndex = 0u;
 
@@ -37,6 +33,9 @@ private:
 
 	D3D12_RECT     m_scissors;
 	D3D12_VIEWPORT m_viewport;
+
+	std::vector<size_t> m_newVertexBufferIndices;
+	std::vector<size_t> m_newIndexBufferIndices;
 
 private:
 	void CreateRenderTargets();
@@ -52,13 +51,9 @@ public:
 	virtual void EndDrawing()   override;
 	virtual void Present(const bool vSync) override;
 
-	virtual size_t CreateVertexBuffer(const size_t vertexSize, const size_t nVertices, const void* buff = nullptr) override;
-	virtual size_t CreateIndexBuffer (const size_t nIndices, const void* buff = nullptr) override;
-	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType, const void* buff = nullptr) override;
-
-	virtual void SetVertexBufferData(const size_t index, const size_t nVertices, const void* buff)     override;
-	virtual void SetIndexBufferData (const size_t index, const size_t nIndices,  const uint32_t* buff) override;
-	virtual void SetConstantBufferData(const size_t index, const void* data) override;
+	virtual size_t CreateVertexBuffer(const size_t nVertices, const size_t vertexSize) override;
+	virtual size_t CreateIndexBuffer (const size_t nIndices) override;
+	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) override;
 
 	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;
 };
