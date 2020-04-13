@@ -26,5 +26,6 @@ public:
 	void WaitForCompletion(const size_t frameIndex);
 
 	DirectX12CommandList& GetCommandList() { return this->m_pCommandList; }
+	DirectX12CommandList* GetCommandListPr() { return &this->m_pCommandList; }
 	DirectX12Fence&       GetFence(const size_t frameIndex) { return *this->m_pFences[frameIndex]; }
 };

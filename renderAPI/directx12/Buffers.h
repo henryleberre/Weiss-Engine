@@ -31,7 +31,6 @@ public:
 
 	void operator=(DirectX12VertexBuffer&& other) noexcept;
 
-	void CreateView();
 	D3D12_VERTEX_BUFFER_VIEW GetView();
 
 	void Bind();
@@ -62,7 +61,6 @@ public:
 
 	void operator=(DirectX12IndexBuffer&& other) noexcept;
 
-	void CreateView();
 	D3D12_INDEX_BUFFER_VIEW GetView();
 
 	void Bind();

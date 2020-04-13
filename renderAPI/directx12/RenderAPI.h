@@ -21,7 +21,6 @@ private:
 	std::array<DirectX12RenderTarget, WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
 
 	DirectX12CommandSubmitter m_commandSubmitter;
-	DirectX12CommandSubmitter m_bvcSubmitter;
 
 	DirectX12RootSignature    m_pInputAssemblerRootSignature;
 
@@ -33,9 +32,6 @@ private:
 
 	D3D12_RECT     m_scissors;
 	D3D12_VIEWPORT m_viewport;
-
-	std::vector<size_t> m_newVertexBufferIndices;
-	std::vector<size_t> m_newIndexBufferIndices;
 
 private:
 	void CreateRenderTargets();

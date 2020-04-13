@@ -16,7 +16,7 @@ DirectX12CommandSubmitter::DirectX12CommandSubmitter(DirectX12DeviceObjectWrappe
 
 	for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++) {
 		this->m_pFences[i] = std::make_unique<DirectX12Fence>(pDevice, 0u, D3D12_FENCE_FLAGS::D3D12_FENCE_FLAG_NONE);
-		this->m_fenceValues[i] = 1u;
+		this->m_fenceValues[i] = 0u;
 	}
 }
 

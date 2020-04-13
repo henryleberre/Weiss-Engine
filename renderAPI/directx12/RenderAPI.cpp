@@ -16,7 +16,9 @@ void DirectX12RenderAPI::CreateRenderTargets()
 }
 
 DirectX12RenderAPI::DirectX12RenderAPI()
-	: RenderAPI(RenderAPIName::DIRECTX12) {
+	: RenderAPI(RenderAPIName::DIRECTX12)
+{
+
 }
 
 void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs)
@@ -30,7 +32,6 @@ void DirectX12RenderAPI::InitRenderAPI(Window* pWindow, const std::vector<Render
 
 	this->CreateRenderTargets();
 
-	this->m_bvcSubmitter     = DirectX12CommandSubmitter(this->m_pDevice);
 	this->m_commandSubmitter = DirectX12CommandSubmitter(this->m_pDevice);
 
 	this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
@@ -62,6 +63,7 @@ void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 
 	if (drawable.indexBufferIndex.has_value()) {
 		this->m_pIndexBuffers[drawable.indexBufferIndex.value()].Bind();
+
 		pGfxCommandList->DrawIndexedInstanced(nVertices, 1, 0, 0, 0);
 	} else {
 		pGfxCommandList->DrawInstanced(nVertices, 1u, 0, 0);
@@ -90,12 +92,9 @@ void DirectX12RenderAPI::BeginDrawing()
 
 void DirectX12RenderAPI::EndDrawing()
 {
-	DirectX12RenderTarget& renderTarget     = this->m_pRenderTargets[this->currentFrameIndex];
-	DirectX12CommandList&  pGfxCommandList  = this->m_commandSubmitter.GetCommandList();
-	DirectX12Fence&        pFence           = this->m_commandSubmitter.GetFence(this->currentFrameIndex);
-
-	this->m_newVertexBufferIndices.clear();
-	this->m_newIndexBufferIndices.clear();
+	DirectX12RenderTarget& renderTarget    = this->m_pRenderTargets[this->currentFrameIndex];
+	DirectX12CommandList&  pGfxCommandList = this->m_commandSubmitter.GetCommandList();
+	DirectX12Fence&        pFence          = this->m_commandSubmitter.GetFence(this->currentFrameIndex);
 
 	pGfxCommandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
@@ -115,14 +114,7 @@ size_t DirectX12RenderAPI::CreateVertexBuffer(const size_t nVertices, const size
 {
 	const size_t vertexBufferIndex = this->m_pVertexBuffers.size();
 
-	this->m_pVertexBuffers.emplace_back(this->m_pDevice, &this->m_commandSubmitter.GetCommandList(), vertexSize, nVertices);
-	this->m_newVertexBufferIndices.push_back(vertexBufferIndex);
-
-	this->m_commandSubmitter.Close();
-	this->m_commandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pVertexBuffers[this->m_pVertexBuffers.size() - 1u].CreateView();
-
-	this->m_commandSubmitter.Reset(this->currentFrameIndex);
+	this->m_pVertexBuffers.emplace_back(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), nVertices, vertexSize);
 
 	return vertexBufferIndex;
 }
@@ -131,21 +123,14 @@ size_t DirectX12RenderAPI::CreateIndexBuffer(const size_t nIndices)
 {
 	const size_t indexBufferIndex = this->m_pIndexBuffers.size();
 
-	this->m_pIndexBuffers.emplace_back(this->m_pDevice, &this->m_commandSubmitter.GetCommandList(), nIndices);
-	this->m_newIndexBufferIndices.push_back(indexBufferIndex);
-
-	this->m_commandSubmitter.Close();
-	this->m_commandSubmitter.Execute(this->m_pCommandQueue, this->currentFrameIndex);
-	this->m_pIndexBuffers[this->m_pIndexBuffers.size() - 1u].CreateView();
-
-	this->m_commandSubmitter.Reset(this->currentFrameIndex);
+	this->m_pIndexBuffers.emplace_back(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), nIndices);
 
 	return indexBufferIndex;
 }
 
 size_t DirectX12RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
 {	
-	this->m_pConstantBuffers.emplace_back(this->m_pDevice, &this->m_bvcSubmitter.GetCommandList(), objSize, slotVS, slotPS, shaderBindingType);
+	this->m_pConstantBuffers.emplace_back(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), objSize, slotVS, slotPS, shaderBindingType);
 
 	return this->m_pConstantBuffers.size() - 1u;
 }

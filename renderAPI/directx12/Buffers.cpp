@@ -16,6 +16,7 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12VertexBuffer&& other)
 	this->m_pCommandList     = other.m_pCommandList;
 	this->m_vertexSize       = other.m_vertexSize;
 	this->m_vertexBufferView = other.m_vertexBufferView;
+	this->m_vertexData       = other.m_vertexData;
 }
 
 DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevice,
@@ -41,6 +42,10 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 
 	this->m_vertexData.resize(bufferSize);
 	std::memset(this->m_vertexData.data(), 0u, bufferSize);
+
+	this->m_vertexBufferView.StrideInBytes  = this->m_vertexSize;
+	this->m_vertexBufferView.SizeInBytes    = this->m_vertexData.size();
+	this->m_vertexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
 }
 
 void DirectX12VertexBuffer::operator=(DirectX12VertexBuffer&& other) noexcept
@@ -52,13 +57,7 @@ void DirectX12VertexBuffer::operator=(DirectX12VertexBuffer&& other) noexcept
 	this->m_pCommandList     = other.m_pCommandList;
 	this->m_vertexSize       = other.m_vertexSize;
 	this->m_vertexBufferView = other.m_vertexBufferView;
-}
-
-void DirectX12VertexBuffer::CreateView()
-{
-	this->m_vertexBufferView.StrideInBytes  = this->m_vertexSize;
-	this->m_vertexBufferView.SizeInBytes    = this->m_vertexData.size();
-	this->m_vertexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
+	this->m_vertexData       = other.m_vertexData;
 }
 
 D3D12_VERTEX_BUFFER_VIEW DirectX12VertexBuffer::GetView()
@@ -78,7 +77,7 @@ void DirectX12VertexBuffer::Update()
 	D3D12_SUBRESOURCE_DATA vertexData = {};
 	vertexData.pData      = this->m_vertexData.data();
 	vertexData.RowPitch   = this->m_vertexData.size();
-	vertexData.SlicePitch = vertexData.RowPitch;
+	vertexData.SlicePitch = this->m_vertexData.size();
 
 	UpdateSubresources(*this->m_pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &vertexData);
 
@@ -99,6 +98,7 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12IndexBuffer&& other)
 
 	this->m_nIndices        = other.m_nIndices;
 	this->m_pUploadHeap     = std::move(other.m_pUploadHeap);
+	other.m_pUploadHeap.SetObjNullptr();
 	this->m_pCommandList    = other.m_pCommandList;
 	this->m_indexBufferView = other.m_indexBufferView;
 }
@@ -126,6 +126,10 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice
 
 	this->m_indexData.resize(bufferSize);
 	std::memset(this->m_indexData.data(), 0u, bufferSize);
+
+	this->m_indexBufferView.Format         = DXGI_FORMAT_R32_UINT;
+	this->m_indexBufferView.SizeInBytes    = this->m_indexData.size();
+	this->m_indexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
 }
 
 void DirectX12IndexBuffer::operator=(DirectX12IndexBuffer&& other) noexcept
@@ -142,13 +146,6 @@ void DirectX12IndexBuffer::operator=(DirectX12IndexBuffer&& other) noexcept
 void DirectX12IndexBuffer::Bind()
 {
 	(*this->m_pCommandList)->IASetIndexBuffer(&this->m_indexBufferView);
-}
-
-void DirectX12IndexBuffer::CreateView()
-{
-	this->m_indexBufferView.Format         = DXGI_FORMAT_R32_UINT;
-	this->m_indexBufferView.SizeInBytes    = this->m_indexData.size();
-	this->m_indexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
 }
 
 D3D12_INDEX_BUFFER_VIEW DirectX12IndexBuffer::GetView()
