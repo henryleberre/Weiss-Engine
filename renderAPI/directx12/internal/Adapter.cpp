@@ -4,7 +4,6 @@
 
 DirectX12Adapter::DirectX12Adapter()
 {
-	HRESULT hr;
 	IDXGIFactory4* dxgiFactory;
 	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory))))
 		throw std::runtime_error("[DIRECTX 12] Failed To Create DXGIFactory1");

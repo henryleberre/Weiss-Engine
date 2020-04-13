@@ -26,10 +26,14 @@ public:
 		other.m_pObject = nullptr;
 	}
 
+	void SetObjNullptr() noexcept { this->m_pObject = nullptr; }
+
 	virtual ~DirectX12ObjectWrapper()
 	{
+		std::cout << "called " << this->m_pObject << '\n';
 		if (this->m_pObject)
 		{
+			std::cout << "Releasing " << this->m_pObject << '\n';
 			this->m_pObject->Release();
 			this->m_pObject = nullptr;
 		}
