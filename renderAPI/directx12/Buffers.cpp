@@ -201,6 +201,11 @@ void DirectX12ConstantBuffer::Bind()
 
 }
 
+ShaderBindingType DirectX12ConstantBuffer::GetShaderBindingType() const noexcept { return this->m_shaderBindingType; }
+
+size_t DirectX12ConstantBuffer::GetSlotVS() const noexcept { return this->m_slotVS; }
+size_t DirectX12ConstantBuffer::GetSlotPS() const noexcept { return this->m_slotPS; }
+
 void DirectX12ConstantBuffer::Update()
 {
 

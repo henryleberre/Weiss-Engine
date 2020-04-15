@@ -9,7 +9,7 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12RenderAPI : public RenderAPI<DirectX12VertexBuffer, DirectX12IndexBuffer, DirectX12ConstantBuffer> {
+class DirectX12RenderAPI : public RenderAPI {
 private:
 	DirectX12Adapter        m_pAdapter;
 	DirectX12Device         m_pDevice;
@@ -21,8 +21,6 @@ private:
 	std::array<DirectX12RenderTarget, WEISS__FRAME_BUFFER_COUNT> m_pRenderTargets;
 
 	DirectX12CommandSubmitter m_commandSubmitter;
-
-	DirectX12RootSignature    m_pInputAssemblerRootSignature;
 
 	std::vector<DirectX12RenderPipeline> m_renderPipelines;
 
@@ -39,7 +37,8 @@ private:
 public:
 	DirectX12RenderAPI();
 
-	virtual void InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs) override;
+	virtual void InitRenderAPI(Window* pWindow) override;
+	virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
 	virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
 

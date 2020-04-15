@@ -9,7 +9,9 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX11RenderAPI : public RenderAPI<DirectX11VertexBuffer, DirectX11IndexBuffer, DirectX11ConstantBuffer>{
+class DirectX11RenderPipeline;
+
+class DirectX11RenderAPI : public RenderAPI {
 private:
 	DirectX11DeviceObjectWrapper m_pDevice;
 	DirectX11DeviceContextObjectWrapper m_pDeviceContext;
@@ -21,8 +23,9 @@ private:
 
 public:
 	DirectX11RenderAPI();
-
-	virtual void InitRenderAPI(Window* pWindow, const std::vector<RenderPipelineDesc>& pipelineDescs) override;
+	
+	virtual void InitRenderAPI(Window* pWindow) override;
+	virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
 	virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
 

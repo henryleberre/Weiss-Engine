@@ -97,6 +97,11 @@ public:
 
 	void Bind();
 
+	ShaderBindingType GetShaderBindingType() const noexcept;
+
+	size_t GetSlotVS() const noexcept;
+	size_t GetSlotPS() const noexcept;
+
 	virtual void Update() override;
 };
 

@@ -15,10 +15,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12RenderPipeline&& other
 	this->m_topology = other.m_topology;
 }
 
-DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice,
-												 DirectX12RootSignatureObjectWrapper& pRootSignature,
-												 const char* vsFilename, const std::vector<ShaderInputElement>& sies,
-												 const char* psFilename, const PrimitiveTopology& topology)
+DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc, std::vector<ConstantBuffer*>& pConstantBuffers)
 {
 	// Specify Compilation Flags
 	size_t compileFlags = D3DCOMPILE_SKIP_OPTIMIZATION;
@@ -33,7 +30,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	wchar_t vsFilenameW[FILENAME_MAX];
 	{
 		size_t convertedCharP = 0;
-		mbstowcs_s(&convertedCharP, vsFilenameW, strlen(vsFilename) + 1u, vsFilename, _TRUNCATE);
+		mbstowcs_s(&convertedCharP, vsFilenameW, strlen(pipelineDesc.vsFilename) + 1u, pipelineDesc.vsFilename, _TRUNCATE);
 	}
 
 	if (D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
@@ -56,7 +53,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	wchar_t psFilenameW[FILENAME_MAX];
 	{
 		size_t convertedCharP = 0;
-		mbstowcs_s(&convertedCharP, psFilenameW, strlen(psFilename) + 1u, psFilename, _TRUNCATE);
+		mbstowcs_s(&convertedCharP, psFilenameW, strlen(pipelineDesc.psFilename) + 1u, pipelineDesc.psFilename, _TRUNCATE);
 	}
 
 	if (D3DCompileFromFile(psFilenameW, nullptr, nullptr, "main", "ps_5_0", compileFlags,
@@ -74,13 +71,13 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	pixelShaderBytecode.pShaderBytecode = pPixelShaderByteCode->GetBufferPointer();
 
 	// Input Layout
-	std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescriptors(sies.size());
+	std::vector<D3D12_INPUT_ELEMENT_DESC> inputElementDescriptors(pipelineDesc.sies.size());
 	for (uint32_t i = 0; i < inputElementDescriptors.size(); i++)
 	{
 		inputElementDescriptors[i] = D3D12_INPUT_ELEMENT_DESC{};
-		inputElementDescriptors[i].SemanticName = sies[i].name;
+		inputElementDescriptors[i].SemanticName = pipelineDesc.sies[i].name;
 
-		switch (sies[i].type)
+		switch (pipelineDesc.sies[i].type)
 		{
 		case ShaderInputElementType::FLOAT_32:
 			inputElementDescriptors[i].Format = DXGI_FORMAT::DXGI_FORMAT_R32_FLOAT;
@@ -106,17 +103,16 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	}
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
-	inputLayoutDesc.NumElements        = sies.size();
+	inputLayoutDesc.NumElements        = pipelineDesc.sies.size();
 	inputLayoutDesc.pInputElementDescs = inputElementDescriptors.data();
 
 	// Pipeline
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 	psoDesc.InputLayout    = inputLayoutDesc;
-	psoDesc.pRootSignature = pRootSignature;
 	psoDesc.VS = vertexShaderBytecode;
 	psoDesc.PS = pixelShaderBytecode;
 
-	switch (topology)
+	switch (pipelineDesc.topology)
 	{
 	case PrimitiveTopology::TRIANGLES:
 		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE::D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -140,6 +136,32 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	psoDesc.DepthStencilState.StencilEnable = FALSE;
 	psoDesc.NumRenderTargets = 1;
 
+	// Root Signature
+	std::vector<CD3DX12_DESCRIPTOR_RANGE> descriptorRanges(pConstantBuffers.size());
+	std::vector<CD3DX12_ROOT_PARAMETER>   rootParameters(1);
+
+	uint32_t i = 0;
+	for (ConstantBuffer* pConstantBuffer : pConstantBuffers)
+	{	
+		DirectX12ConstantBuffer* pConstantBufferX12 = dynamic_cast<DirectX12ConstantBuffer*>(pConstantBuffer);
+
+		if (pConstantBufferX12->GetShaderBindingType().test(0u)) { // Vertex Shader Bit
+			descriptorRanges.push_back(CD3DX12_DESCRIPTOR_RANGE{});
+			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, pConstantBufferX12->GetSlotVS());
+		}
+		
+		if (pConstantBufferX12->GetShaderBindingType().test(1u)) { // Pixel Shader Bit
+			descriptorRanges.push_back(CD3DX12_DESCRIPTOR_RANGE{});
+			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, pConstantBufferX12->GetSlotPS());
+		}
+	}
+
+	rootParameters[0].InitAsDescriptorTable((UINT)descriptorRanges.size(), descriptorRanges.data(), D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL);
+
+	this->m_pRootSignature = DirectX12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, rootParameters),
+
+	psoDesc.pRootSignature = this->m_pRootSignature;
+
 	// create the pso
 	if (FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
@@ -151,8 +173,9 @@ void DirectX12RenderPipeline::operator=(DirectX12RenderPipeline&& other) noexcep
 	other.m_pObject = nullptr;
 }
 
-void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList) const noexcept
+void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& constantBufferss) const noexcept
 {
+	pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
 	pCommandList->SetPipelineState(this->m_pObject);
 	pCommandList->IASetPrimitiveTopology(this->m_topology);
 }
