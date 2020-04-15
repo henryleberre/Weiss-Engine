@@ -42,6 +42,7 @@
 */
 
 #include "math/Include.h"
+#include "image/Include.h"
 #include "common/Include.h"
 #include "window/Include.h"
 #include "graphics/Include.h"
