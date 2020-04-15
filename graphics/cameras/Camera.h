@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../math/Include.h"
+#include "../../math/Include.h"
 
 class Camera {
 protected:
