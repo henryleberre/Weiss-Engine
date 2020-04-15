@@ -22,9 +22,9 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12VertexBuffer&& other)
 DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevice,
 											 DirectX12CommandList* pCommandList,
 											 const size_t nVertices, const size_t vertexSize)
-	: m_vertexSize(vertexSize), m_pCommandList(pCommandList)
+	: m_vertexSize((UINT)vertexSize), m_pCommandList(pCommandList)
 {
-	const UINT bufferSize = vertexSize * nVertices;
+	const UINT bufferSize = static_cast<UINT>(vertexSize * nVertices);
 
 	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
@@ -44,7 +44,7 @@ DirectX12VertexBuffer::DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevi
 	std::memset(this->m_vertexData.data(), 0u, bufferSize);
 
 	this->m_vertexBufferView.StrideInBytes  = this->m_vertexSize;
-	this->m_vertexBufferView.SizeInBytes    = this->m_vertexData.size();
+	this->m_vertexBufferView.SizeInBytes    = static_cast<UINT>(this->m_vertexData.size());
 	this->m_vertexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
 }
 
@@ -108,7 +108,7 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice
 										   const size_t nIndices)
 	: m_nIndices(nIndices), m_pCommandList(pCommandList)
 {
-	const UINT bufferSize = nIndices * sizeof(uint32_t);
+	const UINT bufferSize = static_cast<UINT>(nIndices * sizeof(uint32_t));
 
 	if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
 												&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_INDEX_BUFFER,
@@ -128,7 +128,7 @@ DirectX12IndexBuffer::DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice
 	std::memset(this->m_indexData.data(), 0u, bufferSize);
 
 	this->m_indexBufferView.Format         = DXGI_FORMAT_R32_UINT;
-	this->m_indexBufferView.SizeInBytes    = this->m_indexData.size();
+	this->m_indexBufferView.SizeInBytes    = static_cast<UINT>(this->m_indexData.size());
 	this->m_indexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
 }
 

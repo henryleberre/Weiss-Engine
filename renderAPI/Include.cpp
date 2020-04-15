@@ -1,6 +1,6 @@
 #include "Include.h"
 
-RenderAPIHandle RenderAPI::Create(const RenderAPIName& apiName) noexcept
+RenderAPIHandle RenderAPI::Create(const RenderAPIName& apiName)
 {
 	switch (apiName)
 	{
