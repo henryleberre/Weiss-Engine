@@ -1,5 +1,7 @@
 #pragma once
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #ifdef _WIN32
 
 	#define __WEISS__OS_WINDOWS
@@ -90,6 +92,7 @@
 #include <vector>
 #include <memory>
 #include <bitset>
+#include <codecvt>
 #include <variant>
 #include <fstream>
 #include <sstream>
@@ -98,3 +101,5 @@
 #include <exception>
 #include <algorithm>
 #include <functional>
+
+#undef _CRT_SECURE_NO_WARNINGS
