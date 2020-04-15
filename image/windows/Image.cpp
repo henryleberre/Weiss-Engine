@@ -99,7 +99,7 @@ void WindowsImage::Write(const char* filename) const
 
     char fileExtension[10u]; // assumes the extension has less than 10-1=9 characters
     std::memset(fileExtension, 0u, 10);
-    const uint16_t offset = std::string_view(filename).find_last_of('.');
+    const size_t offset = std::string_view(filename).find_last_of('.');
     std::memcpy(fileExtension, filename + offset, strlen(filename) - offset + 1);
 
     // This should be fine thanks to sso (small string optimization)

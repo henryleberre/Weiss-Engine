@@ -18,7 +18,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12RenderPipeline&& other
 DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc, std::vector<ConstantBuffer*>& pConstantBuffers)
 {
 	// Specify Compilation Flags
-	size_t compileFlags = D3DCOMPILE_SKIP_OPTIMIZATION;
+	UINT compileFlags = 0u;
 #ifdef _DEBUG
 	compileFlags = compileFlags | D3DCOMPILE_DEBUG;
 #endif // _DEBUG
@@ -103,7 +103,7 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	}
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
-	inputLayoutDesc.NumElements        = pipelineDesc.sies.size();
+	inputLayoutDesc.NumElements        = static_cast<UINT>(pipelineDesc.sies.size());
 	inputLayoutDesc.pInputElementDescs = inputElementDescriptors.data();
 
 	// Pipeline
@@ -147,12 +147,12 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 
 		if (pConstantBufferX12->GetShaderBindingType().test(0u)) { // Vertex Shader Bit
 			descriptorRanges.push_back(CD3DX12_DESCRIPTOR_RANGE{});
-			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, pConstantBufferX12->GetSlotVS());
+			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, (UINT)pConstantBufferX12->GetSlotVS());
 		}
 		
 		if (pConstantBufferX12->GetShaderBindingType().test(1u)) { // Pixel Shader Bit
 			descriptorRanges.push_back(CD3DX12_DESCRIPTOR_RANGE{});
-			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, pConstantBufferX12->GetSlotPS());
+			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, (UINT)pConstantBufferX12->GetSlotPS());
 		}
 	}
 

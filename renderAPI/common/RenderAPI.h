@@ -14,7 +14,7 @@ struct RenderPipelineDesc {
 	PrimitiveTopology topology = PrimitiveTopology::TRIANGLES;
 };
 
-struct RenderAPIHandle;
+class RenderAPIHandle;
 
 class RenderAPI {
 private:
@@ -124,7 +124,7 @@ public:
 	[[nodiscard]] RenderAPIName GetRenderAPIName() const noexcept { return this->m_apiName; }
 
 	// ----- Creation ----- //
-	static RenderAPIHandle Create(const RenderAPIName& apiName) noexcept;
+	static RenderAPIHandle Create(const RenderAPIName& apiName);
 };
 
 class RenderAPIHandle {

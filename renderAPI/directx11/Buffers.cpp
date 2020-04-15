@@ -142,7 +142,7 @@ DirectX11ConstantBuffer::DirectX11ConstantBuffer(DirectX11DeviceObjectWrapper& p
 	bd.Usage = D3D11_USAGE_DYNAMIC;
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bd.MiscFlags = 0u;
-	bd.ByteWidth = this->m_objSize;
+	bd.ByteWidth = static_cast<UINT>(this->m_objSize);
 
 	this->m_constantBufferData.resize(bd.ByteWidth);
 	std::memset(this->m_constantBufferData.data(), 0, bd.ByteWidth);
@@ -160,10 +160,10 @@ void DirectX11ConstantBuffer::operator=(DirectX11ConstantBuffer&& other) noexcep
 void DirectX11ConstantBuffer::Bind()
 {
 	if (this->m_shaderBindingType.test(0u)) // Vertex Shader Bit (1 << 0u)
-		(*this->m_pDeviceContext)->VSSetConstantBuffers(this->m_slotVS, 1u, &this->m_pObject);
+		(*this->m_pDeviceContext)->VSSetConstantBuffers((UINT)this->m_slotVS, 1u, &this->m_pObject);
 
 	if (this->m_shaderBindingType.test(1u)) // Pixel Shader Bit (1 << 1u)
-		(*this->m_pDeviceContext)->PSSetConstantBuffers(this->m_slotPS, 1u, &this->m_pObject);
+		(*this->m_pDeviceContext)->PSSetConstantBuffers((UINT)this->m_slotPS, 1u, &this->m_pObject);
 }
 
 void DirectX11ConstantBuffer::Update()

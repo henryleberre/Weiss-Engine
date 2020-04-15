@@ -6,7 +6,7 @@ DirectX12RootSignature::DirectX12RootSignature(DirectX12DeviceObjectWrapper& pDe
 											   const std::vector<CD3DX12_ROOT_PARAMETER>& rootParameters)
 {
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init(rootParameters.size(), rootParameters.data(), 0, nullptr, flags);
+	rootSignatureDesc.Init((UINT)rootParameters.size(), rootParameters.data(), 0, nullptr, flags);
 
 	Microsoft::WRL::ComPtr<ID3DBlob> pSignature;
 	Microsoft::WRL::ComPtr<ID3DBlob> pError;

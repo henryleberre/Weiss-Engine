@@ -65,9 +65,9 @@ void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	if (drawable.indexBufferIndex.has_value()) {
 		dynamic_cast<DirectX12IndexBuffer*>(this->m_pIndexBuffers[drawable.indexBufferIndex.value()])->Bind();
 
-		pGfxCommandList->DrawIndexedInstanced(nVertices, 1, 0, 0, 0);
+		pGfxCommandList->DrawIndexedInstanced(static_cast<UINT>(nVertices), 1, 0, 0, 0);
 	} else {
-		pGfxCommandList->DrawInstanced(nVertices, 1u, 0, 0);
+		pGfxCommandList->DrawInstanced(static_cast<UINT>(nVertices), 1u, 0, 0);
 	}
 }
 
