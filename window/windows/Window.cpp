@@ -15,13 +15,7 @@ WindowsWindow::WindowsWindow(const WindowDescriptor& descriptor)
 	wc.lpszClassName = "WEISS_WNDCLASSA";
 
 	if (!RegisterClassA(&wc))
-	{
-#ifdef __WEISS_SHOW_DEBUG_ERRORS
-		MESSAGE_BOX_ERROR("[WINDOW] Could Not Register Window Class");
-#endif // __WEISS_SHOW_DEBUG_ERRORS
-
 		throw std::runtime_error("[WINDOW] Could Not Register Window Class");
-	}
 
 	const uint32_t windowStyle = descriptor.isResizable ? WS_OVERLAPPEDWINDOW : (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
 
@@ -35,16 +29,7 @@ WindowsWindow::WindowsWindow(const WindowDescriptor& descriptor)
 		NULL, NULL, wc.hInstance, NULL);
 
 	if (this->m_handle == NULL)
-	{
-#ifdef __WEISS_SHOW_DEBUG_ERRORS
-
-		MESSAGE_BOX_ERROR("[WINDOW] Could Not Create Window");
-
-#endif // __WEISS_SHOW_DEBUG_ERRORS
-
 		throw std::runtime_error("[WINDOW] Could Not Create Window");
-	}
-
 
 #ifdef __WEISS__PLATFORM_X64
 
