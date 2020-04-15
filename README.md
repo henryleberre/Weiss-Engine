@@ -59,34 +59,51 @@ int main() {
 	ENABLE_CONSOLE();
 
 	try {
-		WindowHandle    window = Window::Create();
-		RenderAPIHandle renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX12);
+		WindowHandle    window    = Window::Create({1920u, 1080u});
+		RenderAPIHandle renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX11);
+		TestCB cbuff;
 
 		std::vector<RenderPipelineDesc> pipelineDescs{
 			RenderPipelineDesc{"vs.hlsl", {
 				{ "POSITION", ShaderInputElementType::VECTOR_3D_FLOAT_32 },
 				{ "COLOR",    ShaderInputElementType::VECTOR_3D_FLOAT_32 }
-			}, "ps.hlsl", PrimitiveTopology::TRIANGLES}
+			}, "ps.hlsl", { 0u }, PrimitiveTopology::TRIANGLES}
 		};
 
-		renderAPI->InitRenderAPI(window, pipelineDescs);
+		renderAPI->InitRenderAPI(window);
 
-		std::array<Vertex, 4u> vertices{
-			Vertex{Vec3f{+0.0f, +0.5f, 0.5f}, Vec3f{1.0f, 0.0f, 0.0f}},
-			Vertex{Vec3f{+0.5f, -0.5f, 0.5f}, Vec3f{0.0f, 1.0f, 0.0f}},
-			Vertex{Vec3f{-0.5f, -0.5f, 0.5f}, Vec3f{0.0f, 0.0f, 1.0f}},
+		renderAPI->InitPipelines(pipelineDescs);
+
+		std::array<Vertex, 3u> vertices{
+			Vertex{Vec3f{+0.0f, +1.0f, 0.5f}, Vec3f{1.0f, 0.0f, 0.0f}},
+			Vertex{Vec3f{+1.0f, -1.0f, 0.5f}, Vec3f{0.0f, 1.0f, 0.0f}},
+			Vertex{Vec3f{-1.0f, -1.0f, 0.5f}, Vec3f{0.0f, 0.0f, 1.0f}},
 		};
 
 		std::array<uint32_t, 3u> indices{ 0u, 1u, 2u };
 
-		Drawable drawable{ 0u, renderAPI->CreateVertexBuffer(vertices), renderAPI->CreateIndexBuffer(indices) };
+		Drawable drawable{
+			0u,
+			renderAPI->CreateVertexBuffer(vertices.size(), sizeof(Vertex)),
+			renderAPI->CreateIndexBuffer(indices.size())
+		};
+
+		renderAPI->GetVertexBuffer(drawable.vertexBufferIndex).Set(vertices);
+		renderAPI->GetIndexBuffer(drawable.indexBufferIndex.value()).Set(indices);
 
 		while (window->IsRunning()) {
 			window->Update();
+
+			cam.HandleKeyboardInputs(window->GetKeyboard(), 0.1f, 'W', 'S', 'A', 'D', VK_SPACE, VK_SHIFT);
+			renderAPI->GetVertexBuffer(drawable.vertexBufferIndex).Update();
+			renderAPI->GetIndexBuffer(drawable.indexBufferIndex.value()).Update();
+			cam.CalculateTransform();
+
 			renderAPI->BeginDrawing();
-			renderAPI->Draw(drawable, vertices.size());
+			renderAPI->Draw(drawable, indices.size());
 			renderAPI->EndDrawing();
-			renderAPI->Present(true);
+			
+			renderAPI->Present(false);
 		}
 	} catch (const std::runtime_error& e) {
 		std::cout << e.what() << '\n';
