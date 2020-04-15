@@ -5,7 +5,7 @@
 DirectX11RenderPipeline::DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& pDevice,
 												 DirectX11DeviceContextObjectWrapper* pDeviceContext,
 												 const RenderPipelineDesc& desc)
-	: m_pDeviceContext(pDeviceContext)
+	: m_pDeviceContext(pDeviceContext), m_constantBufferIndices(desc.constantBufferIndices)
 {
 	switch (desc.topology)
 	{
@@ -24,10 +24,13 @@ DirectX11RenderPipeline::DirectX11RenderPipeline(DirectX11DeviceObjectWrapper& p
 	this->m_pPixelShader  = DirectX11PixelShader (pDevice, pDeviceContext, desc.psFilename);
 }
 
-void DirectX11RenderPipeline::Bind() noexcept
+void DirectX11RenderPipeline::Bind(std::vector<ConstantBuffer*>& constantBuffers) noexcept
 {
 	this->m_pVertexShader.Bind();
 	this->m_pPixelShader.Bind();
+
+	for (uint32_t cbIndex : this->m_constantBufferIndices)
+		dynamic_cast<DirectX11ConstantBuffer*>(constantBuffers[cbIndex])->Bind();
 
 	(*this->m_pDeviceContext)->IASetPrimitiveTopology(this->m_topology);
 }

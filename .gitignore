@@ -8,6 +8,7 @@ x86/
 Debug/
 *.hlsl
 *.user
+mcart/
 Release/
 *.vcxproj
 *.filters
