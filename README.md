@@ -61,7 +61,6 @@ int main() {
 	try {
 		WindowHandle    window    = Window::Create({1920u, 1080u});
 		RenderAPIHandle renderAPI = RenderAPI::Create(RenderAPIName::DIRECTX11);
-		TestCB cbuff;
 
 		std::vector<RenderPipelineDesc> pipelineDescs{
 			RenderPipelineDesc{"vs.hlsl", {
