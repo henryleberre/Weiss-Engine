@@ -59,7 +59,7 @@ void DirectX12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 {
 	DirectX12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
-	this->m_renderPipelines[drawable.pipelineIndex].Bind(pGfxCommandList, this->m_pConstantBuffers);
+	this->m_renderPipelines[drawable.pipelineIndex].Bind(pGfxCommandList, this->m_pConstantBuffers, this->currentFrameIndex);
 	dynamic_cast<DirectX12VertexBuffer*>(this->m_pVertexBuffers[drawable.vertexBufferIndex])->Bind();
 
 	if (drawable.indexBufferIndex.has_value()) {

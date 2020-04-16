@@ -70,17 +70,18 @@ public:
 
 class DirectX12ConstantBuffer : public ConstantBuffer {
 private:
-	DirectX12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
-
 	size_t m_objSize = 0u;
 
 	size_t m_slotVS = 0u, m_slotPS = 0u;
 
 	ShaderBindingType m_shaderBindingType;
 
-	D3D12_CONSTANT_BUFFER_VIEW_DESC m_constantBufferView;
 
 	DirectX12CommandList* m_pCommandList;
+
+	std::array<DirectX12DescriptorHeap, WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
+	std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC, WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
+	std::array<DirectX12ObjectWrapper<ID3D12Resource>, WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
 
 public:
 	DirectX12ConstantBuffer();
@@ -92,17 +93,16 @@ public:
 							const size_t objSize, const size_t slotVS, const size_t slotPS,
 							const ShaderBindingType& shaderBindingType);
 
-	void CreateView();
-	D3D12_CONSTANT_BUFFER_VIEW_DESC GetView();
+	D3D12_CONSTANT_BUFFER_VIEW_DESC GetView(const size_t index);
 
-	void Bind();
+	void Bind(const size_t frameIndex);
 
 	ShaderBindingType GetShaderBindingType() const noexcept;
 
 	size_t GetSlotVS() const noexcept;
 	size_t GetSlotPS() const noexcept;
 
-	virtual void Update() override;
+	virtual void Update(const size_t frameIndex) override;
 };
 
 #endif // __WEISS__OS_WINDOWS

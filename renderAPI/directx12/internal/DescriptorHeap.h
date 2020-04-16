@@ -11,7 +11,8 @@ class DirectX12DescriptorHeap : public DirectX12DescriptorHeapObjectWrapper {
 public:
 	DirectX12DescriptorHeap() {  }
 
-	DirectX12DescriptorHeap(DirectX12DeviceObjectWrapper& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE type, const uint32_t numDescriptors);
+	DirectX12DescriptorHeap(DirectX12DeviceObjectWrapper& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE type,
+							const uint32_t numDescriptors, const D3D12_DESCRIPTOR_HEAP_FLAGS& flags = D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
 	void operator=(DirectX12DescriptorHeap&& other) noexcept;
 };

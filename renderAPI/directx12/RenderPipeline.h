@@ -14,6 +14,8 @@ private:
 
 	DirectX12RootSignature m_pRootSignature;
 
+	std::vector<uint32_t> m_constantBufferIndices;
+
 public:
 	DirectX12RenderPipeline();
 
@@ -23,7 +25,7 @@ public:
 
 	void operator=(DirectX12RenderPipeline&& other) noexcept;
 
-	void Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers) const noexcept;
+	void Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers, const size_t frameIndex) const noexcept;
 };
 
 #endif // __WEISS__OS_WINDOWS

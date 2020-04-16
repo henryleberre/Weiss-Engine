@@ -166,7 +166,7 @@ void DirectX11ConstantBuffer::Bind()
 		(*this->m_pDeviceContext)->PSSetConstantBuffers((UINT)this->m_slotPS, 1u, &this->m_pObject);
 }
 
-void DirectX11ConstantBuffer::Update()
+void DirectX11ConstantBuffer::Update(const size_t frameIndex)
 {
 	D3D11_MAPPED_SUBRESOURCE resource;
 	if (FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &resource)))

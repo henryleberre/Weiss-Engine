@@ -30,9 +30,7 @@ public:
 
 	virtual ~RenderAPI()
 	{
-		for (auto ptr : this->m_pVertexBuffers) delete ptr;
-		for (auto ptr : this->m_pIndexBuffers) delete ptr;
-		for (auto ptr : this->m_pConstantBuffers) delete ptr;
+		
 	}
 
 	// ----- Virtual Functions ----- //

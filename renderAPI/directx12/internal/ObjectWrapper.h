@@ -39,6 +39,7 @@ public:
 
 	T* operator->() { return this->m_pObject; }
 
+	T*  Get()    noexcept { return this->m_pObject;  }
 	T** GetPtr() noexcept { return &this->m_pObject; }
 
 	operator IUnknown* () const noexcept { return (IUnknown*) this->m_pObject; }
