@@ -12,7 +12,7 @@ public:
 	DirectX12RootSignature() {  }
 
 	DirectX12RootSignature(DirectX12DeviceObjectWrapper& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags,
-						   const std::vector<CD3DX12_ROOT_PARAMETER>& rootParameters = {});
+						   const std::vector<D3D12_ROOT_PARAMETER1>& rootParameters = {});
 
 	void operator=(DirectX12RootSignature&& other) noexcept;
 };

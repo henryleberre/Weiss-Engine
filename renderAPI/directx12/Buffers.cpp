@@ -174,7 +174,15 @@ DirectX12ConstantBuffer::DirectX12ConstantBuffer()
 
 DirectX12ConstantBuffer::DirectX12ConstantBuffer(DirectX12ConstantBuffer&& other)
 {
-	///
+	this->m_constantBufferData = other.m_constantBufferData;
+	this->m_constantBufferViews = other.m_constantBufferViews;
+	this->m_descriptorHeaps = std::move(other.m_descriptorHeaps);
+	this->m_objSize = other.m_objSize;
+	this->m_pCommandList = other.m_pCommandList;
+	this->m_pUploadHeaps = std::move(other.m_pUploadHeaps);
+	this->m_shaderBindingType = other.m_shaderBindingType;
+	this->m_slotPS = other.m_slotPS;
+	this->m_slotVS = other.m_slotVS;
 }
 
 DirectX12ConstantBuffer::DirectX12ConstantBuffer(DirectX12DeviceObjectWrapper& pDevice,
@@ -183,22 +191,38 @@ DirectX12ConstantBuffer::DirectX12ConstantBuffer(DirectX12DeviceObjectWrapper& p
 												 const ShaderBindingType& shaderBindingType)
 	: m_objSize(objSize), m_slotVS(slotVS), m_slotPS(slotPS), m_shaderBindingType(shaderBindingType), m_pCommandList(pCommandList)
 {
+	this->m_constantBufferData.resize(objSize);
+	std::memset(this->m_constantBufferData.data(), 0u, objSize);
 
+	for (int i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
+		this->m_descriptorHeaps[i] = DirectX12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1u, D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+
+	for (int i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
+	{
+		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
+													&CD3DX12_RESOURCE_DESC::Buffer(1024 * 64), D3D12_RESOURCE_STATE_GENERIC_READ,
+													nullptr, IID_PPV_ARGS(this->m_pUploadHeaps[i].GetPtr()))))
+			throw std::runtime_error("[DIRECTX 12] Failed To Create A Commited Resource For A Constant Buffer");
+
+		this->m_pUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
+	
+		this->m_constantBufferViews[i].BufferLocation = this->m_pUploadHeaps[i]->GetGPUVirtualAddress();
+		this->m_constantBufferViews[i].SizeInBytes = (objSize + 255) & ~255;
+
+		pDevice->CreateConstantBufferView(&this->m_constantBufferViews[i], this->m_descriptorHeaps[i]->GetCPUDescriptorHandleForHeapStart());
+	}
 }
 
-void DirectX12ConstantBuffer::CreateView()
+D3D12_CONSTANT_BUFFER_VIEW_DESC DirectX12ConstantBuffer::GetView(const size_t index)
 {
-
+	return this->m_constantBufferViews[index];
 }
 
-D3D12_CONSTANT_BUFFER_VIEW_DESC DirectX12ConstantBuffer::GetView()
+void DirectX12ConstantBuffer::Bind(const size_t frameIndex)
 {
-	return this->m_constantBufferView;
-}
-
-void DirectX12ConstantBuffer::Bind()
-{
-
+	this->m_pCommandList->Get()->SetDescriptorHeaps(1u, this->m_descriptorHeaps[frameIndex].GetPtr());
+	this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(0, this->m_descriptorHeaps[frameIndex]->GetGPUDescriptorHandleForHeapStart());
+	this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(1, this->m_descriptorHeaps[frameIndex]->GetGPUDescriptorHandleForHeapStart());
 }
 
 ShaderBindingType DirectX12ConstantBuffer::GetShaderBindingType() const noexcept { return this->m_shaderBindingType; }
@@ -206,9 +230,18 @@ ShaderBindingType DirectX12ConstantBuffer::GetShaderBindingType() const noexcept
 size_t DirectX12ConstantBuffer::GetSlotVS() const noexcept { return this->m_slotVS; }
 size_t DirectX12ConstantBuffer::GetSlotPS() const noexcept { return this->m_slotPS; }
 
-void DirectX12ConstantBuffer::Update()
+void DirectX12ConstantBuffer::Update(const size_t frameIndex)
 {
+	CD3DX12_RANGE readRange(0, 0);
+	uint8_t* gpuDestAddr;
+	
+	if (FAILED(this->m_pUploadHeaps[frameIndex]->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
+		throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
 
+	memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
+
+	CD3DX12_RANGE writtenRange(0, this->m_objSize);
+	this->m_pUploadHeaps[frameIndex]->Unmap(0u, &writtenRange);
 }
 
 #endif // __WEISS__OS_WINDOWS

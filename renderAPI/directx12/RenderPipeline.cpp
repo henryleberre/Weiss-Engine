@@ -13,14 +13,19 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12RenderPipeline&& other
 	other.m_pObject = nullptr;
 
 	this->m_topology = other.m_topology;
+	this->m_constantBufferIndices = other.m_constantBufferIndices;
 }
 
 DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc, std::vector<ConstantBuffer*>& pConstantBuffers)
+	: m_constantBufferIndices(pipelineDesc.constantBufferIndices)
 {
 	// Specify Compilation Flags
 	UINT compileFlags = 0u;
+
 #ifdef _DEBUG
-	compileFlags = compileFlags | D3DCOMPILE_DEBUG;
+
+	compileFlags |= D3DCOMPILE_DEBUG;
+
 #endif // _DEBUG
 
 	// Vertex Shader
@@ -33,8 +38,8 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 		mbstowcs_s(&convertedCharP, vsFilenameW, strlen(pipelineDesc.vsFilename) + 1u, pipelineDesc.vsFilename, _TRUNCATE);
 	}
 
-	if (D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
-		0, &pVertexShaderByteCode, &pErrorBuff) != S_OK)
+	if (FAILED(D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
+		0, &pVertexShaderByteCode, &pErrorBuff)))
 	{
 #ifdef _DEBUG
 		OutputDebugStringA((char*)pErrorBuff->GetBufferPointer());
@@ -56,8 +61,8 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 		mbstowcs_s(&convertedCharP, psFilenameW, strlen(pipelineDesc.psFilename) + 1u, pipelineDesc.psFilename, _TRUNCATE);
 	}
 
-	if (D3DCompileFromFile(psFilenameW, nullptr, nullptr, "main", "ps_5_0", compileFlags,
-		0, &pPixelShaderByteCode, &pErrorBuff) != S_OK)
+	if (FAILED(D3DCompileFromFile(psFilenameW, nullptr, nullptr, "main", "ps_5_0", compileFlags,
+		0, &pPixelShaderByteCode, &pErrorBuff)))
 	{
 #ifdef _DEBUG
 		OutputDebugStringA((char*)pErrorBuff->GetBufferPointer());
@@ -137,28 +142,34 @@ DirectX12RenderPipeline::DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& p
 	psoDesc.NumRenderTargets = 1;
 
 	// Root Signature
-	std::vector<CD3DX12_DESCRIPTOR_RANGE> descriptorRanges(pConstantBuffers.size());
-	std::vector<CD3DX12_ROOT_PARAMETER>   rootParameters(1);
+	std::vector<D3D12_DESCRIPTOR_RANGE1> descriptorRanges;
+	std::vector<D3D12_ROOT_PARAMETER1>   rootParameters(1);
 
-	uint32_t i = 0;
-	for (ConstantBuffer* pConstantBuffer : pConstantBuffers)
-	{	
-		DirectX12ConstantBuffer* pConstantBufferX12 = dynamic_cast<DirectX12ConstantBuffer*>(pConstantBuffer);
+	size_t i = 0u;
+	for (const size_t cbIndex : pipelineDesc.constantBufferIndices)
+	{
+		DirectX12ConstantBuffer* pConstantBufferX12 = dynamic_cast<DirectX12ConstantBuffer*>(pConstantBuffers[cbIndex]);
 
 		if (pConstantBufferX12->GetShaderBindingType().test(0u)) { // Vertex Shader Bit
-			descriptorRanges.push_back(CD3DX12_DESCRIPTOR_RANGE{});
-			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, (UINT)pConstantBufferX12->GetSlotVS());
+			descriptorRanges.push_back(D3D12_DESCRIPTOR_RANGE1{});
+			descriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+			descriptorRanges[i].NumDescriptors = 1u;
+			descriptorRanges[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlotVS();
 		}
-		
+
 		if (pConstantBufferX12->GetShaderBindingType().test(1u)) { // Pixel Shader Bit
-			descriptorRanges.push_back(CD3DX12_DESCRIPTOR_RANGE{});
-			descriptorRanges[i++].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1u, (UINT)pConstantBufferX12->GetSlotPS());
+			descriptorRanges.push_back(D3D12_DESCRIPTOR_RANGE1{});
+			descriptorRanges[i].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+			descriptorRanges[i].NumDescriptors = 1u;
+			descriptorRanges[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlotPS();
 		}
 	}
 
-	rootParameters[0].InitAsDescriptorTable((UINT)descriptorRanges.size(), descriptorRanges.data(), D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL);
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = (UINT)descriptorRanges.size();
+	rootParameters[0].DescriptorTable.pDescriptorRanges   = descriptorRanges.data();
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL;
 
-	this->m_pRootSignature = DirectX12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, rootParameters),
+	this->m_pRootSignature = DirectX12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, (pipelineDesc.constantBufferIndices.size() > 0) ? rootParameters : std::vector<D3D12_ROOT_PARAMETER1>{}),
 
 	psoDesc.pRootSignature = this->m_pRootSignature;
 
@@ -173,8 +184,13 @@ void DirectX12RenderPipeline::operator=(DirectX12RenderPipeline&& other) noexcep
 	other.m_pObject = nullptr;
 }
 
-void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& constantBufferss) const noexcept
+void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& constantBufferss, const size_t frameIndex) const noexcept
 {
+	for (const size_t cbIndex : this->m_constantBufferIndices)
+	{
+		dynamic_cast<DirectX12ConstantBuffer*>(constantBufferss[cbIndex])->Bind(frameIndex);
+	}
+
 	pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
 	pCommandList->SetPipelineState(this->m_pObject);
 	pCommandList->IASetPrimitiveTopology(this->m_topology);
