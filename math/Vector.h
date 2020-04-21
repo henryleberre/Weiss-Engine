@@ -8,7 +8,19 @@ struct Vector2D
 	T x;
 	T y;
 
-	Vector2D() {}
+	Vector2D() = default;
+
+#ifdef __WEISS__OS_WINDOWS
+	
+	Vector2D(const DirectX::XMVECTOR& other)
+	{
+		DirectX::XMFLOAT4 float4;
+		DirectX::XMStoreFloat4(&float4, other);
+
+		this->x = float4.x; this->y = float4.y;
+	}
+
+#endif // __WEISS__OS_WINDOWS
 
 	template <typename K>
 	Vector2D(const K& n) : x(static_cast<T>(n)), y(static_cast<T>(n)) {}
@@ -45,6 +57,15 @@ struct Vector2D
 
 	template<typename K>
 	[[nodiscard]] inline bool operator!=(const Vector2D<K>& v) { return this->x != v.x || this->y != v.y; }
+
+#ifdef __WEISS__OS_WINDOWS
+
+	inline operator DirectX::XMVECTOR() const noexcept
+	{
+		return DirectX::XMVectorSet(this->x, this->y, 0.0f, 0.0f);
+	}
+
+#endif // __WEISS__OS_WINDOWS
 };
 
 template <typename T>
@@ -83,13 +104,40 @@ struct Vector3D : Vector2D<T>
 {
 	T z;
 
-	Vector3D() {}
+	Vector3D() = default;
+
+#ifdef __WEISS__OS_WINDOWS
+
+	Vector3D(const DirectX::XMVECTOR& other)
+	{
+		DirectX::XMFLOAT4 float4;
+		DirectX::XMStoreFloat4(&float4, other);
+
+		this->x = float4.x; this->y = float4.y; this->z = float4.z;
+	}
+
+#endif // __WEISS__OS_WINDOWS
 
 	template <typename K>
 	Vector3D(const K& n) : Vector2D<T>(n), z(static_cast<T>(n)) {}
 
 	template <typename K, typename L, typename M>
 	Vector3D(const K& x, const L& y, const M& z) : Vector2D<T>(x, y), z(static_cast<T>(z)) {}
+
+	template <typename T2>
+	Vector3D(const Vector2D<T2>& v) : Vector2D<T>(v) { }
+
+	template <typename K>
+	inline void operator+=(const Vector2D<K>& v) { this->x += v.x; this->y += v.y; }
+
+	template <typename K>
+	inline void operator-=(const Vector2D<K>& v) { this->x -= v.x; this->y -= v.y; }
+
+	template <typename K>
+	inline void operator*=(const Vector2D<K>& v) { this->x *= v.x; this->y *= v.y; }
+
+	template <typename K>
+	inline void operator/=(const Vector2D<K>& v) { this->x /= v.x; this->y /= v.y; }
 
 	template <typename K>
 	inline void operator+=(const Vector3D<K>& v) { this->x += v.x; this->y += v.y; this->z += v.z; }
@@ -102,7 +150,7 @@ struct Vector3D : Vector2D<T>
 
 	template <typename K>
 	inline void operator/=(const Vector3D<K>& v) { this->x /= v.x; this->y /= v.y; this->z /= v.z; }
-
+	 
 	template <typename K>
 	inline void operator+=(const K& n) { this->x += n; this->y += n; this->z += n; }
 
@@ -120,7 +168,28 @@ struct Vector3D : Vector2D<T>
 
 	template<typename K>
 	[[nodiscard]] inline bool operator!=(const Vector3D<K>& v) { return this->x != v.x || this->y != v.y || this->z != v.z; }
+
+#ifdef __WEISS__OS_WINDOWS
+
+	inline operator DirectX::XMVECTOR() const noexcept
+	{
+		return DirectX::XMVectorSet(this->x, this->y, this->z, 0.0f);
+	}
+
+#endif // __WEISS__OS_WINDOWS
 };
+
+template <typename T, typename K>
+[[nodiscard]] inline Vector3D<T> operator+(const Vector3D<T>& a, const Vector2D<K>& b) { return Vector3D<T>{ a.x + b.x, a.y + b.y, a.z }; }
+
+template <typename T, typename K>
+[[nodiscard]] inline Vector3D<T> operator-(const Vector3D<T>& a, const Vector2D<K>& b) { return Vector3D<T>{ a.x - b.x, a.y - b.y, a.z }; }
+
+template <typename T, typename K>
+[[nodiscard]] inline Vector3D<T> operator*(const Vector3D<T>& a, const Vector2D<K>& b) { return Vector3D<T>{ a.x * b.x, a.y * b.y, a.z }; }
+
+template <typename T, typename K>
+[[nodiscard]] inline Vector3D<T> operator/(const Vector3D<T>& a, const Vector2D<K>& b) { return Vector3D<T>{ a.x / b.x, a.y / b.y, a.z }; }
 
 template <typename T, typename K>
 [[nodiscard]] inline Vector3D<T> operator+(const Vector3D<T>& a, const Vector3D<K>& b) { return Vector3D<T>{ a.x + b.x, a.y + b.y, a.z + b.z }; }
@@ -158,13 +227,31 @@ struct Vector4D : Vector3D<T>
 {
 	T w;
 
-	Vector4D() {}
+	Vector4D() = default;
+
+#ifdef __WEISS__OS_WINDOWS
+
+	Vector4D(const DirectX::XMVECTOR& other)
+	{
+		DirectX::XMFLOAT4 float4;
+		DirectX::XMStoreFloat4(&float4, other);
+
+		this->x = float4.x; this->y = float4.y; this->z = float4.z; this->w = float4.w;
+	}
+
+#endif // __WEISS__OS_WINDOWS
 
 	template <typename K>
 	Vector4D(const K& n) : Vector3D<T>(n), w(static_cast<T>(w)) {}
 
 	template <typename K, typename L, typename M, typename N>
 	Vector4D(const K& x, const L& y, const M& z, const N& w) : Vector3D<T>(x, y, z), w(static_cast<T>(w)) {}
+
+	template <typename T2>
+	Vector4D(const Vector2D<T2>& v) : Vector2D<T>(v) { }
+
+	template <typename T2>
+	Vector4D(const Vector3D<T2>& v) : Vector3D<T>(v) { }
 
 	template <typename K>
 	inline void operator+=(const Vector4D<K>& v) { this->x += v.x; this->y += v.y; this->z += v.z; this->w += v.w; }
@@ -195,6 +282,15 @@ struct Vector4D : Vector3D<T>
 
 	template<typename K>
 	[[nodiscard]] inline bool operator!=(const Vector4D<K>& v) { return this->x != v.x || this->y != v.y || this->z != v.z || this->w != v.w;; }
+
+#ifdef __WEISS__OS_WINDOWS
+
+	inline operator DirectX::XMVECTOR() const noexcept
+	{
+		return DirectX::XMVectorSet(this->x, this->y, this->z, this->w);
+	}
+
+#endif // __WEISS__OS_WINDOWS
 };
 
 template <typename T, typename K>
