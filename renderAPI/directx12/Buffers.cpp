@@ -220,9 +220,10 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC DirectX12ConstantBuffer::GetView(const size_t in
 
 void DirectX12ConstantBuffer::Bind(const size_t frameIndex)
 {
-	this->m_pCommandList->Get()->SetDescriptorHeaps(1u, this->m_descriptorHeaps[frameIndex].GetPtr());
-	this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(0, this->m_descriptorHeaps[frameIndex]->GetGPUDescriptorHandleForHeapStart());
-	this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(1, this->m_descriptorHeaps[frameIndex]->GetGPUDescriptorHandleForHeapStart());
+	DirectX12DescriptorHeap& descriptorHeap = this->m_descriptorHeaps[frameIndex];
+
+	this->m_pCommandList->Get()->SetDescriptorHeaps(1u, descriptorHeap.GetPtr());
+	this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(0u, descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 ShaderBindingType DirectX12ConstantBuffer::GetShaderBindingType() const noexcept { return this->m_shaderBindingType; }
@@ -230,18 +231,18 @@ ShaderBindingType DirectX12ConstantBuffer::GetShaderBindingType() const noexcept
 size_t DirectX12ConstantBuffer::GetSlotVS() const noexcept { return this->m_slotVS; }
 size_t DirectX12ConstantBuffer::GetSlotPS() const noexcept { return this->m_slotPS; }
 
-void DirectX12ConstantBuffer::Update(const size_t frameIndex)
+void DirectX12ConstantBuffer::Update()
 {
 	CD3DX12_RANGE readRange(0, 0);
-	uint8_t* gpuDestAddr;
-	
-	if (FAILED(this->m_pUploadHeaps[frameIndex]->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
-		throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
 
-	memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
+	for (size_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
+	{
+		uint8_t* gpuDestAddr;
+		if (FAILED(this->m_pUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
+			throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
 
-	CD3DX12_RANGE writtenRange(0, this->m_objSize);
-	this->m_pUploadHeaps[frameIndex]->Unmap(0u, &writtenRange);
+		memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
+	}
 }
 
 #endif // __WEISS__OS_WINDOWS

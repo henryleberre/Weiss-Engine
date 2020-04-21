@@ -186,13 +186,14 @@ void DirectX12RenderPipeline::operator=(DirectX12RenderPipeline&& other) noexcep
 
 void DirectX12RenderPipeline::Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& constantBufferss, const size_t frameIndex) const noexcept
 {
+	pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
+	pCommandList->SetPipelineState(this->m_pObject);
+
 	for (const size_t cbIndex : this->m_constantBufferIndices)
 	{
 		dynamic_cast<DirectX12ConstantBuffer*>(constantBufferss[cbIndex])->Bind(frameIndex);
 	}
 
-	pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
-	pCommandList->SetPipelineState(this->m_pObject);
 	pCommandList->IASetPrimitiveTopology(this->m_topology);
 }
 

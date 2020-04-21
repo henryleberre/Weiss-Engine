@@ -67,7 +67,7 @@ protected:
     std::vector<int8_t> m_constantBufferData;
 
 public:
-    virtual void Update(const size_t frameIndex = 0u) = 0;
+    virtual void Update() = 0;
 
     template <typename T>
     inline T& Get()
