@@ -80,7 +80,7 @@ public:
 
 	void Bind();
 
-	virtual void Update(const size_t frameIndex) override;
+	virtual void Update() override;
 };
 
 #endif // __WEISS__OS_WINDOWS

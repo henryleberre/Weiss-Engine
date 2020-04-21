@@ -82,7 +82,7 @@ private:
 	std::array<DirectX12DescriptorHeap, WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
 	std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC, WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
 	std::array<DirectX12ObjectWrapper<ID3D12Resource>, WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
-
+	
 public:
 	DirectX12ConstantBuffer();
 
@@ -102,7 +102,7 @@ public:
 	size_t GetSlotVS() const noexcept;
 	size_t GetSlotPS() const noexcept;
 
-	virtual void Update(const size_t frameIndex) override;
+	virtual void Update() override;
 };
 
 #endif // __WEISS__OS_WINDOWS
