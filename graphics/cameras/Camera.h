@@ -1,22 +1,34 @@
 #pragma once
 
+#include "../window/Include.h"
 #include "../../math/Include.h"
 
 class Camera {
 protected:
-	DirectX::XMMATRIX m_transform = DirectX::XMMatrixIdentity();
+	Mat4x4f m_transform = Mat4x4f::MakeIdentity();
 
-	DirectX::XMVECTOR m_position = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	DirectX::XMVECTOR m_rotation = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	Vec3f m_position;
+	Vec3f m_rotation;
 
 public:
 	Camera();
 
-	[[nodiscard]] DirectX::XMMATRIX GetTransform()           const noexcept;
-	[[nodiscard]] DirectX::XMMATRIX GetTransposedTransform() const noexcept;
+	Camera(const Vec3f& position, const Vec3f& rotation);
 
-	[[nodiscard]] Vec3f GetPosition() const noexcept;
-	[[nodiscard]] Vec3f GetRotation() const noexcept;
+	[[nodiscard]] Mat4x4f GetTransform()           const noexcept;
+	[[nodiscard]] Mat4x4f GetTransposedTransform() const noexcept;
+
+	[[nodiscard]] Vec3f& GetPosition() noexcept;
+	[[nodiscard]] Vec3f& GetRotation() noexcept;
+
+	void Rotate     (const Vec3f& delta)    noexcept;
+	void SetRotation(const Vec3f& rotation) noexcept;
+
+	void Translate  (const Vec3f& delta)    noexcept;
+	void SetPosition(const Vec3f& position) noexcept;
 
 	virtual void CalculateTransform() = 0;
+
+	virtual void HandleMouseMovements(Mouse& mouse, const float sensitivity) = 0;
+	virtual void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char forward, const char backward, const char left, const char right, const char up, const char down) = 0;
 };
