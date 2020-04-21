@@ -2,6 +2,7 @@
 
 #include "Camera.h"
 #include "../../window/Include.h"
+#include "../../common/Include.h"
 
 struct OrthographicCameraDescriptor
 {
@@ -16,15 +17,8 @@ private:
 public:
 	OrthographicCamera(Window* pWindow, const OrthographicCameraDescriptor& descriptor);
 
-	void Rotate(const float angle);
-
-	void SetPosition(const Vec2f& v);
-
-	void SetRotation(const Vec2f& v);
-
-	void Translate(const Vec2f& v);
-
 	virtual void CalculateTransform() override;
 
-	void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char left, const char right, const char up, const char down);
+	virtual void HandleMouseMovements(Mouse& mouse, const float sensitivity) override;
+	virtual void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char forward, const char backward, const char left, const char right, const char up, const char down) override;
 };
