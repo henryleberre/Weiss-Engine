@@ -6,13 +6,21 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<IDXGIAdapter1> DirectX12AdapterObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12Adapter : public DirectX12AdapterObjectWrapper {
-public:
-	DirectX12Adapter();
+	typedef D3D12ObjectWrapper<IDXGIAdapter1> D3D12AdapterObjectWrapper;
 
-	void operator=(DirectX12Adapter&& other) noexcept;
-};
+	class D3D12Adapter : public D3D12AdapterObjectWrapper {
+	public:
+		D3D12Adapter();
+
+		void operator=(D3D12Adapter&& other) noexcept;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

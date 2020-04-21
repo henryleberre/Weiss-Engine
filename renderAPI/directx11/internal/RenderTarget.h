@@ -6,33 +6,25 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX11ObjectWrapper<ID3D11RenderTargetView> DirectX11RenderTargetbjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D11    {
 
-class DirectX11RenderTarget : public DirectX11RenderTargetbjectWrapper {
-public:
-	DirectX11RenderTarget() {  }
+	typedef D3D11ObjectWrapper<ID3D11RenderTargetView> D3D11RenderTargetbjectWrapper;
 
-	DirectX11RenderTarget(DirectX11DeviceObjectWrapper& pDevice, DirectX11SwapChainObjectWrapper& pSwapChain)
-	{
-		Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer;
+	class D3D11RenderTarget : public D3D11RenderTargetbjectWrapper {
+	public:
+		D3D11RenderTarget() = default;
 
-		if (FAILED(pSwapChain->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer)))
-			throw std::runtime_error("[DIRECTX 11] Could Not Get BackBuffer");
+		D3D11RenderTarget(D3D11DeviceObjectWrapper& pDevice, D3D11SwapChainObjectWrapper& pSwapChain);
 
-		if (FAILED(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &this->m_pObject)))
-			throw std::runtime_error("[DIRECTX 11] Could Not Create RenderTargetView");
-	}
+		void operator=(D3D11RenderTarget&& other) noexcept;
 
-	void operator=(DirectX11RenderTarget&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-	}
+		void SetCurrent(D3D11DeviceContextObjectWrapper& pDeviceContext) const noexcept;
+	};
 
-	void SetCurrent(DirectX11DeviceContextObjectWrapper& pDeviceContext) const noexcept
-	{
-		pDeviceContext->OMSetRenderTargets(1u, &this->m_pObject, NULL);
-	}
-};
+}; // D3D11
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

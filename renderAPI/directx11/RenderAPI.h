@@ -9,35 +9,43 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX11RenderPipeline;
+namespace WS       {
+namespace Internal {
+namespace D3D11    {
 
-class DirectX11RenderAPI : public RenderAPI {
-private:
-	DirectX11DeviceObjectWrapper m_pDevice;
-	DirectX11DeviceContextObjectWrapper m_pDeviceContext;
-	DirectX11SwapChain    m_pSwapChain;
-	DirectX11RenderTarget m_pRenderTarget;
-	DirectX11DepthBuffer  m_pDepthBuffer;
+	class D3D11RenderPipeline;
 
-	std::vector<DirectX11RenderPipeline> m_pRenderPipelines;
+	class D3D11RenderAPI : public RenderAPI {
+	private:
+		D3D11DeviceObjectWrapper        m_pDevice;
+		D3D11DeviceContextObjectWrapper m_pDeviceContext;
+		D3D11SwapChain    m_pSwapChain;
+		D3D11RenderTarget m_pRenderTarget;
+		D3D11DepthBuffer  m_pDepthBuffer;
 
-public:
-	DirectX11RenderAPI();
-	
-	virtual void InitRenderAPI(Window* pWindow) override;
-	virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
+		std::vector<D3D11RenderPipeline> m_pRenderPipelines;
 
-	virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
+		public:
+			D3D11RenderAPI();
 
-	virtual void BeginDrawing() override;
-	virtual void EndDrawing()   override;
-	virtual void Present(const bool vSync) override;
+			virtual void InitRenderAPI(Window* pWindow) override;
+			virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
-	virtual size_t CreateVertexBuffer(const size_t nVertices, const size_t vertexSize) override;
-	virtual size_t CreateIndexBuffer (const size_t nIndices) override;
-	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) override;
+			virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
 
-	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;
-};
+			virtual void BeginDrawing() override;
+			virtual void EndDrawing()   override;
+			virtual void Present(const bool vSync) override;
+
+			virtual size_t CreateVertexBuffer(const size_t nVertices, const size_t vertexSize) override;
+			virtual size_t CreateIndexBuffer(const size_t nIndices) override;
+			virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) override;
+
+			virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;
+	};
+
+}; // D3D11
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

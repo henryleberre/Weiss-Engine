@@ -6,37 +6,45 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lparam);
+namespace WS {
 
-class WindowsWindow : public Window {
-	friend LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lparam);
+	namespace WIN {
 
-private:
-	HWND m_handle = 0;
+		LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lparam);
 
-public:
-	WindowsWindow(const WindowDescriptor& descriptor);
+		class WindowsWindow : public Window {
+			friend LRESULT CALLBACK WindowProcessMessages(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lparam);
 
-	[[nodiscard]] HWND GetHandle() const;
+		private:
+			HWND m_handle = 0;
 
-	[[nodiscard]] virtual Rect GetWindowRectangle() const override;
-	[[nodiscard]] virtual Rect GetClientRectangle() const override;
+		public:
+			WindowsWindow(const WindowDescriptor& descriptor);
 
-	[[nodiscard]] LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
+			[[nodiscard]] HWND GetHandle() const;
 
-	virtual void SetWindowSize(const uint16_t width, const uint16_t height) override;
+			[[nodiscard]] virtual Rect GetWindowRectangle() const override;
+			[[nodiscard]] virtual Rect GetClientRectangle() const override;
 
-	virtual void SetClientSize(const uint16_t width, const uint16_t height) override;
+			[[nodiscard]] LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
-	virtual void SetTitle(const char* title) const noexcept override;
+			virtual void SetWindowSize(const uint16_t width, const uint16_t height) override;
 
-	virtual void SetIcon(const char* pathname) override;
+			virtual void SetClientSize(const uint16_t width, const uint16_t height) override;
 
-	virtual void Update() override;
+			virtual void SetTitle(const char* title) const noexcept override;
 
-	void Destroy() noexcept;
+			virtual void SetIcon(const char* pathname) override;
 
-	~WindowsWindow();
-};
+			virtual void Update() override;
+
+			void Destroy() noexcept;
+
+			~WindowsWindow();
+		};
+
+	}; // WIN
+
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

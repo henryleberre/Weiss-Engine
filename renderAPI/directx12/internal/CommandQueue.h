@@ -5,15 +5,23 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12CommandQueue> DirectX12CommandQueueObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12CommandQueue : public DirectX12CommandQueueObjectWrapper {
-public:
-	DirectX12CommandQueue() {  }
+	typedef D3D12ObjectWrapper<ID3D12CommandQueue> D3D12CommandQueueObjectWrapper;
 
-	DirectX12CommandQueue(DirectX12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
+	class D3D12CommandQueue : public D3D12CommandQueueObjectWrapper {
+	public:
+		D3D12CommandQueue() {  }
 
-	void operator=(DirectX12CommandQueue&& other) noexcept;
-};
+		D3D12CommandQueue(D3D12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
+
+		void operator=(D3D12CommandQueue&& other) noexcept;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

@@ -6,19 +6,27 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<IDXGISwapChain3> DirectX12SwapChainObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12SwapChain : public DirectX12SwapChainObjectWrapper {
-public:
-	DirectX12SwapChain() {  }
+	typedef D3D12ObjectWrapper<IDXGISwapChain3> D3D12SwapChainObjectWrapper;
 
-	DirectX12SwapChain(DirectX12DeviceObjectWrapper&       pDevice,
-					   DirectX12CommandQueueObjectWrapper& pCommandQueue,
-					   const Window* pWindow, const UINT bufferCount);
+	class D3D12SwapChain : public D3D12SwapChainObjectWrapper {
+	public:
+		D3D12SwapChain() {  }
 
-	void operator=(DirectX12SwapChain&& other) noexcept;
-	
-	void Present(const bool vSync) const;
-};
+		D3D12SwapChain(D3D12DeviceObjectWrapper& pDevice,
+						   D3D12CommandQueueObjectWrapper& pCommandQueue,
+						   const Window* pWindow, const UINT bufferCount);
+
+		void operator=(D3D12SwapChain&& other) noexcept;
+
+		void Present(const bool vSync) const;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

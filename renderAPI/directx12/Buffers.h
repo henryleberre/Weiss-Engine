@@ -6,103 +6,109 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12VertexBufferObjectWrapper;
-typedef DirectX12ObjectWrapper<ID3D12Resource> DirectX12IndexBufferObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12VertexBuffer : public DirectX12ObjectWrapper<ID3D12Resource>,
+	typedef D3D12ObjectWrapper<ID3D12Resource> D3D12VertexBufferObjectWrapper;
+	typedef D3D12ObjectWrapper<ID3D12Resource> D3D12IndexBufferObjectWrapper;
+
+	class D3D12VertexBuffer : public D3D12ObjectWrapper<ID3D12Resource>,
 							  public VertexBuffer {
-private:
-	D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
+	private:
+		D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
-	DirectX12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
+		D3D12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
 
-	UINT m_vertexSize;
+		UINT m_vertexSize;
 
-	DirectX12CommandList* m_pCommandList = nullptr;
+		D3D12CommandList* m_pCommandList = nullptr;
 
-public:
-	DirectX12VertexBuffer();
+	public:
+		D3D12VertexBuffer();
 
-	DirectX12VertexBuffer(DirectX12VertexBuffer&& other);
+		D3D12VertexBuffer(D3D12VertexBuffer&& other);
 
-	DirectX12VertexBuffer(DirectX12DeviceObjectWrapper& pDevice,
-						  DirectX12CommandList* pCommandList,
+		D3D12VertexBuffer(D3D12DeviceObjectWrapper& pDevice,
+						  D3D12CommandList* pCommandList,
 						  const size_t nVertices, const size_t vertexSize);
 
-	void operator=(DirectX12VertexBuffer&& other) noexcept;
+		void operator=(D3D12VertexBuffer&& other) noexcept;
 
-	D3D12_VERTEX_BUFFER_VIEW GetView();
+		D3D12_VERTEX_BUFFER_VIEW GetView();
 
-	void Bind();
+		void Bind();
 
-	virtual void Update() override;
-};
+		virtual void Update() override;
+	};
 
-
-class DirectX12IndexBuffer : public DirectX12IndexBufferObjectWrapper,
+	class D3D12IndexBuffer : public D3D12IndexBufferObjectWrapper,
 							 public IndexBuffer {
-private:
-	D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
+	private:
+		D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
 
-	DirectX12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
+		D3D12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
 
-	size_t m_nIndices;
+		size_t m_nIndices;
 
-	DirectX12CommandList* m_pCommandList;
+		D3D12CommandList* m_pCommandList;
 
-public:
-	DirectX12IndexBuffer();
+	public:
+		D3D12IndexBuffer();
 
-	DirectX12IndexBuffer(DirectX12IndexBuffer&& other);
+		D3D12IndexBuffer(D3D12IndexBuffer&& other);
 
-	DirectX12IndexBuffer(DirectX12DeviceObjectWrapper& pDevice,
-						 DirectX12CommandList* pCommandList,
+		D3D12IndexBuffer(D3D12DeviceObjectWrapper& pDevice,
+						 D3D12CommandList* pCommandList,
 						 const size_t nIndices);
 
-	void operator=(DirectX12IndexBuffer&& other) noexcept;
+		void operator=(D3D12IndexBuffer&& other) noexcept;
 
-	D3D12_INDEX_BUFFER_VIEW GetView();
+		D3D12_INDEX_BUFFER_VIEW GetView();
 
-	void Bind();
+		void Bind();
 
-	virtual void Update() override;
-};
+		virtual void Update() override;
+	};
 
-class DirectX12ConstantBuffer : public ConstantBuffer {
-private:
-	size_t m_objSize = 0u;
+	class D3D12ConstantBuffer : public ConstantBuffer {
+	private:
+		size_t m_objSize = 0u;
 
-	size_t m_slotVS = 0u, m_slotPS = 0u;
+		size_t m_slotVS = 0u, m_slotPS = 0u;
 
-	ShaderBindingType m_shaderBindingType;
+		ShaderBindingType m_shaderBindingType;
 
+		D3D12CommandList* m_pCommandList;
 
-	DirectX12CommandList* m_pCommandList;
+		std::array<D3D12DescriptorHeap,                WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
+		std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC,    WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
+		std::array<D3D12ObjectWrapper<ID3D12Resource>, WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
 
-	std::array<DirectX12DescriptorHeap, WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
-	std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC, WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
-	std::array<DirectX12ObjectWrapper<ID3D12Resource>, WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
-	
-public:
-	DirectX12ConstantBuffer();
+	public:
+		D3D12ConstantBuffer();
 
-	DirectX12ConstantBuffer(DirectX12ConstantBuffer&& other);
+		D3D12ConstantBuffer(D3D12ConstantBuffer&& other);
 
-	DirectX12ConstantBuffer(DirectX12DeviceObjectWrapper& pDevice,
-							DirectX12CommandList* pCommandList,
+		D3D12ConstantBuffer(D3D12DeviceObjectWrapper& pDevice,
+							D3D12CommandList* pCommandList,
 							const size_t objSize, const size_t slotVS, const size_t slotPS,
 							const ShaderBindingType& shaderBindingType);
 
-	D3D12_CONSTANT_BUFFER_VIEW_DESC GetView(const size_t index);
+		D3D12_CONSTANT_BUFFER_VIEW_DESC GetView(const size_t index);
 
-	void Bind(const size_t frameIndex);
+		void Bind(const size_t frameIndex);
 
-	ShaderBindingType GetShaderBindingType() const noexcept;
+		ShaderBindingType GetShaderBindingType() const noexcept;
 
-	size_t GetSlotVS() const noexcept;
-	size_t GetSlotPS() const noexcept;
+		size_t GetSlotVS() const noexcept;
+		size_t GetSlotPS() const noexcept;
 
-	virtual void Update() override;
-};
+		virtual void Update() override;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

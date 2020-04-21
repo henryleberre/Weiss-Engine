@@ -12,6 +12,10 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef WindowsImage Image;
+namespace WS {
+
+    typedef Internal::WIN::WindowsImage Image;
+
+};
 
 #endif // __WEISS__OS_WINDOWS

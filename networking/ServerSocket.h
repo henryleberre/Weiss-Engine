@@ -2,24 +2,28 @@
 
 #include "../common/Include.h"
 
-class ServerSocket {
-private:
-	SOCKET m_socket = INVALID_SOCKET;
+namespace WS {
 
-	std::vector<SOCKET> m_clients;
+	class ServerSocket {
+	private:
+		SOCKET m_socket = INVALID_SOCKET;
 
-public:
-	ServerSocket();
+		std::vector<SOCKET> m_clients;
 
-	~ServerSocket();
+	public:
+		ServerSocket();
 
-	void Bind(const unsigned int port);
+		~ServerSocket();
 
-	[[nodiscard]] int Accept() noexcept;
+		void Bind(const unsigned int port);
 
-	void Send(const int clientID, const char* data, int length = -1);
+		[[nodiscard]] int Accept() noexcept;
 
-	[[nodiscard]] std::pair<std::array<char, 1024u>, size_t> Receive(const int clientID);
+		void Send(const int clientID, const char* data, int length = -1);
 
-	void Disconnect() noexcept;
-};
+		[[nodiscard]] std::pair<std::array<char, 1024u>, size_t> Receive(const int clientID);
+
+		void Disconnect() noexcept;
+	};
+
+}; // WS

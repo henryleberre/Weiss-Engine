@@ -6,37 +6,45 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX11VertexShader {
-private:
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_pShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout>  m_pInputLayout;
+namespace WS       {
+namespace Internal {
+namespace D3D11    {
 
-	DirectX11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
+	class D3D11VertexShader {
+	private:
+		Microsoft::WRL::ComPtr<ID3D11VertexShader> m_pShader;
+		Microsoft::WRL::ComPtr<ID3D11InputLayout>  m_pInputLayout;
 
-public:
-	DirectX11VertexShader() {  }
+		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
-	DirectX11VertexShader(DirectX11DeviceObjectWrapper& pDevice,
-						  DirectX11DeviceContextObjectWrapper* pDeviceContext,
+	public:
+		D3D11VertexShader() {  }
+
+		D3D11VertexShader(D3D11DeviceObjectWrapper& pDevice,
+						  D3D11DeviceContextObjectWrapper* pDeviceContext,
 						  const char* sourceFilename, const std::vector<ShaderInputElement>& sies);
 
-	void Bind() const noexcept;
-};
+		void Bind() const noexcept;
+	};
 
-class DirectX11PixelShader {
-private:
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pShader;
+	class D3D11PixelShader {
+	private:
+		Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pShader;
 
-	DirectX11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
+		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
-public:
-	DirectX11PixelShader() {  }
+	public:
+		D3D11PixelShader() {  }
 
-	DirectX11PixelShader(DirectX11DeviceObjectWrapper& pDevice,
-						 DirectX11DeviceContextObjectWrapper* pDeviceContext,
+		D3D11PixelShader(D3D11DeviceObjectWrapper& pDevice,
+						 D3D11DeviceContextObjectWrapper* pDeviceContext,
 						 const char* sourceFilename);
 
-	void Bind() const noexcept;
-};
+		void Bind() const noexcept;
+	};
+
+}; // D3D11
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

@@ -2,22 +2,30 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12CommandAllocator::DirectX12CommandAllocator(DirectX12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type)
-{
-	if (pDevice->CreateCommandAllocator(type, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
-		throw std::runtime_error("[DIRECTX 12] Could Not Create Command Allocator");
-}
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-void DirectX12CommandAllocator::operator=(DirectX12CommandAllocator&& other) noexcept
-{
-	this->m_pObject = other.m_pObject;
-	other.m_pObject = nullptr;
-}
+	D3D12CommandAllocator::D3D12CommandAllocator(D3D12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type)
+	{
+		if (pDevice->CreateCommandAllocator(type, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+			throw std::runtime_error("[DIRECTX 12] Could Not Create Command Allocator");
+	}
 
-void DirectX12CommandAllocator::Reset() const
-{
-	if (FAILED(this->m_pObject->Reset()))
-		throw std::runtime_error("[DIRECTX 12] Could Not Reset Command Allocator");
-}
+	void D3D12CommandAllocator::operator=(D3D12CommandAllocator&& other) noexcept
+	{
+		this->m_pObject = other.m_pObject;
+		other.m_pObject = nullptr;
+	}
+
+	void D3D12CommandAllocator::Reset() const
+	{
+		if (FAILED(this->m_pObject->Reset()))
+			throw std::runtime_error("[DIRECTX 12] Could Not Reset Command Allocator");
+	}
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

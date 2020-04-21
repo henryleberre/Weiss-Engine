@@ -1,38 +1,42 @@
 #include "Camera.h"
 #include "../../window/Include.h"
 
-struct PerspectiveCameraDescriptor
-{
-	const Vec3f position;
-	const Vec3f rotation;
+namespace WS {
 
-	const float fov;
-	const float zNear;
-	const float zFar;
-};
+	struct PerspectiveCameraDescriptor
+	{
+		const Vec3f position;
+		const Vec3f rotation;
 
-class PerspectiveCamera : public Camera
-{
-private:
-	const DirectX::XMVECTOR UP_VECTOR      = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	const DirectX::XMVECTOR FORWARD_VECTOR = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	const DirectX::XMVECTOR RIGHT_VECTOR   = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+		const float fov;
+		const float zNear;
+		const float zFar;
+	};
 
-	DirectX::XMVECTOR m_forwardVector = FORWARD_VECTOR;
-	DirectX::XMVECTOR m_rightVector   = RIGHT_VECTOR;
+	class PerspectiveCamera : public Camera
+	{
+	private:
+		const DirectX::XMVECTOR UP_VECTOR      = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		const DirectX::XMVECTOR FORWARD_VECTOR = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+		const DirectX::XMVECTOR RIGHT_VECTOR   = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 
-	float m_fov = 0.0f, m_aspectRatio = 0.0f, m_zNear = 0.0f, m_zFar = 0.0f;
+		DirectX::XMVECTOR m_forwardVector = FORWARD_VECTOR;
+		DirectX::XMVECTOR m_rightVector = RIGHT_VECTOR;
 
-private:
-	[[nodiscard]] DirectX::XMMATRIX GetViewMatrix();
+		float m_fov = 0.0f, m_aspectRatio = 0.0f, m_zNear = 0.0f, m_zFar = 0.0f;
 
-	[[nodiscard]] DirectX::XMMATRIX GetProjectionMatrix();
+	private:
+		[[nodiscard]] DirectX::XMMATRIX GetViewMatrix();
 
-public:
-	PerspectiveCamera(Window* pWindow, const PerspectiveCameraDescriptor& descriptor);
+		[[nodiscard]] DirectX::XMMATRIX GetProjectionMatrix();
 
-	virtual void CalculateTransform() override;
+	public:
+		PerspectiveCamera(Window* pWindow, const PerspectiveCameraDescriptor& descriptor);
 
-	virtual void HandleMouseMovements(Mouse& mouse, const float sensitivity) override;
-	virtual void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char forward, const char backward, const char left, const char right, const char up, const char down) override;
+		virtual void CalculateTransform() override;
+
+		virtual void HandleMouseMovements(Mouse& mouse, const float sensitivity) override;
+		virtual void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char forward, const char backward, const char left, const char right, const char up, const char down) override;
+	};
+
 };

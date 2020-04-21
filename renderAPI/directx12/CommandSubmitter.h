@@ -5,27 +5,39 @@
 #include "internal/CommandList.h"
 #include "internal/CommandAllocator.h"
 
-class DirectX12CommandSubmitter {
-private:
-	DirectX12CommandList m_pCommandList;
+#ifdef __WEISS__OS_WINDOWS
 
-	std::array<UINT64, WEISS__FRAME_BUFFER_COUNT> m_fenceValues;
-	std::array<std::unique_ptr<DirectX12Fence>, WEISS__FRAME_BUFFER_COUNT> m_pFences;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-	std::array<DirectX12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
+	class D3D12CommandSubmitter {
+	private:
+		D3D12CommandList m_pCommandList;
 
-public:
-	DirectX12CommandSubmitter();
-	DirectX12CommandSubmitter(DirectX12DeviceObjectWrapper& pDevice);
+		std::array<UINT64,                      WEISS__FRAME_BUFFER_COUNT> m_fenceValues;
+		std::array<std::unique_ptr<D3D12Fence>, WEISS__FRAME_BUFFER_COUNT> m_pFences;
 
-	void Close();
-	void Reset(const size_t frameIndex);
+		std::array<D3D12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
 
-	void Execute(DirectX12CommandQueueObjectWrapper& pCommandQueue, const size_t frameIndex);
+	public:
+		D3D12CommandSubmitter();
+		D3D12CommandSubmitter(D3D12DeviceObjectWrapper& pDevice);
 
-	void WaitForCompletion(const size_t frameIndex);
+		void Close();
+		void Reset(const size_t frameIndex);
 
-	DirectX12CommandList& GetCommandList() { return this->m_pCommandList; }
-	DirectX12CommandList* GetCommandListPr() { return &this->m_pCommandList; }
-	DirectX12Fence&       GetFence(const size_t frameIndex) { return *this->m_pFences[frameIndex]; }
-};
+		void Execute(D3D12CommandQueueObjectWrapper& pCommandQueue, const size_t frameIndex);
+
+		void WaitForCompletion(const size_t frameIndex);
+
+		D3D12CommandList& GetCommandList()   { return this->m_pCommandList;  }
+		D3D12CommandList* GetCommandListPr() { return &this->m_pCommandList; }
+		D3D12Fence&       GetFence(const size_t frameIndex) { return *this->m_pFences[frameIndex]; }
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
+
+#endif // __WEISS__OS_WINDOWS

@@ -5,16 +5,24 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12RootSignature> DirectX12RootSignatureObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12RootSignature : public DirectX12RootSignatureObjectWrapper {
-public:
-	DirectX12RootSignature() {  }
+	typedef D3D12ObjectWrapper<ID3D12RootSignature> D3D12RootSignatureObjectWrapper;
 
-	DirectX12RootSignature(DirectX12DeviceObjectWrapper& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags,
-						   const std::vector<D3D12_ROOT_PARAMETER1>& rootParameters = {});
+	class D3D12RootSignature : public D3D12RootSignatureObjectWrapper {
+	public:
+		D3D12RootSignature() {  }
 
-	void operator=(DirectX12RootSignature&& other) noexcept;
-};
+		D3D12RootSignature(D3D12DeviceObjectWrapper& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags,
+							   const std::vector<D3D12_ROOT_PARAMETER1>& rootParameters = {});
+
+		void operator=(D3D12RootSignature&& other) noexcept;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

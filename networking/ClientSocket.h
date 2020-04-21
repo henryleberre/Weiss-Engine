@@ -2,20 +2,24 @@
 
 #include "../common/Include.h"
 
-class ClientSocket {
-private:
-	SOCKET m_socket = INVALID_SOCKET;
+namespace WS {
 
-public:
-	ClientSocket();
+	class ClientSocket {
+	private:
+		SOCKET m_socket = INVALID_SOCKET;
 
-	~ClientSocket();
+	public:
+		ClientSocket();
 
-	void Connect(const char* host, const unsigned int port);
+		~ClientSocket();
 
-	void Send(const char* data, int length = -1);
+		void Connect(const char* host, const unsigned int port);
 
-	[[nodiscard]] std::pair<std::array<char, 1024u>, size_t> Receive();
+		void Send(const char* data, int length = -1);
 
-	void Disconnect() noexcept;
-};
+		[[nodiscard]] std::pair<std::array<char, 1024u>, size_t> Receive();
+
+		void Disconnect() noexcept;
+	};
+
+}; // WS

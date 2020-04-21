@@ -2,82 +2,86 @@
 
 #include "../../common/Include.h"
 
-class VertexBuffer {
-protected:
-	std::vector<int8_t> m_vertexData;
+namespace WS {
 
-public:
-    virtual void Update() = 0;
+    class VertexBuffer {
+    protected:
+        std::vector<int8_t> m_vertexData;
 
-    inline void Set(const void* buff, const size_t bufferSize) noexcept
-    {
-        std::memcpy(this->m_vertexData.data(), buff, bufferSize);
-    }
+    public:
+        virtual void Update() = 0;
 
-    template <typename CONTAINER>
-    inline void Set(const CONTAINER& container) noexcept
-    {
-        this->Set(container.data(), container.size() * sizeof(container[0])); 
-    }
+        inline void Set(const void* buff, const size_t bufferSize) noexcept
+        {
+            std::memcpy(this->m_vertexData.data(), buff, bufferSize);
+        }
 
-    template <typename T>
-    inline T& GetVertex(const size_t vertexIndex) noexcept
-    {
-        return *(((T*)(this->m_vertexData.data())) + vertexIndex);
-    }
+        template <typename CONTAINER>
+        inline void Set(const CONTAINER& container) noexcept
+        {
+            this->Set(container.data(), container.size() * sizeof(container[0]));
+        }
 
-    template <typename T>
-    inline void SetVertex(const size_t vertexIndex, const T& vertex) noexcept
-    {
-        this->GetVertex<T>(vertexIndex) = vertex;
-    }
-};
+        template <typename T>
+        inline T& GetVertex(const size_t vertexIndex) noexcept
+        {
+            return *(((T*)(this->m_vertexData.data())) + vertexIndex);
+        }
 
-class IndexBuffer {
-protected:
-	std::vector<uint32_t> m_indexData;
+        template <typename T>
+        inline void SetVertex(const size_t vertexIndex, const T& vertex) noexcept
+        {
+            this->GetVertex<T>(vertexIndex) = vertex;
+        }
+    };
 
-public:
-    virtual void Update() = 0;
+    class IndexBuffer {
+    protected:
+        std::vector<uint32_t> m_indexData;
 
-    inline void Set(const void* buff, const size_t nIndices) noexcept
-    {
-        std::memcpy(this->m_indexData.data(), buff, nIndices * sizeof(uint32_t));
-    }
+    public:
+        virtual void Update() = 0;
 
-    template <typename CONTAINER>
-    inline void Set(const CONTAINER& container) noexcept
-    {
-        this->Set(container.data(), container.size());
-    }
+        inline void Set(const void* buff, const size_t nIndices) noexcept
+        {
+            std::memcpy(this->m_indexData.data(), buff, nIndices * sizeof(uint32_t));
+        }
 
-    inline uint32_t& GetIndex(const size_t indexIndex) noexcept
-    {
-        return this->m_indexData[indexIndex];
-    }
+        template <typename CONTAINER>
+        inline void Set(const CONTAINER& container) noexcept
+        {
+            this->Set(container.data(), container.size());
+        }
 
-    inline void SetIndex(const size_t indexIndex, const uint32_t index) noexcept
-    {
-        this->GetIndex(indexIndex) = index;
-    }
-};
+        inline uint32_t& GetIndex(const size_t indexIndex) noexcept
+        {
+            return this->m_indexData[indexIndex];
+        }
 
-class ConstantBuffer {
-protected:
-    std::vector<int8_t> m_constantBufferData;
+        inline void SetIndex(const size_t indexIndex, const uint32_t index) noexcept
+        {
+            this->GetIndex(indexIndex) = index;
+        }
+    };
 
-public:
-    virtual void Update() = 0;
+    class ConstantBuffer {
+    protected:
+        std::vector<int8_t> m_constantBufferData;
 
-    template <typename T>
-    inline T& Get()
-    {
-        return *((T*)this->m_constantBufferData.data());
-    }
+    public:
+        virtual void Update() = 0;
 
-    template <typename T>
-    inline void Set(const T& obj)
-    {
-        this->Get<T>() = obj;
-    }
+        template <typename T>
+        inline T& Get()
+        {
+            return *((T*)this->m_constantBufferData.data());
+        }
+
+        template <typename T>
+        inline void Set(const T& obj)
+        {
+            this->Get<T>() = obj;
+        }
+    };
+
 };

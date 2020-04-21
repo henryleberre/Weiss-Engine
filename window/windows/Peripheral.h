@@ -5,32 +5,40 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class WindowsPeripheralDevice : public PeripheralDevice {
-public:
-	virtual bool __HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
-};
+namespace WS {
 
-class WindowsMouse : public Mouse,
-                     public WindowsPeripheralDevice {
-public:
-	WindowsMouse();
+	namespace WIN {
 
-	virtual void Show() const noexcept override;
-	virtual void Hide() const noexcept override;
+		class WindowsPeripheralDevice : public PeripheralDevice {
+		public:
+			virtual bool __HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+		};
 
-	virtual void Clip(const Rect& rect) const noexcept override;
+		class WindowsMouse : public Mouse,
+							 public WindowsPeripheralDevice {
+		public:
+			WindowsMouse();
 
-	virtual void __OnWindowUpdateBegin() override;
+			virtual void Show() const noexcept override;
+			virtual void Hide() const noexcept override;
 
-	virtual bool __HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) override;
+			virtual void Clip(const Rect& rect) const noexcept override;
 
-	virtual void __OnWindowUpdateEnd() override;
-};
+			virtual void __OnWindowUpdateBegin() override;
 
-class WindowsKeyboard : public Keyboard,
-                        public WindowsPeripheralDevice {
-public:
-	virtual bool __HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) override;
-};
+			virtual bool __HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) override;
+
+			virtual void __OnWindowUpdateEnd() override;
+		};
+
+		class WindowsKeyboard : public Keyboard,
+								public WindowsPeripheralDevice {
+		public:
+			virtual bool __HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) override;
+		};
+
+	}; // WIN
+
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

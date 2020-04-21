@@ -1,148 +1,156 @@
 #include "Image.h"
 
-WindowsImage::WindowsImage() {  }
+namespace WS       {
+namespace Internal {
+namespace WIN      {
 
-WindowsImage::WindowsImage(WindowsImage&& other)
-{
-    this->m_width = other.m_width;
-    this->m_height = other.m_height;
-    this->m_nPixels = other.m_nPixels;
+    WindowsImage::WindowsImage() {  }
 
-    this->m_buff = std::move(other.m_buff);
-}
+    WindowsImage::WindowsImage(WindowsImage&& other)
+    {
+        this->m_width = other.m_width;
+        this->m_height = other.m_height;
+        this->m_nPixels = other.m_nPixels;
 
-WindowsImage::WindowsImage(const WindowsImage& other)
-{
-    this->m_width = other.m_width;
-    this->m_height = other.m_height;
-    this->m_nPixels = other.m_nPixels;
+        this->m_buff = std::move(other.m_buff);
+    }
 
-    const size_t bufferSize = this->m_nPixels * sizeof(Coloru8);
-    this->m_buff = std::make_unique<Coloru8[]>(bufferSize);
-    std::memcpy(this->m_buff.get(), other.m_buff.get(), bufferSize);
-}
+    WindowsImage::WindowsImage(const WindowsImage& other)
+    {
+        this->m_width = other.m_width;
+        this->m_height = other.m_height;
+        this->m_nPixels = other.m_nPixels;
 
-WindowsImage::WindowsImage(const char* filename)
-{
-    Microsoft::WRL::ComPtr<IWICBitmapSource>      decodedConvertedFrame;
-    Microsoft::WRL::ComPtr<IWICBitmapDecoder>     bitmapDecoder;
-    Microsoft::WRL::ComPtr<IWICImagingFactory>    factory;
-    Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frameDecoder;
+        const size_t bufferSize = this->m_nPixels * sizeof(Coloru8);
+        this->m_buff = std::make_unique<Coloru8[]>(bufferSize);
+        std::memcpy(this->m_buff.get(), other.m_buff.get(), bufferSize);
+    }
 
-    if (FAILED(CoInitialize(NULL)))
-        throw std::runtime_error("[COM] Failed To Init COM");
+    WindowsImage::WindowsImage(const char* filename)
+    {
+        Microsoft::WRL::ComPtr<IWICBitmapSource>      decodedConvertedFrame;
+        Microsoft::WRL::ComPtr<IWICBitmapDecoder>     bitmapDecoder;
+        Microsoft::WRL::ComPtr<IWICImagingFactory>    factory;
+        Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frameDecoder;
 
-    if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
-        throw std::runtime_error("[WIC] Could Not Create IWICImagingFactory");
+        if (FAILED(CoInitialize(NULL)))
+            throw std::runtime_error("[COM] Failed To Init COM");
 
-    // Convert from char* to wchar_t*
-    const size_t length = mbstowcs(nullptr, filename, 0);
-    wchar_t* filenameW = new wchar_t[length];
-    mbstowcs(filenameW, filename, length);
+        if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+            throw std::runtime_error("[WIC] Could Not Create IWICImagingFactory");
 
-    if (FAILED(factory->CreateDecoderFromFilename(filenameW, NULL, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &bitmapDecoder)))
-        throw std::runtime_error("[WIC] Could Not Read / Open Image");
+        // Convert from char* to wchar_t*
+        const size_t length = mbstowcs(nullptr, filename, 0);
+        wchar_t* filenameW = new wchar_t[length];
+        mbstowcs(filenameW, filename, length);
 
-    if (FAILED(bitmapDecoder->GetFrame(0, &frameDecoder)))
-        throw std::runtime_error("[WIC] Could Not Get First Frame Of Image");
+        if (FAILED(factory->CreateDecoderFromFilename(filenameW, NULL, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &bitmapDecoder)))
+            throw std::runtime_error("[WIC] Could Not Read / Open Image");
 
-    if (FAILED(frameDecoder->GetSize((UINT*)&this->m_width, (UINT*)&this->m_height)))
-        throw std::runtime_error("[WIC] Could Not Get Image Width/Height");
+        if (FAILED(bitmapDecoder->GetFrame(0, &frameDecoder)))
+            throw std::runtime_error("[WIC] Could Not Get First Frame Of Image");
 
-    this->m_nPixels = this->m_width * this->m_height;
+        if (FAILED(frameDecoder->GetSize((UINT*)&this->m_width, (UINT*)&this->m_height)))
+            throw std::runtime_error("[WIC] Could Not Get Image Width/Height");
 
-    if (FAILED(WICConvertBitmapSource(GUID_WICPixelFormat32bppRGBA, frameDecoder.Get(), &decodedConvertedFrame)))
-        throw std::runtime_error("[WIC] Could Not Create Bitmap Converter");
+        this->m_nPixels = this->m_width * this->m_height;
 
-    this->m_buff = std::make_unique<Coloru8[]>(this->m_nPixels * sizeof(Coloru8));
+        if (FAILED(WICConvertBitmapSource(GUID_WICPixelFormat32bppRGBA, frameDecoder.Get(), &decodedConvertedFrame)))
+            throw std::runtime_error("[WIC] Could Not Create Bitmap Converter");
 
-    const WICRect sampleRect{ 0, 0, this->m_width, this->m_height };
+        this->m_buff = std::make_unique<Coloru8[]>(this->m_nPixels * sizeof(Coloru8));
 
-    if (FAILED(decodedConvertedFrame->CopyPixels(&sampleRect, this->m_width * sizeof(Coloru8), this->m_nPixels * sizeof(Coloru8), (BYTE*)this->m_buff.get())))
-        throw std::runtime_error("[WIC] Could Not Copy Pixels From Bitmap");
-}
+        const WICRect sampleRect{ 0, 0, this->m_width, this->m_height };
 
-WindowsImage::WindowsImage(const uint16_t width, const uint16_t height, const Coloru8& fillColor)
-{
-    this->m_width = width;
-    this->m_height = height;
-    this->m_nPixels = this->m_width * this->m_height;
+        if (FAILED(decodedConvertedFrame->CopyPixels(&sampleRect, this->m_width * sizeof(Coloru8), this->m_nPixels * sizeof(Coloru8), (BYTE*)this->m_buff.get())))
+            throw std::runtime_error("[WIC] Could Not Copy Pixels From Bitmap");
+    }
 
-    const size_t bufferSize = this->m_nPixels * sizeof(Coloru8);
-    this->m_buff = std::make_unique<Coloru8[]>(bufferSize);
+    WindowsImage::WindowsImage(const uint16_t width, const uint16_t height, const Coloru8& fillColor)
+    {
+        this->m_width = width;
+        this->m_height = height;
+        this->m_nPixels = this->m_width * this->m_height;
 
-    std::fill_n(this->m_buff.get(), this->m_nPixels, fillColor);
-}
+        const size_t bufferSize = this->m_nPixels * sizeof(Coloru8);
+        this->m_buff = std::make_unique<Coloru8[]>(bufferSize);
 
-void WindowsImage::Write(const char* filename) const
-{
-    if (FAILED(CoInitialize(NULL)))
-        throw std::runtime_error("[COM] Failed To Init COM");
+        std::fill_n(this->m_buff.get(), this->m_nPixels, fillColor);
+    }
 
-    Microsoft::WRL::ComPtr<IWICImagingFactory>    factory;
-    Microsoft::WRL::ComPtr<IWICBitmapEncoder>     bitmapEncoder;
-    Microsoft::WRL::ComPtr<IWICBitmapFrameEncode> bitmapFrame;
-    Microsoft::WRL::ComPtr<IWICStream>            outputStream;
+    void WindowsImage::Write(const char* filename) const
+    {
+        if (FAILED(CoInitialize(NULL)))
+            throw std::runtime_error("[COM] Failed To Init COM");
 
-    if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
-        throw std::runtime_error("[WIC] Could Not Create IWICImagingFactory");
+        Microsoft::WRL::ComPtr<IWICImagingFactory>    factory;
+        Microsoft::WRL::ComPtr<IWICBitmapEncoder>     bitmapEncoder;
+        Microsoft::WRL::ComPtr<IWICBitmapFrameEncode> bitmapFrame;
+        Microsoft::WRL::ComPtr<IWICStream>            outputStream;
 
-    if (FAILED(factory->CreateStream(&outputStream)))
-        throw std::runtime_error("[WIC] Failed To Create Output Stream");
+        if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+            throw std::runtime_error("[WIC] Could Not Create IWICImagingFactory");
 
-    // Convert from char* to wchar_t*
-    const size_t length = mbstowcs(nullptr, filename, 0);
-    wchar_t* filenameW = new wchar_t[length];
-    mbstowcs(filenameW, filename, length);
-    if (FAILED(outputStream->InitializeFromFilename(filenameW, GENERIC_WRITE)))
-        throw std::runtime_error("[WIC] Failed To Initialize Output Stream From Filename");
+        if (FAILED(factory->CreateStream(&outputStream)))
+            throw std::runtime_error("[WIC] Failed To Create Output Stream");
 
-    char fileExtension[10u]; // assumes the extension has less than 10-1=9 characters
-    std::memset(fileExtension, 0u, 10);
-    const size_t offset = std::string_view(filename).find_last_of('.');
-    std::memcpy(fileExtension, filename + offset, strlen(filename) - offset + 1);
+        // Convert from char* to wchar_t*
+        const size_t length = mbstowcs(nullptr, filename, 0);
+        wchar_t* filenameW = new wchar_t[length];
+        mbstowcs(filenameW, filename, length);
+        if (FAILED(outputStream->InitializeFromFilename(filenameW, GENERIC_WRITE)))
+            throw std::runtime_error("[WIC] Failed To Initialize Output Stream From Filename");
 
-    // This should be fine thanks to sso (small string optimization)
-    const std::unordered_map<std::string, REFGUID> extensionToREFUGUIDMap{
-        { ".bmp", GUID_ContainerFormatBmp  }, { ".png",  GUID_ContainerFormatPng  },
-        { ".ico", GUID_ContainerFormatIco  }, { ".jpeg", GUID_ContainerFormatJpeg },
-        { ".jpg", GUID_ContainerFormatJpeg }, { ".tiff", GUID_ContainerFormatTiff },
-        { ".gif", GUID_ContainerFormatGif  }, { ".wmp",  GUID_ContainerFormatWmp  }
-    };
+        char fileExtension[10u]; // assumes the extension has less than 10-1=9 characters
+        std::memset(fileExtension, 0u, 10);
+        const size_t offset = std::string_view(filename).find_last_of('.');
+        std::memcpy(fileExtension, filename + offset, strlen(filename) - offset + 1);
 
-    if (extensionToREFUGUIDMap.find(fileExtension) == std::end(extensionToREFUGUIDMap))
-        throw std::runtime_error("[WIC] Your Image Extension Is Not Supported");
+        // This should be fine thanks to sso (small string optimization)
+        const std::unordered_map<std::string, REFGUID> extensionToREFUGUIDMap{
+            { ".bmp", GUID_ContainerFormatBmp  }, { ".png",  GUID_ContainerFormatPng  },
+            { ".ico", GUID_ContainerFormatIco  }, { ".jpeg", GUID_ContainerFormatJpeg },
+            { ".jpg", GUID_ContainerFormatJpeg }, { ".tiff", GUID_ContainerFormatTiff },
+            { ".gif", GUID_ContainerFormatGif  }, { ".wmp",  GUID_ContainerFormatWmp  }
+        };
 
-    if (FAILED(factory->CreateEncoder(extensionToREFUGUIDMap.at(fileExtension), NULL, &bitmapEncoder)))
-        throw std::runtime_error("[WIC] Failed To Create Bitmap Encoder");
+        if (extensionToREFUGUIDMap.find(fileExtension) == std::end(extensionToREFUGUIDMap))
+            throw std::runtime_error("[WIC] Your Image Extension Is Not Supported");
 
-    if (FAILED(bitmapEncoder->Initialize(outputStream.Get(), WICBitmapEncoderNoCache)))
-        throw std::runtime_error("[WIC] Failed To Initialize Bitmap ");
+        if (FAILED(factory->CreateEncoder(extensionToREFUGUIDMap.at(fileExtension), NULL, &bitmapEncoder)))
+            throw std::runtime_error("[WIC] Failed To Create Bitmap Encoder");
 
-    if (FAILED(bitmapEncoder->CreateNewFrame(&bitmapFrame, NULL)))
-        throw std::runtime_error("[WIC] Failed To Create A New Frame");
+        if (FAILED(bitmapEncoder->Initialize(outputStream.Get(), WICBitmapEncoderNoCache)))
+            throw std::runtime_error("[WIC] Failed To Initialize Bitmap ");
 
-    if (FAILED(bitmapFrame->Initialize(NULL)))
-        throw std::runtime_error("[WIC] Failed To Initialize A Bitmap's Frame");
+        if (FAILED(bitmapEncoder->CreateNewFrame(&bitmapFrame, NULL)))
+            throw std::runtime_error("[WIC] Failed To Create A New Frame");
 
-    if (FAILED(bitmapFrame->SetSize(this->m_width, this->m_height)))
-        throw std::runtime_error("[WIC] Failed To Set A Bitmap's Frame's Size");
+        if (FAILED(bitmapFrame->Initialize(NULL)))
+            throw std::runtime_error("[WIC] Failed To Initialize A Bitmap's Frame");
 
-    WICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppBGRA;
-    if (FAILED(bitmapFrame->SetPixelFormat(&pixelFormat)))
-        throw std::runtime_error("[WIC] Failed To Set Pixel Format On A Bitmap Frame's");
+        if (FAILED(bitmapFrame->SetSize(this->m_width, this->m_height)))
+            throw std::runtime_error("[WIC] Failed To Set A Bitmap's Frame's Size");
 
-    if (!IsEqualGUID(pixelFormat, GUID_WICPixelFormat32bppBGRA))
-        throw std::runtime_error("[WIC] The Requested Pixel Format Is Not Supported");
+        WICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppBGRA;
+        if (FAILED(bitmapFrame->SetPixelFormat(&pixelFormat)))
+            throw std::runtime_error("[WIC] Failed To Set Pixel Format On A Bitmap Frame's");
 
-    const UINT stride     = this->m_width   * sizeof(Coloru8);
-    const UINT bufferSize = this->m_nPixels * sizeof(Coloru8);
-    if (FAILED(bitmapFrame->WritePixels(this->m_height, stride, bufferSize, (BYTE*)this->m_buff.get())))
-        throw std::runtime_error("[WIC] Failed To Write Pixels To A Bitmap's Frame");
+        if (!IsEqualGUID(pixelFormat, GUID_WICPixelFormat32bppBGRA))
+            throw std::runtime_error("[WIC] The Requested Pixel Format Is Not Supported");
 
-    if (FAILED(bitmapFrame->Commit()))
-        throw std::runtime_error("[WIC] Failed To Commit A Bitmap's Frame");
+        const UINT stride = this->m_width * sizeof(Coloru8);
+        const UINT bufferSize = this->m_nPixels * sizeof(Coloru8);
+        if (FAILED(bitmapFrame->WritePixels(this->m_height, stride, bufferSize, (BYTE*)this->m_buff.get())))
+            throw std::runtime_error("[WIC] Failed To Write Pixels To A Bitmap's Frame");
 
-    if (FAILED(bitmapEncoder->Commit()))
-        throw std::runtime_error("[WIC] Failed To Commit Bitmap Encoder");
-}
+        if (FAILED(bitmapFrame->Commit()))
+            throw std::runtime_error("[WIC] Failed To Commit A Bitmap's Frame");
+
+        if (FAILED(bitmapEncoder->Commit()))
+            throw std::runtime_error("[WIC] Failed To Commit Bitmap Encoder");
+    }
+
+}; // WIN
+}; // Internal
+}; // WS
