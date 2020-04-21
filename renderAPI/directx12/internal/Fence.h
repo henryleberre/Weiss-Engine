@@ -5,22 +5,31 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12Fence> DirectX12FenceObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12Fence : public DirectX12FenceObjectWrapper {
-	HANDLE m_fenceEvent = nullptr;
+	typedef D3D12ObjectWrapper<ID3D12Fence> D3D12FenceObjectWrapper;
 
-	bool bRealFence = false;
+	class D3D12Fence : public D3D12FenceObjectWrapper {
+	private:
+		HANDLE m_fenceEvent = nullptr;
 
-public:
-	DirectX12Fence() = default;
+		bool bRealFence = false;
 
-	DirectX12Fence(DirectX12DeviceObjectWrapper& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags);
-	~DirectX12Fence();
+	public:
+		D3D12Fence() = default;
 
-	void operator=(DirectX12Fence&& other) noexcept;
+		D3D12Fence(D3D12DeviceObjectWrapper& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags);
+		~D3D12Fence();
 
-	HANDLE GetEvent() const noexcept;
-};
+		void operator=(D3D12Fence&& other) noexcept;
+
+		HANDLE GetEvent() const noexcept;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

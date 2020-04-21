@@ -6,135 +6,139 @@
 #include "../../common/Include.h"
 #include "../../window/Include.h"
 
-struct RenderPipelineDesc {
-	const char* vsFilename;
-	std::vector<ShaderInputElement> sies;
-	const char* psFilename;
-	std::vector<uint32_t> constantBufferIndices;
-	PrimitiveTopology topology = PrimitiveTopology::TRIANGLES;
-};
+namespace WS {
 
-class RenderAPIHandle;
+	struct RenderPipelineDesc {
+		const char* vsFilename;
+		std::vector<ShaderInputElement> sies;
+		const char* psFilename;
+		std::vector<uint32_t> constantBufferIndices;
+		PrimitiveTopology topology = PrimitiveTopology::TRIANGLES;
+	};
 
-class RenderAPI {
-private:
-	RenderAPIName m_apiName;
+	class RenderAPIHandle;
 
-protected:
-	std::vector<VertexBuffer*>   m_pVertexBuffers;
-	std::vector<IndexBuffer*>    m_pIndexBuffers;
-	std::vector<ConstantBuffer*> m_pConstantBuffers;
+	class RenderAPI {
+	private:
+		RenderAPIName m_apiName;
 
-public:
-	RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {}
+	protected:
+		std::vector<VertexBuffer*>   m_pVertexBuffers;
+		std::vector<IndexBuffer*>    m_pIndexBuffers;
+		std::vector<ConstantBuffer*> m_pConstantBuffers;
 
-	virtual ~RenderAPI()
-	{
-		
-	}
+	public:
+		RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {}
 
-	// ----- Virtual Functions ----- //
+		virtual ~RenderAPI()
+		{
 
-	virtual void InitRenderAPI(Window* pWindow) = 0;
-	virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) = 0;
+		}
 
-    virtual void Draw(const Drawable& drawable, const size_t nVertices) = 0;
+		// ----- Virtual Functions ----- //
 
-	/*
-	 * This structure is used to take advantage of recent rendering apis such as directx12 and vulkan.
-	 * By submitting draw commands to the GPU asynchronously while other functions can be called on the cpu side
-	 * (such as game logic and physics). The present method is then called to swap buffers.
-	 * This is why dealing with gpu memory after calling "EndFrame()" is undefined behavior.
-	 */
-	virtual void BeginDrawing() = 0;
-    virtual void EndDrawing()   = 0;
-	virtual void Present(const bool vSync) = 0;
+		virtual void InitRenderAPI(Window* pWindow) = 0;
+		virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) = 0;
 
-	virtual size_t CreateVertexBuffer(const size_t nVertices, const size_t vertexSize) = 0;
-	virtual size_t CreateIndexBuffer (const size_t nIndices) = 0;
-	virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) = 0;
+		virtual void Draw(const Drawable& drawable, const size_t nVertices) = 0;
 
-	virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
+		/*
+		 * This structure is used to take advantage of recent rendering apis such as directx12 and vulkan.
+		 * By submitting draw commands to the GPU asynchronously while other functions can be called on the cpu side
+		 * (such as game logic and physics). The present method is then called to swap buffers.
+		 * This is why dealing with gpu memory after calling "EndFrame()" is undefined behavior.
+		 */
+		virtual void BeginDrawing() = 0;
+		virtual void EndDrawing()   = 0;
+		virtual void Present(const bool vSync) = 0;
 
-	// ----- Non-Virtual Functions ----- //
+		virtual size_t CreateVertexBuffer  (const size_t nVertices, const size_t vertexSize) = 0;
+		virtual size_t CreateIndexBuffer   (const size_t nIndices) = 0;
+		virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) = 0;
 
-	inline VertexBuffer& GetVertexBuffer(const size_t vertexBufferIndex) noexcept
-	{
-		return *this->m_pVertexBuffers[vertexBufferIndex];
-	}
+		virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 
-	inline IndexBuffer& GetIndexBuffer(const size_t indexBufferIndex) noexcept
-	{
-		return *this->m_pIndexBuffers[indexBufferIndex];
-	}
+		// ----- Non-Virtual Functions ----- //
 
-	inline ConstantBuffer& GetConstantBuffer(const size_t constantBufferIndex) noexcept
-	{
-		return *this->m_pConstantBuffers[constantBufferIndex];
-	}
+		inline VertexBuffer& GetVertexBuffer(const size_t vertexBufferIndex) noexcept
+		{
+			return *this->m_pVertexBuffers[vertexBufferIndex];
+		}
 
-	// ----- Non-Virtual Virtual Overloads ----- //
+		inline IndexBuffer& GetIndexBuffer(const size_t indexBufferIndex) noexcept
+		{
+			return *this->m_pIndexBuffers[indexBufferIndex];
+		}
 
-	inline size_t CreateVertexBuffer(const void* buff, const size_t nVertices, const size_t vertexSize)
-	{
-		const size_t i = this->CreateVertexBuffer(nVertices, vertexSize);
+		inline ConstantBuffer& GetConstantBuffer(const size_t constantBufferIndex) noexcept
+		{
+			return *this->m_pConstantBuffers[constantBufferIndex];
+		}
 
-		this->GetVertexBuffer(i).Set(buff, nVertices * vertexSize);
-		this->GetVertexBuffer(i).Update();
+		// ----- Non-Virtual Virtual Overloads ----- //
 
-		return i;
-	}
+		inline size_t CreateVertexBuffer(const void* buff, const size_t nVertices, const size_t vertexSize)
+		{
+			const size_t i = this->CreateVertexBuffer(nVertices, vertexSize);
 
-	template <typename CONTAINER>
-	inline size_t CreateVertexBuffer(const CONTAINER& container)
-	{
-		return this->CreateVertexBuffer(container.data(), container.size() * sizeof(container[0]), sizeof(container[0]));
-	}
+			this->GetVertexBuffer(i).Set(buff, nVertices * vertexSize);
+			this->GetVertexBuffer(i).Update();
 
-	inline size_t CreateIndexBuffer(const void* buff, const size_t nIndices)
-	{
-		const size_t i = this->CreateIndexBuffer(nIndices);
+			return i;
+		}
 
-		this->GetIndexBuffer(i).Set(buff, nIndices);
-		this->GetIndexBuffer(i).Update();
+		template <typename CONTAINER>
+		inline size_t CreateVertexBuffer(const CONTAINER& container)
+		{
+			return this->CreateVertexBuffer(container.data(), container.size() * sizeof(container[0]), sizeof(container[0]));
+		}
 
-		return i;
-	}
+		inline size_t CreateIndexBuffer(const void* buff, const size_t nIndices)
+		{
+			const size_t i = this->CreateIndexBuffer(nIndices);
 
-	template <typename CONTAINER>
-	inline size_t CreateIndexBuffer(const CONTAINER& container)
-	{
-		return this->CreateIndexBuffer(container.data(), container.size());
-	}
+			this->GetIndexBuffer(i).Set(buff, nIndices);
+			this->GetIndexBuffer(i).Update();
 
-	template <typename T>
-	inline size_t CreateConstantBuffer(const T& obj, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
-	{
-		const size_t constantBufferIndex = this->CreateConstantBuffer(sizeof(T), slotVS, slotPS, shaderBindingType);
-		this->GetConstantBuffer(constantBufferIndex).Set(obj);
-		this->GetConstantBuffer(constantBufferIndex).Update();
+			return i;
+		}
 
-		return constantBufferIndex;
-	}
+		template <typename CONTAINER>
+		inline size_t CreateIndexBuffer(const CONTAINER& container)
+		{
+			return this->CreateIndexBuffer(container.data(), container.size());
+		}
 
-	// ----- Getter Functions ----- //
+		template <typename T>
+		inline size_t CreateConstantBuffer(const T& obj, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+		{
+			const size_t constantBufferIndex = this->CreateConstantBuffer(sizeof(T), slotVS, slotPS, shaderBindingType);
+			this->GetConstantBuffer(constantBufferIndex).Set(obj);
+			this->GetConstantBuffer(constantBufferIndex).Update();
 
-	[[nodiscard]] RenderAPIName GetRenderAPIName() const noexcept { return this->m_apiName; }
+			return constantBufferIndex;
+		}
 
-	// ----- Creation ----- //
-	static RenderAPIHandle Create(const RenderAPIName& apiName);
-};
+		// ----- Getter Functions ----- //
 
-class RenderAPIHandle {
-private:
-	RenderAPI* m_pRenderAPI = nullptr;
+		[[nodiscard]] RenderAPIName GetRenderAPIName() const noexcept { return this->m_apiName; }
 
-public:
-	RenderAPIHandle() {  }
-	RenderAPIHandle(RenderAPI* pRenderAPI) : m_pRenderAPI(pRenderAPI) {  }
+		// ----- Creation ----- //
+		static RenderAPIHandle Create(const RenderAPIName& apiName);
+	};
 
-	~RenderAPIHandle() { delete this->m_pRenderAPI; }
+	class RenderAPIHandle {
+	private:
+		RenderAPI* m_pRenderAPI = nullptr;
 
-	operator RenderAPI*  () noexcept { return this->m_pRenderAPI; }
-	RenderAPI* operator->() noexcept { return this->m_pRenderAPI; }
+	public:
+		RenderAPIHandle() {  }
+		RenderAPIHandle(RenderAPI* pRenderAPI) : m_pRenderAPI(pRenderAPI) {  }
+
+		~RenderAPIHandle() { delete this->m_pRenderAPI; }
+
+		operator RenderAPI*  () noexcept { return this->m_pRenderAPI; }
+		RenderAPI* operator->() noexcept { return this->m_pRenderAPI; }
+	};
+
 };

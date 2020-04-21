@@ -2,31 +2,39 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-DirectX12Fence::DirectX12Fence(DirectX12DeviceObjectWrapper& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags)
-	: bRealFence(true)
-{
-	if (pDevice->CreateFence(initialValue, flags, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
-		throw std::runtime_error("[DIRECTX 12] Failed To Create Fence");
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-	this->m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-	if (this->m_fenceEvent == nullptr)
-		throw std::runtime_error("[DIRECTX 12] Failed To Create Fence Event");
-}
+	D3D12Fence::D3D12Fence(D3D12DeviceObjectWrapper& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags)
+		: bRealFence(true)
+	{
+		if (pDevice->CreateFence(initialValue, flags, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+			throw std::runtime_error("[DIRECTX 12] Failed To Create Fence");
 
-DirectX12Fence::~DirectX12Fence()
-{
-	CloseHandle(this->m_fenceEvent);
-}
+		this->m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		if (this->m_fenceEvent == nullptr)
+			throw std::runtime_error("[DIRECTX 12] Failed To Create Fence Event");
+	}
 
-void DirectX12Fence::operator=(DirectX12Fence&& other) noexcept
-{
-	this->m_pObject = other.m_pObject;
-	other.m_pObject = nullptr;
-}
+	D3D12Fence::~D3D12Fence()
+	{
+		CloseHandle(this->m_fenceEvent);
+	}
 
-HANDLE DirectX12Fence::GetEvent() const noexcept
-{
-	return this->m_fenceEvent;
-}
+	void D3D12Fence::operator=(D3D12Fence&& other) noexcept
+	{
+		this->m_pObject = other.m_pObject;
+		other.m_pObject = nullptr;
+	}
+
+	HANDLE D3D12Fence::GetEvent() const noexcept
+	{
+		return this->m_fenceEvent;
+	}
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

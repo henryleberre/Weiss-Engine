@@ -7,25 +7,33 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12GraphicsCommandList> DirectX12CommandListObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12CommandList : public DirectX12CommandListObjectWrapper {
-public:
-	DirectX12CommandList() {  }
+	typedef D3D12ObjectWrapper<ID3D12GraphicsCommandList> D3D12CommandListObjectWrapper;
 
-	DirectX12CommandList(DirectX12DeviceObjectWrapper& pDevice,
-						 DirectX12CommandAllocatorObjectWrapper& pCommandAllocator,
+	class D3D12CommandList : public D3D12CommandListObjectWrapper {
+	public:
+		D3D12CommandList() {  }
+
+		D3D12CommandList(D3D12DeviceObjectWrapper& pDevice,
+						 D3D12CommandAllocatorObjectWrapper& pCommandAllocator,
 						 const D3D12_COMMAND_LIST_TYPE& type);
 
-	~DirectX12CommandList() = default;
+		~D3D12CommandList() = default;
 
-	void operator=(DirectX12CommandList&& other) noexcept;
+		void operator=(D3D12CommandList&& other) noexcept;
 
-	void Close();
+		void Close();
 
-	void Reset(DirectX12CommandAllocatorObjectWrapper& pCommandAllocator) const;
+		void Reset(D3D12CommandAllocatorObjectWrapper& pCommandAllocator) const;
 
-	void TransitionResource(ID3D12Resource* pResource, const D3D12_RESOURCE_STATES& before, const D3D12_RESOURCE_STATES& after);
-};
+		void TransitionResource(ID3D12Resource* pResource, const D3D12_RESOURCE_STATES& before, const D3D12_RESOURCE_STATES& after);
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

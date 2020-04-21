@@ -5,17 +5,25 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12CommandAllocator> DirectX12CommandAllocatorObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12CommandAllocator : public DirectX12CommandAllocatorObjectWrapper {
-public:
-	DirectX12CommandAllocator() {  }
+	typedef D3D12ObjectWrapper<ID3D12CommandAllocator> D3D12CommandAllocatorObjectWrapper;
 
-	DirectX12CommandAllocator(DirectX12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
+	class D3D12CommandAllocator : public D3D12CommandAllocatorObjectWrapper {
+	public:
+		D3D12CommandAllocator() {  }
 
-	void operator=(DirectX12CommandAllocator&& other) noexcept;
+		D3D12CommandAllocator(D3D12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
 
-	void Reset() const;
-};
+		void operator=(D3D12CommandAllocator&& other) noexcept;
+
+		void Reset() const;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

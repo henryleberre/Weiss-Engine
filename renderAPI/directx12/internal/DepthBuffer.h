@@ -6,21 +6,29 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-class DirectX12DepthBuffer {
-private:
-	DirectX12ObjectWrapper<ID3D12Resource>       m_pDepthStencilBuffer;
-	DirectX12ObjectWrapper<ID3D12DescriptorHeap> m_pDescriptorHeap;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE m_dsvHandle;
+	class D3D12DepthBuffer {
+	private:
+		D3D12ObjectWrapper<ID3D12Resource>       m_pDepthStencilBuffer;
+		D3D12ObjectWrapper<ID3D12DescriptorHeap> m_pDescriptorHeap;
 
-public:
-	DirectX12DepthBuffer() {  }
+		CD3DX12_CPU_DESCRIPTOR_HANDLE m_dsvHandle;
 
-	DirectX12DepthBuffer(DirectX12Device& pDevice, Window* pWindow);
+	public:
+		D3D12DepthBuffer() {  }
 
-	void Clear(DirectX12CommandListObjectWrapper& pCommandList);
+		D3D12DepthBuffer(D3D12Device& pDevice, Window* pWindow);
 
-	operator CD3DX12_CPU_DESCRIPTOR_HANDLE* () noexcept;
-};
+		void Clear(D3D12CommandListObjectWrapper& pCommandList);
+
+		operator CD3DX12_CPU_DESCRIPTOR_HANDLE* () noexcept;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

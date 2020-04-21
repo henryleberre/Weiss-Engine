@@ -6,26 +6,34 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX12ObjectWrapper<ID3D12PipelineState> DirectX12RenderPipelineObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D12    {
 
-class DirectX12RenderPipeline : public DirectX12RenderPipelineObjectWrapper {
-private:
-	D3D_PRIMITIVE_TOPOLOGY m_topology;
+	typedef D3D12ObjectWrapper<ID3D12PipelineState> D3D12RenderPipelineObjectWrapper;
 
-	DirectX12RootSignature m_pRootSignature;
+	class D3D12RenderPipeline : public D3D12RenderPipelineObjectWrapper {
+	private:
+		D3D_PRIMITIVE_TOPOLOGY m_topology;
 
-	std::vector<uint32_t> m_constantBufferIndices;
+		D3D12RootSignature m_pRootSignature;
 
-public:
-	DirectX12RenderPipeline();
+		std::vector<uint32_t> m_constantBufferIndices;
 
-	DirectX12RenderPipeline(DirectX12RenderPipeline&& other);
+	public:
+		D3D12RenderPipeline();
 
-	DirectX12RenderPipeline(DirectX12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc, std::vector<ConstantBuffer*>& pConstantBuffers);
+		D3D12RenderPipeline(D3D12RenderPipeline&& other);
 
-	void operator=(DirectX12RenderPipeline&& other) noexcept;
+		D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc, std::vector<ConstantBuffer*>& pConstantBuffers);
 
-	void Bind(DirectX12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers, const size_t frameIndex) const noexcept;
-};
+		void operator=(D3D12RenderPipeline&& other) noexcept;
+
+		void Bind(D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers, const size_t frameIndex) const noexcept;
+	};
+
+}; // D3D12
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS

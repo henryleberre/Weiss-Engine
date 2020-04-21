@@ -3,32 +3,36 @@
 #include "../window/Include.h"
 #include "../../math/Include.h"
 
-class Camera {
-protected:
-	Mat4x4f m_transform = Mat4x4f::MakeIdentity();
+namespace WS {
 
-	Vec3f m_position;
-	Vec3f m_rotation;
+	class Camera {
+	protected:
+		Mat4x4f m_transform = Mat4x4f::MakeIdentity();
 
-public:
-	Camera();
+		Vec3f m_position;
+		Vec3f m_rotation;
 
-	Camera(const Vec3f& position, const Vec3f& rotation);
+	public:
+		Camera();
 
-	[[nodiscard]] Mat4x4f GetTransform()           const noexcept;
-	[[nodiscard]] Mat4x4f GetTransposedTransform() const noexcept;
+		Camera(const Vec3f& position, const Vec3f& rotation);
 
-	[[nodiscard]] Vec3f& GetPosition() noexcept;
-	[[nodiscard]] Vec3f& GetRotation() noexcept;
+		[[nodiscard]] Mat4x4f GetTransform()           const noexcept;
+		[[nodiscard]] Mat4x4f GetTransposedTransform() const noexcept;
 
-	void Rotate     (const Vec3f& delta)    noexcept;
-	void SetRotation(const Vec3f& rotation) noexcept;
+		[[nodiscard]] Vec3f& GetPosition() noexcept;
+		[[nodiscard]] Vec3f& GetRotation() noexcept;
 
-	void Translate  (const Vec3f& delta)    noexcept;
-	void SetPosition(const Vec3f& position) noexcept;
+		void Rotate     (const Vec3f& delta)    noexcept;
+		void SetRotation(const Vec3f& rotation) noexcept;
 
-	virtual void CalculateTransform() = 0;
+		void Translate  (const Vec3f& delta)    noexcept;
+		void SetPosition(const Vec3f& position) noexcept;
 
-	virtual void HandleMouseMovements(Mouse& mouse, const float sensitivity) = 0;
-	virtual void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char forward, const char backward, const char left, const char right, const char up, const char down) = 0;
+		virtual void CalculateTransform() = 0;
+
+		virtual void HandleMouseMovements(Mouse& mouse, const float sensitivity) = 0;
+		virtual void HandleKeyboardInputs(Keyboard& keyboard, const float speed, const char forward, const char backward, const char left, const char right, const char up, const char down) = 0;
+	};
+
 };

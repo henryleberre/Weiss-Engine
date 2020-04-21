@@ -6,81 +6,89 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11VertexBufferObjectWrapper;
-typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11IndexBufferObjectWrapper;
-typedef DirectX11ObjectWrapper<ID3D11Buffer> DirectX11ConstantBufferObjectWrapper;
+namespace WS       {
+namespace Internal {
+namespace D3D11    {
 
-class DirectX11VertexBuffer : public DirectX11VertexBufferObjectWrapper,
+	typedef D3D11ObjectWrapper<ID3D11Buffer> D3D11VertexBufferObjectWrapper;
+	typedef D3D11ObjectWrapper<ID3D11Buffer> D3D11IndexBufferObjectWrapper;
+	typedef D3D11ObjectWrapper<ID3D11Buffer> D3D11ConstantBufferObjectWrapper;
+
+	class D3D11VertexBuffer : public D3D11VertexBufferObjectWrapper,
 							  public VertexBuffer {
-private:
-	size_t m_vertexSize;
+	private:
+		size_t m_vertexSize;
 
-	DirectX11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
+		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
-public:
-	DirectX11VertexBuffer();
+	public:
+		D3D11VertexBuffer();
 
-	DirectX11VertexBuffer(DirectX11VertexBuffer&& other);
+		D3D11VertexBuffer(D3D11VertexBuffer&& other);
 
-	DirectX11VertexBuffer(DirectX11DeviceObjectWrapper& pDevice,
-						  DirectX11DeviceContextObjectWrapper* pDeviceContext,
+		D3D11VertexBuffer(D3D11DeviceObjectWrapper& pDevice,
+						  D3D11DeviceContextObjectWrapper* pDeviceContext,
 						  const size_t nVertices, const size_t vertexSize);
 
-	void operator=(DirectX11VertexBuffer&& other) noexcept;
+		void operator=(D3D11VertexBuffer&& other) noexcept;
 
-	void Bind();
-	
-	virtual void Update() override;
-};
+		void Bind();
 
-class DirectX11IndexBuffer : public DirectX11IndexBufferObjectWrapper,
+		virtual void Update() override;
+	};
+
+	class D3D11IndexBuffer : public D3D11IndexBufferObjectWrapper,
 							 public IndexBuffer {
-private:
-	size_t m_nIndices = 0u;
+	private:
+		size_t m_nIndices = 0u;
 
-	DirectX11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
+		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
-public:
-	DirectX11IndexBuffer();
+	public:
+		D3D11IndexBuffer();
 
-	DirectX11IndexBuffer(DirectX11IndexBuffer&& other);
+		D3D11IndexBuffer(D3D11IndexBuffer&& other);
 
-	DirectX11IndexBuffer(DirectX11DeviceObjectWrapper& pDevice,
-						 DirectX11DeviceContextObjectWrapper* pDeviceContext, 
+		D3D11IndexBuffer(D3D11DeviceObjectWrapper& pDevice,
+						 D3D11DeviceContextObjectWrapper* pDeviceContext,
 						 const size_t nIndices);
 
-	void operator=(DirectX11IndexBuffer&& other) noexcept;
+		void operator=(D3D11IndexBuffer&& other) noexcept;
 
-	void Bind();
+		void Bind();
 
-	virtual void Update() override;
-};
+		virtual void Update() override;
+	};
 
-class DirectX11ConstantBuffer : public DirectX11ConstantBufferObjectWrapper,
+	class D3D11ConstantBuffer : public D3D11ConstantBufferObjectWrapper,
 								public ConstantBuffer {
-private:
-	size_t m_objSize = 0u;
+	private:
+		size_t m_objSize = 0u;
 
-	size_t m_slotVS = 0u, m_slotPS = 0u;
+		size_t m_slotVS = 0u, m_slotPS = 0u;
 
-	ShaderBindingType m_shaderBindingType;
+		ShaderBindingType m_shaderBindingType;
 
-	DirectX11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
+		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
-public:
-	DirectX11ConstantBuffer();
+	public:
+		D3D11ConstantBuffer();
 
-	DirectX11ConstantBuffer(DirectX11ConstantBuffer&& other);
+		D3D11ConstantBuffer(D3D11ConstantBuffer&& other);
 
-	DirectX11ConstantBuffer(DirectX11DeviceObjectWrapper& pDevice,
-							DirectX11DeviceContextObjectWrapper* pDeviceContext,
+		D3D11ConstantBuffer(D3D11DeviceObjectWrapper& pDevice,
+							D3D11DeviceContextObjectWrapper* pDeviceContext,
 							const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType);
 
-	void operator=(DirectX11ConstantBuffer&& other) noexcept;
+		void operator=(D3D11ConstantBuffer&& other) noexcept;
 
-	void Bind();
+		void Bind();
 
-	virtual void Update() override;
-};
+		virtual void Update() override;
+	};
+
+}; // D3D11
+}; // Internal
+}; // WS
 
 #endif // __WEISS__OS_WINDOWS
