@@ -84,6 +84,7 @@
 #pragma comment(lib, "vulkan-1.lib")
 
 // Standard C++17 Library Includes
+#include <map>
 #include <list>
 #include <array>
 #include <thread>

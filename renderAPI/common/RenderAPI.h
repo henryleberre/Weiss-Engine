@@ -37,7 +37,7 @@ namespace WS {
 
 		// ----- Virtual Functions ----- //
 
-		virtual void InitRenderAPI(Window* pWindow) = 0;
+		virtual void InitRenderAPI(Window* pWindow, const uint16_t maxFps = 144u) = 0;
 		virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) = 0;
 
 		virtual void Draw(const Drawable& drawable, const size_t nVertices) = 0;

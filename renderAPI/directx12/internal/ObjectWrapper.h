@@ -18,7 +18,7 @@ namespace D3D12    {
 		T* m_pObject = nullptr;
 
 	public:
-		D3D12ObjectWrapper() = default;
+		D3D12ObjectWrapper() { }
 
 		/* This function overloads the assignement operator with an r-value reference to itself
 		 * It copies the pointer from the "other" and sets it to nullptr.

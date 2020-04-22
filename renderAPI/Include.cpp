@@ -6,6 +6,8 @@ namespace WS {
 	{
 		switch (apiName)
 		{
+		case RenderAPIName::VULKAN:
+			return new Internal::VK::VKRenderAPI();
 #ifdef __WEISS__OS_WINDOWS
 		case RenderAPIName::DIRECTX11:
 			return new Internal::D3D11::D3D11RenderAPI();

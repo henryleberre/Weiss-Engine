@@ -25,12 +25,12 @@ namespace D3D12    {
 
 	}
 
-	void D3D12RenderAPI::InitRenderAPI(Window* pWindow)
+	void D3D12RenderAPI::InitRenderAPI(Window* pWindow, const uint16_t maxFps)
 	{
 		this->m_pDevice         = D3D12Device(this->m_pAdapter);
 		this->m_pDepthBuffer    = D3D12DepthBuffer(this->m_pDevice, pWindow);
 		this->m_pCommandQueue   = D3D12CommandQueue(this->m_pDevice, D3D12_COMMAND_LIST_TYPE::D3D12_COMMAND_LIST_TYPE_DIRECT);
-		this->m_pSwapChain      = D3D12SwapChain(this->m_pDevice, this->m_pCommandQueue, pWindow, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
+		this->m_pSwapChain      = D3D12SwapChain(this->m_pDevice, this->m_pCommandQueue, pWindow, maxFps, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
 		this->m_pDescriptorHeap = D3D12DescriptorHeap(this->m_pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, static_cast<UINT>(WEISS__FRAME_BUFFER_COUNT));
 
 		this->CreateRenderTargets();

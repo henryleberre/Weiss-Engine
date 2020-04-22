@@ -18,7 +18,7 @@ namespace D3D12    {
 
 		D3D12SwapChain(D3D12DeviceObjectWrapper& pDevice,
 						   D3D12CommandQueueObjectWrapper& pCommandQueue,
-						   const Window* pWindow, const UINT bufferCount);
+						   const Window* pWindow, const uint16_t maxFps, const UINT bufferCount);
 
 		void operator=(D3D12SwapChain&& other) noexcept;
 

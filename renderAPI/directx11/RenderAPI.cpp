@@ -8,7 +8,7 @@ namespace D3D11    {
 
 	D3D11RenderAPI::D3D11RenderAPI() : RenderAPI(RenderAPIName::DIRECTX11) {}
 
-	void D3D11RenderAPI::InitRenderAPI(Window* pWindow)
+	void D3D11RenderAPI::InitRenderAPI(Window* pWindow, const uint16_t maxFps)
 	{
 		if (D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, this->m_pDevice.GetPtr(), nullptr, this->m_pDeviceContext.GetPtr()) != S_OK)
 			throw std::runtime_error("Could Not Create Device");

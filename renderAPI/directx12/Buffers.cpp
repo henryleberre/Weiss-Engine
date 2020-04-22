@@ -236,6 +236,7 @@ namespace D3D12    {
 	void D3D12ConstantBuffer::Update()
 	{
 		CD3DX12_RANGE readRange(0, 0);
+		CD3DX12_RANGE writtenRange(0, this->m_objSize);
 
 		for (size_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
 		{
@@ -244,6 +245,8 @@ namespace D3D12    {
 				throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
 
 			memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
+
+			this->m_pUploadHeaps[i]->Unmap(0, &writtenRange);
 		}
 	}
 
