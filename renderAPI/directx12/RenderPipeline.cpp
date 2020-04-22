@@ -194,7 +194,9 @@ namespace D3D12    {
 		pCommandList->SetPipelineState(this->m_pObject);
 
 		for (const size_t cbIndex : this->m_constantBufferIndices)
+		{
 			dynamic_cast<D3D12ConstantBuffer*>(constantBufferss[cbIndex])->Bind(frameIndex);
+		}
 
 		pCommandList->IASetPrimitiveTopology(this->m_topology);
 	}

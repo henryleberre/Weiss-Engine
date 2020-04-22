@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../window/Include.h"
+#include "../../window/Include.h"
 #include "../../math/Include.h"
 
 namespace WS {

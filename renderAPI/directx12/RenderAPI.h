@@ -41,7 +41,7 @@ namespace D3D12    {
 	public:
 		D3D12RenderAPI();
 
-		virtual void InitRenderAPI(Window* pWindow) override;
+		virtual void InitRenderAPI(Window* pWindow, const uint16_t maxFps = 144u) override;
 		virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
 		virtual void Draw(const Drawable& drawable, const size_t nVertices) override;

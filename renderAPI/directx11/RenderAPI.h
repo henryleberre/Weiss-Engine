@@ -28,7 +28,7 @@ namespace D3D11    {
 		public:
 			D3D11RenderAPI();
 
-			virtual void InitRenderAPI(Window* pWindow) override;
+			virtual void InitRenderAPI(Window* pWindow, const uint16_t maxFps) override;
 			virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
 			virtual void Draw(const Drawable& drawable, const size_t nVertices) override;
