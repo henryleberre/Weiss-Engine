@@ -17,14 +17,14 @@ namespace D3D11    {
 	class D3D11VertexBuffer : public D3D11VertexBufferObjectWrapper,
 							  public VertexBuffer {
 	private:
-		size_t m_vertexSize;
+		size_t m_vertexSize = 0u;
 
 		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
 	public:
-		D3D11VertexBuffer();
+		D3D11VertexBuffer() = default;
 
-		D3D11VertexBuffer(D3D11VertexBuffer&& other);
+		D3D11VertexBuffer(D3D11VertexBuffer&& other) noexcept;
 
 		D3D11VertexBuffer(D3D11DeviceObjectWrapper& pDevice,
 						  D3D11DeviceContextObjectWrapper* pDeviceContext,
@@ -45,9 +45,9 @@ namespace D3D11    {
 		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
 	public:
-		D3D11IndexBuffer();
+		D3D11IndexBuffer() = default;
 
-		D3D11IndexBuffer(D3D11IndexBuffer&& other);
+		D3D11IndexBuffer(D3D11IndexBuffer&& other) noexcept;
 
 		D3D11IndexBuffer(D3D11DeviceObjectWrapper& pDevice,
 						 D3D11DeviceContextObjectWrapper* pDeviceContext,
@@ -65,20 +65,18 @@ namespace D3D11    {
 	private:
 		size_t m_objSize = 0u;
 
-		size_t m_slotVS = 0u, m_slotPS = 0u;
-
-		ShaderBindingType m_shaderBindingType;
+		size_t m_slot = 0u;
 
 		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
 	public:
-		D3D11ConstantBuffer();
+		D3D11ConstantBuffer() = default;
 
-		D3D11ConstantBuffer(D3D11ConstantBuffer&& other);
+		D3D11ConstantBuffer(D3D11ConstantBuffer&& other) noexcept;
 
 		D3D11ConstantBuffer(D3D11DeviceObjectWrapper& pDevice,
 							D3D11DeviceContextObjectWrapper* pDeviceContext,
-							const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType);
+							const size_t objSize, const size_t slot);
 
 		void operator=(D3D11ConstantBuffer&& other) noexcept;
 

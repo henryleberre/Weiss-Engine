@@ -54,7 +54,7 @@ namespace WS {
 
 		virtual size_t CreateVertexBuffer  (const size_t nVertices, const size_t vertexSize) = 0;
 		virtual size_t CreateIndexBuffer   (const size_t nIndices) = 0;
-		virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType) = 0;
+		virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slot) = 0;
 
 		virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 

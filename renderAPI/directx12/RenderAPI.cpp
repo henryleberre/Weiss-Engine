@@ -133,9 +133,9 @@ namespace D3D12    {
 		return indexBufferIndex;
 	}
 
-	size_t D3D12RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+	size_t D3D12RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slot)
 	{
-		this->m_pConstantBuffers.push_back(new D3D12ConstantBuffer(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), objSize, slotVS, slotPS, shaderBindingType));
+		this->m_pConstantBuffers.push_back(new D3D12ConstantBuffer(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), objSize, slot));
 
 		return this->m_pConstantBuffers.size() - 1u;
 	}

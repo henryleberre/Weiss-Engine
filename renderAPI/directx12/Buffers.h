@@ -20,22 +20,20 @@ namespace D3D12    {
 
 		D3D12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
 
-		UINT m_vertexSize;
+		UINT m_vertexSize = 0u;
 
 		D3D12CommandList* m_pCommandList = nullptr;
 
 	public:
-		D3D12VertexBuffer();
+		D3D12VertexBuffer() = default;
 
-		D3D12VertexBuffer(D3D12VertexBuffer&& other);
+		D3D12VertexBuffer(D3D12VertexBuffer&& other) noexcept;
 
 		D3D12VertexBuffer(D3D12DeviceObjectWrapper& pDevice,
 						  D3D12CommandList* pCommandList,
 						  const size_t nVertices, const size_t vertexSize);
 
 		void operator=(D3D12VertexBuffer&& other) noexcept;
-
-		D3D12_VERTEX_BUFFER_VIEW GetView();
 
 		void Bind();
 
@@ -49,22 +47,20 @@ namespace D3D12    {
 
 		D3D12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
 
-		size_t m_nIndices;
+		size_t m_nIndices = 0u;
 
-		D3D12CommandList* m_pCommandList;
+		D3D12CommandList* m_pCommandList = nullptr;
 
 	public:
-		D3D12IndexBuffer();
+		D3D12IndexBuffer() = default;
 
-		D3D12IndexBuffer(D3D12IndexBuffer&& other);
+		D3D12IndexBuffer(D3D12IndexBuffer&& other) noexcept;
 
 		D3D12IndexBuffer(D3D12DeviceObjectWrapper& pDevice,
 						 D3D12CommandList* pCommandList,
 						 const size_t nIndices);
 
 		void operator=(D3D12IndexBuffer&& other) noexcept;
-
-		D3D12_INDEX_BUFFER_VIEW GetView();
 
 		void Bind();
 
@@ -75,10 +71,8 @@ namespace D3D12    {
 	private:
 		size_t m_objSize = 0u;
 
-		size_t m_slotVS = 0u, m_slotPS = 0u;
-
-		ShaderBindingType m_shaderBindingType;
-
+		const size_t m_slot = 0u;
+		
 		D3D12CommandList* m_pCommandList;
 
 		std::array<D3D12DescriptorHeap,                WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
@@ -88,21 +82,15 @@ namespace D3D12    {
 	public:
 		D3D12ConstantBuffer();
 
-		D3D12ConstantBuffer(D3D12ConstantBuffer&& other);
+		D3D12ConstantBuffer(D3D12ConstantBuffer&& other) noexcept;
 
 		D3D12ConstantBuffer(D3D12DeviceObjectWrapper& pDevice,
 							D3D12CommandList* pCommandList,
-							const size_t objSize, const size_t slotVS, const size_t slotPS,
-							const ShaderBindingType& shaderBindingType);
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC GetView(const size_t index);
+							const size_t objSize, const size_t slot);
 
 		void Bind(const size_t frameIndex);
 
-		ShaderBindingType GetShaderBindingType() const noexcept;
-
-		size_t GetSlotVS() const noexcept;
-		size_t GetSlotPS() const noexcept;
+		size_t GetSlot() const noexcept;
 
 		virtual void Update() override;
 	};
