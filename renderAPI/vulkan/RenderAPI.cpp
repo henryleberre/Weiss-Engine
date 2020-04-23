@@ -50,8 +50,8 @@ namespace VK       {
 	{
 		return 0u;
 	}
-	
-	size_t VKRenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+
+	size_t VKRenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slot)
 	{
 		return 0u;
 	}

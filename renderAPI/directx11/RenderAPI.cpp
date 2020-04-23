@@ -83,9 +83,9 @@ namespace D3D11    {
 		return this->m_pIndexBuffers.size() - 1u;
 	}
 
-	size_t D3D11RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slotVS, const size_t slotPS, const ShaderBindingType& shaderBindingType)
+	size_t D3D11RenderAPI::CreateConstantBuffer(const size_t objSize, const size_t slot)
 	{
-		this->m_pConstantBuffers.push_back(new D3D11ConstantBuffer(this->m_pDevice, &this->m_pDeviceContext, objSize, slotVS, slotPS, shaderBindingType));
+		this->m_pConstantBuffers.push_back(new D3D11ConstantBuffer(this->m_pDevice, &this->m_pDeviceContext, objSize, slot));
 
 		return this->m_pConstantBuffers.size() - 1u;
 	}

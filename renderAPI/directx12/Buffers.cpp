@@ -6,20 +6,14 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	D3D12VertexBuffer::D3D12VertexBuffer()
-	{
-
-	}
-
-	D3D12VertexBuffer::D3D12VertexBuffer(D3D12VertexBuffer&& other)
+	D3D12VertexBuffer::D3D12VertexBuffer(D3D12VertexBuffer&& other) noexcept
+		: m_vertexSize(other.m_vertexSize), m_pCommandList(other.m_pCommandList)
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
 
-		this->m_pUploadHeap  = std::move(other.m_pUploadHeap);
-		this->m_pCommandList = other.m_pCommandList;
-		this->m_vertexSize   = other.m_vertexSize;
-		this->m_vertexData   = other.m_vertexData;
+		this->m_pUploadHeap = std::move(other.m_pUploadHeap);
+		this->m_vertexData  = other.m_vertexData;
 		this->m_vertexBufferView = other.m_vertexBufferView;
 	}
 
@@ -64,11 +58,6 @@ namespace D3D12    {
 		this->m_vertexBufferView = other.m_vertexBufferView;
 	}
 
-	D3D12_VERTEX_BUFFER_VIEW D3D12VertexBuffer::GetView()
-	{
-		return this->m_vertexBufferView;
-	}
-
 	void D3D12VertexBuffer::Bind()
 	{
 		(*this->m_pCommandList)->IASetVertexBuffers(0u, 1u, &this->m_vertexBufferView);
@@ -88,20 +77,15 @@ namespace D3D12    {
 		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 	}
 
-	D3D12IndexBuffer::D3D12IndexBuffer()
-	{
 
-	}
-
-	D3D12IndexBuffer::D3D12IndexBuffer(D3D12IndexBuffer&& other)
+	D3D12IndexBuffer::D3D12IndexBuffer(D3D12IndexBuffer&& other) noexcept
+		: m_nIndices(other.m_nIndices), m_pCommandList(m_pCommandList)
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
 
-		this->m_nIndices    = other.m_nIndices;
 		this->m_pUploadHeap = std::move(other.m_pUploadHeap);
 		other.m_pUploadHeap.SetObjNullptr();
-		this->m_pCommandList    = other.m_pCommandList;
 		this->m_indexBufferView = other.m_indexBufferView;
 	}
 
@@ -150,11 +134,6 @@ namespace D3D12    {
 		(*this->m_pCommandList)->IASetIndexBuffer(&this->m_indexBufferView);
 	}
 
-	D3D12_INDEX_BUFFER_VIEW D3D12IndexBuffer::GetView()
-	{
-		return this->m_indexBufferView;
-	}
-
 	void D3D12IndexBuffer::Update()
 	{
 		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
@@ -174,24 +153,19 @@ namespace D3D12    {
 
 	}
 
-	D3D12ConstantBuffer::D3D12ConstantBuffer(D3D12ConstantBuffer&& other)
+	D3D12ConstantBuffer::D3D12ConstantBuffer(D3D12ConstantBuffer&& other) noexcept
+		: m_slot(other.m_slot), m_objSize(other.m_objSize), m_pCommandList(other.m_pCommandList)
 	{
 		this->m_constantBufferData  = other.m_constantBufferData;
 		this->m_constantBufferViews = other.m_constantBufferViews;
 		this->m_descriptorHeaps = std::move(other.m_descriptorHeaps);
-		this->m_objSize      = other.m_objSize;
-		this->m_pCommandList = other.m_pCommandList;
 		this->m_pUploadHeaps = std::move(other.m_pUploadHeaps);
-		this->m_shaderBindingType = other.m_shaderBindingType;
-		this->m_slotPS = other.m_slotPS;
-		this->m_slotVS = other.m_slotVS;
 	}
 
 	D3D12ConstantBuffer::D3D12ConstantBuffer(D3D12DeviceObjectWrapper& pDevice,
 											 D3D12CommandList* pCommandList,
-											 const size_t objSize, const size_t slotVS, const size_t slotPS,
-											 const ShaderBindingType& shaderBindingType)
-		: m_objSize(objSize), m_slotVS(slotVS), m_slotPS(slotPS), m_shaderBindingType(shaderBindingType), m_pCommandList(pCommandList)
+											 const size_t objSize, const size_t slot)
+		: m_objSize(objSize), m_slot(slot), m_pCommandList(pCommandList)
 	{
 		this->m_constantBufferData.resize(objSize);
 		std::memset(this->m_constantBufferData.data(), 0u, objSize);
@@ -215,11 +189,6 @@ namespace D3D12    {
 		}
 	}
 
-	D3D12_CONSTANT_BUFFER_VIEW_DESC D3D12ConstantBuffer::GetView(const size_t index)
-	{
-		return this->m_constantBufferViews[index];
-	}
-
 	void D3D12ConstantBuffer::Bind(const size_t frameIndex)
 	{
 		D3D12DescriptorHeap& descriptorHeap = this->m_descriptorHeaps[frameIndex];
@@ -228,10 +197,7 @@ namespace D3D12    {
 		this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(0u, descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 
-	ShaderBindingType D3D12ConstantBuffer::GetShaderBindingType() const noexcept { return this->m_shaderBindingType; }
-
-	size_t D3D12ConstantBuffer::GetSlotVS() const noexcept { return this->m_slotVS; }
-	size_t D3D12ConstantBuffer::GetSlotPS() const noexcept { return this->m_slotPS; }
+	size_t D3D12ConstantBuffer::GetSlot() const noexcept { return this->m_slot; }
 
 	void D3D12ConstantBuffer::Update()
 	{

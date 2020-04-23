@@ -146,7 +146,7 @@ namespace D3D12    {
 		psoDesc.NumRenderTargets = 1;
 
 		// Root Signature
-		std::vector<D3D12_DESCRIPTOR_RANGE1> descriptorRanges;
+		std::vector<D3D12_DESCRIPTOR_RANGE1> descriptorRanges(pipelineDesc.constantBufferIndices.size());
 		std::vector<D3D12_ROOT_PARAMETER1>   rootParameters(1);
 
 		size_t i = 0u;
@@ -154,19 +154,9 @@ namespace D3D12    {
 		{
 			D3D12ConstantBuffer* pConstantBufferX12 = dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex]);
 
-			if (pConstantBufferX12->GetShaderBindingType().test(0u)) { // Vertex Shader Bit
-				descriptorRanges.push_back(D3D12_DESCRIPTOR_RANGE1{});
-				descriptorRanges[i].RangeType      = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-				descriptorRanges[i].NumDescriptors = 1u;
-				descriptorRanges[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlotVS();
-			}
-
-			if (pConstantBufferX12->GetShaderBindingType().test(1u)) { // Pixel Shader Bit
-				descriptorRanges.push_back(D3D12_DESCRIPTOR_RANGE1{});
-				descriptorRanges[i].RangeType      = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-				descriptorRanges[i].NumDescriptors = 1u;
-				descriptorRanges[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlotPS();
-			}
+			descriptorRanges[i].RangeType      = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+			descriptorRanges[i].NumDescriptors = 1u;
+			descriptorRanges[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlot();
 		}
 
 		rootParameters[0].DescriptorTable.NumDescriptorRanges = (UINT)descriptorRanges.size();
