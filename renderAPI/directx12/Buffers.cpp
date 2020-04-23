@@ -24,19 +24,11 @@ namespace D3D12    {
 	{
 		const UINT bufferSize = static_cast<UINT>(vertexSize * nVertices);
 
-		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,
-			nullptr, IID_PPV_ARGS(&this->m_pObject))))
-			throw std::runtime_error("[DIRECTX 12] Failed To Create Vertex Buffer Resource");
+		this->m_pObject     = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+													 D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, "Vertex Buffer");
 
-		this->m_pObject->SetName(L"Vertex Buffer Resource Heap");
-
-		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr, IID_PPV_ARGS(this->m_pUploadHeap.GetPtr()))))
-			throw std::runtime_error("[DIRECTX 12] Failed To Create Vertex Buffer Upload Heap");
-
-		m_pUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
+		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+													 D3D12_RESOURCE_STATE_GENERIC_READ, "Vertex Buffer Upload Heap");
 
 		this->m_vertexData.resize(bufferSize);
 		std::memset(this->m_vertexData.data(), 0u, bufferSize);
@@ -96,19 +88,11 @@ namespace D3D12    {
 	{
 		const UINT bufferSize = static_cast<UINT>(nIndices * sizeof(uint32_t));
 
-		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_INDEX_BUFFER,
-			nullptr, IID_PPV_ARGS(&this->m_pObject))))
-			throw std::runtime_error("[DIRECTX 12] Failed To Create Index Buffer Resource");
+		this->m_pObject     = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+													 D3D12_RESOURCE_STATE_INDEX_BUFFER, "Index Buffer");
 
-		this->m_pObject->SetName(L"Index Buffer Resource Heap");
-
-		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(bufferSize), D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr, IID_PPV_ARGS(this->m_pUploadHeap.GetPtr()))))
-			throw std::runtime_error("[DIRECTX 12] Failed To Create Index Buffer Upload Heap");
-
-		this->m_pUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
+		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+													 D3D12_RESOURCE_STATE_GENERIC_READ, "Index Buffer Upload Heap");
 
 		this->m_indexData.resize(bufferSize);
 		std::memset(this->m_indexData.data(), 0u, bufferSize);
@@ -148,11 +132,6 @@ namespace D3D12    {
 		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 	}
 
-	D3D12ConstantBuffer::D3D12ConstantBuffer()
-	{
-
-	}
-
 	D3D12ConstantBuffer::D3D12ConstantBuffer(D3D12ConstantBuffer&& other) noexcept
 		: m_slot(other.m_slot), m_objSize(other.m_objSize), m_pCommandList(other.m_pCommandList)
 	{
@@ -175,18 +154,25 @@ namespace D3D12    {
 
 		for (int i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
 		{
-			if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
-				&CD3DX12_RESOURCE_DESC::Buffer(1024 * 64), D3D12_RESOURCE_STATE_GENERIC_READ,
-				nullptr, IID_PPV_ARGS(this->m_pUploadHeaps[i].GetPtr()))))
-				throw std::runtime_error("[DIRECTX 12] Failed To Create A Commited Resource For A Constant Buffer");
-
-			this->m_pUploadHeaps[i]->SetName(L"Constant Buffer Upload Resource Heap");
+			this->m_pUploadHeaps[i] = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(1024 * 64),
+															 D3D12_RESOURCE_STATE_GENERIC_READ, "Constant Buffer Upload Heap");
 
 			this->m_constantBufferViews[i].BufferLocation = this->m_pUploadHeaps[i]->GetGPUVirtualAddress();
 			this->m_constantBufferViews[i].SizeInBytes = (objSize + 255) & ~255;
 
 			pDevice->CreateConstantBufferView(&this->m_constantBufferViews[i], this->m_descriptorHeaps[i]->GetCPUDescriptorHandleForHeapStart());
 		}
+	}
+
+	void D3D12ConstantBuffer::operator=(D3D12ConstantBuffer&& other) noexcept
+	{
+		this->m_slot         = other.m_slot;
+		this->m_objSize      = other.m_objSize;
+		this->m_pCommandList = other.m_pCommandList;
+		this->m_constantBufferData  = other.m_constantBufferData;
+		this->m_constantBufferViews = other.m_constantBufferViews;
+		this->m_descriptorHeaps     = std::move(other.m_descriptorHeaps);
+		this->m_pUploadHeaps        = std::move(other.m_pUploadHeaps);
 	}
 
 	void D3D12ConstantBuffer::Bind(const size_t frameIndex)

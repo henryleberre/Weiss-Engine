@@ -11,3 +11,4 @@
 #include "RootSignature.h"
 #include "ObjectWrapper.h"
 #include "CommandAllocator.h"
+#include "CommittedResource.h"
