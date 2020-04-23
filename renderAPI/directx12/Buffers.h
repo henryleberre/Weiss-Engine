@@ -3,6 +3,7 @@
 #include "internal/Include.h"
 #include "../common/Include.h"
 #include "../../common/Include.h"
+#include "internal/CommittedResource.h"
 
 #ifdef __WEISS__OS_WINDOWS
 
@@ -10,15 +11,12 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	typedef D3D12ObjectWrapper<ID3D12Resource> D3D12VertexBufferObjectWrapper;
-	typedef D3D12ObjectWrapper<ID3D12Resource> D3D12IndexBufferObjectWrapper;
-
-	class D3D12VertexBuffer : public D3D12ObjectWrapper<ID3D12Resource>,
+	class D3D12VertexBuffer : public D3D12CommittedResource,
 							  public VertexBuffer {
 	private:
 		D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
-		D3D12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
+		D3D12CommittedResource m_pUploadHeap;
 
 		UINT m_vertexSize = 0u;
 
@@ -40,12 +38,12 @@ namespace D3D12    {
 		virtual void Update() override;
 	};
 
-	class D3D12IndexBuffer : public D3D12IndexBufferObjectWrapper,
+	class D3D12IndexBuffer : public D3D12CommittedResource,
 							 public IndexBuffer {
 	private:
 		D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
 
-		D3D12ObjectWrapper<ID3D12Resource> m_pUploadHeap;
+		D3D12CommittedResource m_pUploadHeap;
 
 		size_t m_nIndices = 0u;
 
@@ -71,22 +69,24 @@ namespace D3D12    {
 	private:
 		size_t m_objSize = 0u;
 
-		const size_t m_slot = 0u;
+		size_t m_slot = 0u;
 		
 		D3D12CommandList* m_pCommandList;
 
-		std::array<D3D12DescriptorHeap,                WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
-		std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC,    WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
-		std::array<D3D12ObjectWrapper<ID3D12Resource>, WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
+		std::array<D3D12DescriptorHeap,             WEISS__FRAME_BUFFER_COUNT> m_descriptorHeaps;
+		std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC, WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
+		std::array<D3D12CommittedResource,          WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
 
 	public:
-		D3D12ConstantBuffer();
+		D3D12ConstantBuffer() = default;
 
 		D3D12ConstantBuffer(D3D12ConstantBuffer&& other) noexcept;
 
 		D3D12ConstantBuffer(D3D12DeviceObjectWrapper& pDevice,
 							D3D12CommandList* pCommandList,
 							const size_t objSize, const size_t slot);
+
+		void operator=(D3D12ConstantBuffer&& other) noexcept;
 
 		void Bind(const size_t frameIndex);
 
