@@ -22,9 +22,7 @@ namespace D3D12    {
 
 	void D3D12CommandList::Close()
 	{
-		HRESULT hr = this->m_pObject->Close();
-
-		if (FAILED(hr))
+		if (FAILED(this->m_pObject->Close()))
 			throw std::runtime_error("[DIRECTX 12] Failed To Close Command List");
 	}
 

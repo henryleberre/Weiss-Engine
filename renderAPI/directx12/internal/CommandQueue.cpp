@@ -18,12 +18,6 @@ namespace D3D12    {
 			throw std::runtime_error("[D3D12] Could Not Create Command Queue");
 	}
 
-	void D3D12CommandQueue::operator=(D3D12CommandQueue&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-	}
-
 }; // D3D12
 }; // Internal
 }; // WS

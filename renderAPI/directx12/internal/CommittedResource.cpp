@@ -6,15 +6,10 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	D3D12CommittedResource::D3D12CommittedResource(D3D12CommittedResource&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-	}
-
 	D3D12CommittedResource::D3D12CommittedResource(D3D12DeviceObjectWrapper& pDevice,   const D3D12_HEAP_TYPE& heapType,
 												   const D3D12_HEAP_FLAGS& flags,       const D3D12_RESOURCE_DESC& desc,
 												   const D3D12_RESOURCE_STATES& states, const char* name)
+		: m_originalState(states), m_currentState(states)
 	{
 		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(heapType), flags, &desc, states,
 													nullptr, IID_PPV_ARGS(&this->m_pObject))))
@@ -32,7 +27,10 @@ namespace D3D12    {
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
-	}
+
+		this->m_currentState  = other.m_currentState;
+		this->m_originalState = other.m_originalState;
+	}				
 
 }; // D3D12
 }; // Internal

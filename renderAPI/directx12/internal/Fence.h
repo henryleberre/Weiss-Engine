@@ -18,9 +18,10 @@ namespace D3D12    {
 		bool bRealFence = false;
 
 	public:
-		D3D12Fence() { }
+		D3D12Fence() = default;
 
 		D3D12Fence(D3D12DeviceObjectWrapper& pDevice, const UINT64 initialValue, const D3D12_FENCE_FLAGS flags);
+		
 		~D3D12Fence();
 
 		void operator=(D3D12Fence&& other) noexcept;

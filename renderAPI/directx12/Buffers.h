@@ -11,11 +11,11 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	class D3D12VertexBuffer : public D3D12CommittedResource,
-							  public VertexBuffer {
+	class D3D12VertexBuffer : public VertexBuffer {
 	private:
 		D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
 
+		D3D12CommittedResource m_pVertexBuffer;
 		D3D12CommittedResource m_pUploadHeap;
 
 		UINT m_vertexSize = 0u;
@@ -25,24 +25,20 @@ namespace D3D12    {
 	public:
 		D3D12VertexBuffer() = default;
 
-		D3D12VertexBuffer(D3D12VertexBuffer&& other) noexcept;
-
 		D3D12VertexBuffer(D3D12DeviceObjectWrapper& pDevice,
 						  D3D12CommandList* pCommandList,
 						  const size_t nVertices, const size_t vertexSize);
-
-		void operator=(D3D12VertexBuffer&& other) noexcept;
 
 		void Bind();
 
 		virtual void Update() override;
 	};
 
-	class D3D12IndexBuffer : public D3D12CommittedResource,
-							 public IndexBuffer {
+	class D3D12IndexBuffer : public IndexBuffer {
 	private:
 		D3D12_INDEX_BUFFER_VIEW m_indexBufferView;
 
+		D3D12CommittedResource m_pIndexBuffer;
 		D3D12CommittedResource m_pUploadHeap;
 
 		size_t m_nIndices = 0u;
@@ -52,13 +48,9 @@ namespace D3D12    {
 	public:
 		D3D12IndexBuffer() = default;
 
-		D3D12IndexBuffer(D3D12IndexBuffer&& other) noexcept;
-
 		D3D12IndexBuffer(D3D12DeviceObjectWrapper& pDevice,
 						 D3D12CommandList* pCommandList,
 						 const size_t nIndices);
-
-		void operator=(D3D12IndexBuffer&& other) noexcept;
 
 		void Bind();
 
@@ -80,13 +72,9 @@ namespace D3D12    {
 	public:
 		D3D12ConstantBuffer() = default;
 
-		D3D12ConstantBuffer(D3D12ConstantBuffer&& other) noexcept;
-
 		D3D12ConstantBuffer(D3D12DeviceObjectWrapper& pDevice,
 							D3D12CommandList* pCommandList,
 							const size_t objSize, const size_t slot);
-
-		void operator=(D3D12ConstantBuffer&& other) noexcept;
 
 		void Bind(const size_t frameIndex);
 

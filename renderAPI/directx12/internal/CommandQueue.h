@@ -16,8 +16,6 @@ namespace D3D12    {
 		D3D12CommandQueue() {  }
 
 		D3D12CommandQueue(D3D12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
-
-		void operator=(D3D12CommandQueue&& other) noexcept;
 	};
 
 }; // D3D12

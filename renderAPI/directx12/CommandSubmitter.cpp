@@ -6,11 +6,6 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	D3D12CommandSubmitter::D3D12CommandSubmitter()
-	{
-
-	}
-
 	D3D12CommandSubmitter::D3D12CommandSubmitter(D3D12DeviceObjectWrapper& pDevice)
 	{
 		for (uint16_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
