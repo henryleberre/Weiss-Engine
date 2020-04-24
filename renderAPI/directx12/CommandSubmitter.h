@@ -21,7 +21,8 @@ namespace D3D12    {
 		std::array<D3D12CommandAllocator, WEISS__FRAME_BUFFER_COUNT> m_pCommandAllocators;
 
 	public:
-		D3D12CommandSubmitter();
+		D3D12CommandSubmitter() = default;
+
 		D3D12CommandSubmitter(D3D12DeviceObjectWrapper& pDevice);
 
 		void Close();

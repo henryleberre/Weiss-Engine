@@ -17,8 +17,6 @@ namespace D3D12    {
 
 		D3D12CommandAllocator(D3D12DeviceObjectWrapper& pDevice, const D3D12_COMMAND_LIST_TYPE& type);
 
-		void operator=(D3D12CommandAllocator&& other) noexcept;
-
 		void Reset() const;
 	};
 

@@ -14,7 +14,7 @@ namespace D3D12    {
 
 	class D3D12SwapChain : public D3D12SwapChainObjectWrapper {
 	public:
-		D3D12SwapChain() {  }
+		D3D12SwapChain() = default;
 
 		D3D12SwapChain(D3D12DeviceObjectWrapper& pDevice,
 						   D3D12CommandQueueObjectWrapper& pCommandQueue,

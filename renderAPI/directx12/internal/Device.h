@@ -14,7 +14,7 @@ namespace D3D12    {
 
 	class D3D12Device : public D3D12DeviceObjectWrapper {
 	public:
-		D3D12Device() {  }
+		D3D12Device() = default;
 
 		D3D12Device(D3D12AdapterObjectWrapper& pAdapter);
 

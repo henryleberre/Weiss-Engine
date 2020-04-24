@@ -6,17 +6,6 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	D3D12VertexBuffer::D3D12VertexBuffer(D3D12VertexBuffer&& other) noexcept
-		: m_vertexSize(other.m_vertexSize), m_pCommandList(other.m_pCommandList)
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_pUploadHeap = std::move(other.m_pUploadHeap);
-		this->m_vertexData  = other.m_vertexData;
-		this->m_vertexBufferView = other.m_vertexBufferView;
-	}
-
 	D3D12VertexBuffer::D3D12VertexBuffer(D3D12DeviceObjectWrapper& pDevice,
 										 D3D12CommandList* pCommandList,
 										 const size_t nVertices, const size_t vertexSize)
@@ -24,8 +13,8 @@ namespace D3D12    {
 	{
 		const UINT bufferSize = static_cast<UINT>(vertexSize * nVertices);
 
-		this->m_pObject     = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-													 D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, "Vertex Buffer");
+		this->m_pVertexBuffer = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+													   D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, "Vertex Buffer");
 
 		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 													 D3D12_RESOURCE_STATE_GENERIC_READ, "Vertex Buffer Upload Heap");
@@ -35,19 +24,7 @@ namespace D3D12    {
 
 		this->m_vertexBufferView.StrideInBytes  = this->m_vertexSize;
 		this->m_vertexBufferView.SizeInBytes    = static_cast<UINT>(this->m_vertexData.size());
-		this->m_vertexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
-	}
-
-	void D3D12VertexBuffer::operator=(D3D12VertexBuffer&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_pUploadHeap  = std::move(other.m_pUploadHeap);
-		this->m_pCommandList = other.m_pCommandList;
-		this->m_vertexSize   = other.m_vertexSize;
-		this->m_vertexData   = other.m_vertexData;
-		this->m_vertexBufferView = other.m_vertexBufferView;
+		this->m_vertexBufferView.BufferLocation = this->m_pVertexBuffer->GetGPUVirtualAddress();
 	}
 
 	void D3D12VertexBuffer::Bind()
@@ -57,29 +34,18 @@ namespace D3D12    {
 
 	void D3D12VertexBuffer::Update()
 	{
-		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
+		this->m_pVertexBuffer.TransitionTo(*this->m_pCommandList, D3D12_RESOURCE_STATE_COPY_DEST);
 
 		D3D12_SUBRESOURCE_DATA vertexData = {};
 		vertexData.pData      = this->m_vertexData.data();
 		vertexData.RowPitch   = this->m_vertexData.size();
 		vertexData.SlicePitch = this->m_vertexData.size();
 
-		UpdateSubresources(*this->m_pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &vertexData);
+		UpdateSubresources(*this->m_pCommandList, this->m_pVertexBuffer, this->m_pUploadHeap, 0, 0, 1, &vertexData);
 
-		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		this->m_pVertexBuffer.TransitionBack(*this->m_pCommandList);
 	}
 
-
-	D3D12IndexBuffer::D3D12IndexBuffer(D3D12IndexBuffer&& other) noexcept
-		: m_nIndices(other.m_nIndices), m_pCommandList(m_pCommandList)
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_pUploadHeap = std::move(other.m_pUploadHeap);
-		other.m_pUploadHeap.SetObjNullptr();
-		this->m_indexBufferView = other.m_indexBufferView;
-	}
 
 	D3D12IndexBuffer::D3D12IndexBuffer(D3D12DeviceObjectWrapper& pDevice,
 									   D3D12CommandList* pCommandList,
@@ -88,8 +54,8 @@ namespace D3D12    {
 	{
 		const UINT bufferSize = static_cast<UINT>(nIndices * sizeof(uint32_t));
 
-		this->m_pObject     = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
-													 D3D12_RESOURCE_STATE_INDEX_BUFFER, "Index Buffer");
+		this->m_pIndexBuffer = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+													  D3D12_RESOURCE_STATE_INDEX_BUFFER, "Index Buffer");
 
 		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 													 D3D12_RESOURCE_STATE_GENERIC_READ, "Index Buffer Upload Heap");
@@ -99,18 +65,7 @@ namespace D3D12    {
 
 		this->m_indexBufferView.Format         = DXGI_FORMAT_R32_UINT;
 		this->m_indexBufferView.SizeInBytes    = static_cast<UINT>(this->m_indexData.size());
-		this->m_indexBufferView.BufferLocation = this->m_pObject->GetGPUVirtualAddress();
-	}
-
-	void D3D12IndexBuffer::operator=(D3D12IndexBuffer&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_nIndices        = other.m_nIndices;
-		this->m_pUploadHeap     = std::move(other.m_pUploadHeap);
-		this->m_pCommandList    = other.m_pCommandList;
-		this->m_indexBufferView = other.m_indexBufferView;
+		this->m_indexBufferView.BufferLocation = this->m_pIndexBuffer->GetGPUVirtualAddress();
 	}
 
 	void D3D12IndexBuffer::Bind()
@@ -120,26 +75,18 @@ namespace D3D12    {
 
 	void D3D12IndexBuffer::Update()
 	{
-		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_INDEX_BUFFER, D3D12_RESOURCE_STATE_COPY_DEST);
+		this->m_pIndexBuffer.TransitionTo(*this->m_pCommandList, D3D12_RESOURCE_STATE_COPY_DEST);
 
 		D3D12_SUBRESOURCE_DATA indexData = {};
 		indexData.pData      = this->m_indexData.data();
 		indexData.RowPitch   = this->m_indexData.size();
 		indexData.SlicePitch = indexData.RowPitch;
 
-		UpdateSubresources(*this->m_pCommandList, this->m_pObject, this->m_pUploadHeap, 0, 0, 1, &indexData);
+		UpdateSubresources(*this->m_pCommandList, this->m_pIndexBuffer, this->m_pUploadHeap, 0, 0, 1, &indexData);
 
-		(*this->m_pCommandList).TransitionResource(this->m_pObject, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		this->m_pIndexBuffer.TransitionBack(*this->m_pCommandList);
 	}
 
-	D3D12ConstantBuffer::D3D12ConstantBuffer(D3D12ConstantBuffer&& other) noexcept
-		: m_slot(other.m_slot), m_objSize(other.m_objSize), m_pCommandList(other.m_pCommandList)
-	{
-		this->m_constantBufferData  = other.m_constantBufferData;
-		this->m_constantBufferViews = other.m_constantBufferViews;
-		this->m_descriptorHeaps = std::move(other.m_descriptorHeaps);
-		this->m_pUploadHeaps = std::move(other.m_pUploadHeaps);
-	}
 
 	D3D12ConstantBuffer::D3D12ConstantBuffer(D3D12DeviceObjectWrapper& pDevice,
 											 D3D12CommandList* pCommandList,
@@ -162,17 +109,6 @@ namespace D3D12    {
 
 			pDevice->CreateConstantBufferView(&this->m_constantBufferViews[i], this->m_descriptorHeaps[i]->GetCPUDescriptorHandleForHeapStart());
 		}
-	}
-
-	void D3D12ConstantBuffer::operator=(D3D12ConstantBuffer&& other) noexcept
-	{
-		this->m_slot         = other.m_slot;
-		this->m_objSize      = other.m_objSize;
-		this->m_pCommandList = other.m_pCommandList;
-		this->m_constantBufferData  = other.m_constantBufferData;
-		this->m_constantBufferViews = other.m_constantBufferViews;
-		this->m_descriptorHeaps     = std::move(other.m_descriptorHeaps);
-		this->m_pUploadHeaps        = std::move(other.m_pUploadHeaps);
 	}
 
 	void D3D12ConstantBuffer::Bind(const size_t frameIndex)

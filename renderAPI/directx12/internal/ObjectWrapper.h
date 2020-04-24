@@ -17,23 +17,23 @@ namespace D3D12    {
 	protected:
 		T* m_pObject = nullptr;
 
+		char* name;
+
 	public:
-		D3D12ObjectWrapper() { }
+		D3D12ObjectWrapper() = default;
 
 		/* This function overloads the assignement operator with an r-value reference to itself
 		 * It copies the pointer from the "other" and sets it to nullptr.
 		 * This is done to ensure that the resource isn't freed while this object is being created.
 		 * (Preventing a "use after free")
 		*/
-		void operator=(D3D12ObjectWrapper<T>&& other)
+		void operator=(D3D12ObjectWrapper<T>&& other) noexcept
 		{
 			this->m_pObject = other.m_pObject;
 			other.m_pObject = nullptr;
 		}
 
-		void SetObjNullptr() noexcept { this->m_pObject = nullptr; }
-
-		virtual ~D3D12ObjectWrapper()
+		~D3D12ObjectWrapper()
 		{
 			if (this->m_pObject)
 			{
@@ -42,14 +42,14 @@ namespace D3D12    {
 			}
 		}
 
-		T* operator->() { return this->m_pObject; }
+		[[nodiscard]] T* operator->() { return this->m_pObject; }
 
-		T*  Get()    noexcept { return this->m_pObject;  }
-		T** GetPtr() noexcept { return &this->m_pObject; }
+		[[nodiscard]] T*  Get()    noexcept { return this->m_pObject;  }
+		[[nodiscard]] T** GetPtr() noexcept { return &this->m_pObject; }
 
-		operator IUnknown* () const noexcept { return (IUnknown*) this->m_pObject; }
+		[[nodiscard]] operator IUnknown* () const noexcept { return (IUnknown*) this->m_pObject; }
 
-		operator T* () const noexcept { return this->m_pObject; }
+		[[nodiscard]] operator T* () const noexcept { return this->m_pObject; }
 	};
 
 }; // D3D12

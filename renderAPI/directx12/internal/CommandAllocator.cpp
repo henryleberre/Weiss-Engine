@@ -12,12 +12,6 @@ namespace D3D12    {
 			throw std::runtime_error("[DIRECTX 12] Could Not Create Command Allocator");
 	}
 
-	void D3D12CommandAllocator::operator=(D3D12CommandAllocator&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-	}
-
 	void D3D12CommandAllocator::Reset() const
 	{
 		if (FAILED(this->m_pObject->Reset()))
