@@ -17,6 +17,10 @@ namespace VK       {
 		void operator=(VKInstance&& instance) noexcept;
 
 		~VKInstance();
+
+	private:
+		static std::vector<std::string> GetAvailableExtensions() noexcept;
+		static std::vector<const char*> GetRequiredExtensions()  noexcept;
 	};
 
 }; // VK

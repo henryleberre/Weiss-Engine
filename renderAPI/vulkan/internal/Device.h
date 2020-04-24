@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Surface.h"
 #include "Instance.h"
 #include "ObjectWrapper.h"
 
@@ -37,7 +38,7 @@ namespace VK       {
 		uint32_t m_rating = 0u;
 
 		VKPhysicalDeviceDataWrapper();
-		VKPhysicalDeviceDataWrapper(const VkPhysicalDevice& physicalDevice);
+		VKPhysicalDeviceDataWrapper(const VkPhysicalDevice& physicalDevice, const VKSurface& surface);
 	};
 
 	typedef VKObjectWrapper<VkDevice> VKDeviceObjectWrapper;
@@ -53,14 +54,14 @@ namespace VK       {
 
 	public:
 		VKDevice();
-		VKDevice(const VKInstance& instance);
+		VKDevice(const VKInstance& instance, const VKSurface& surface);
 
 		void operator=(VKDevice&& device) noexcept;
 
 		~VKDevice();
 
 	private:
-		void PickPhysicalDevice(const VKInstance& instance);
+		void PickPhysicalDevice(const VKInstance& instance, const VKSurface& surface);
 		void CreateLogicalDeviceAndQueues(const VKInstance& instance);
 	};
 

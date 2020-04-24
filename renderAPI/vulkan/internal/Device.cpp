@@ -27,7 +27,7 @@ namespace VK       {
 		
 	}
 
-	VKPhysicalDeviceDataWrapper::VKPhysicalDeviceDataWrapper(const VkPhysicalDevice& physicalDevice)
+	VKPhysicalDeviceDataWrapper::VKPhysicalDeviceDataWrapper(const VkPhysicalDevice& physicalDevice, const VKSurface& surface)
 		: m_physicalDevice(physicalDevice)
 	{
 		vkGetPhysicalDeviceFeatures  (physicalDevice, &this->m_features);
@@ -47,7 +47,12 @@ namespace VK       {
 			if (queueFlags & VK_QUEUE_GRAPHICS_BIT)
 				this->m_graphicsQueueIndex = i;
 
-			//TODO:: Present Support
+
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
+
+			if (presentSupport)
+				this->m_presentQueueIndex = i;
 
 			i++;
 		}
@@ -68,9 +73,9 @@ namespace VK       {
 
 	}
 
-	VKDevice::VKDevice(const VKInstance& instance)
+	VKDevice::VKDevice(const VKInstance& instance, const VKSurface& surface)
 	{
-		this->PickPhysicalDevice(instance);
+		this->PickPhysicalDevice(instance, surface);
 		this->CreateLogicalDeviceAndQueues(instance);
 	}
 
@@ -87,7 +92,7 @@ namespace VK       {
 
 	}
 
-	void VKDevice::PickPhysicalDevice(const VKInstance& instance)
+	void VKDevice::PickPhysicalDevice(const VKInstance& instance, const VKSurface& surface)
 	{
 		// Get Physical Devices
 		uint32_t deviceCount = 0;
@@ -105,7 +110,7 @@ namespace VK       {
 		std::multimap<uint64_t, VKPhysicalDeviceDataWrapper> candidates;
 		for (const VkPhysicalDevice& physicalDevice : devices)
 		{
-			const VKPhysicalDeviceDataWrapper physicalDeviceDataWrapper(physicalDevice);
+			const VKPhysicalDeviceDataWrapper physicalDeviceDataWrapper(physicalDevice, surface);
 
 			if (physicalDeviceDataWrapper.m_graphicsQueueIndex.has_value() && physicalDeviceDataWrapper.m_presentQueueIndex.has_value())
 				candidates.insert({ physicalDeviceDataWrapper.m_rating, physicalDeviceDataWrapper });
@@ -132,6 +137,9 @@ namespace VK       {
 			queueCreateInfo.pQueuePriorities = &queuePriority;
 		}
 
+		std::cout << queueCreateInfos[0].queueFamilyIndex << '\n';
+		std::cout << queueCreateInfos[1].queueFamilyIndex << '\n';
+
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 
 		VkDeviceCreateInfo createInfo = {};
@@ -139,9 +147,15 @@ namespace VK       {
 		createInfo.pQueueCreateInfos       = queueCreateInfos.data();
 		createInfo.queueCreateInfoCount    = queueCreateInfos.size();
 		createInfo.pEnabledFeatures        = &deviceFeatures;
-		createInfo.ppEnabledExtensionNames = nullptr;
-		createInfo.enabledExtensionCount   = 0u;
 		createInfo.enabledLayerCount       = 0u;
+
+		const std::vector<const char*> extensions{
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
+		createInfo.ppEnabledLayerNames     = nullptr;
+		createInfo.enabledExtensionCount   = extensions.size();
+		createInfo.ppEnabledExtensionNames = extensions.data();
 
 		if (VK_FAILED(vkCreateDevice(this->m_physicalDeviceData.m_physicalDevice, &createInfo, nullptr, &this->m_pObject)))
 			throw std::runtime_error("|VULKAN] Failed To Create Logical Device");
