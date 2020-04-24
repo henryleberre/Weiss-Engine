@@ -11,6 +11,29 @@ namespace VK       {
 
 	VKInstance::VKInstance(const char* appName)
 	{
+		const std::vector<std::string> availableExtensions = VKInstance::GetAvailableExtensions();
+		const std::vector<const char*> requiredExtensions  = VKInstance::GetRequiredExtensions();
+
+		for (const char* requiredExtension : requiredExtensions)
+		{
+			bool bFound = false;
+
+			for (std::string availableExtension : availableExtensions)
+			{
+				if (requiredExtension == availableExtension)
+				{
+					bFound = true;
+					break;
+				}
+			}
+
+			if (!bFound)
+			{
+				const std::string errorString = "[VULKAN] Extension \"" + std::string(requiredExtension) + std::string("\" Is Not Supported");
+				throw std::runtime_error(errorString.c_str());
+			}
+		}
+
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "My Super App Using Weiss Engine";
@@ -22,10 +45,27 @@ namespace VK       {
 		VkInstanceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		createInfo.pApplicationInfo = &appInfo;
+		createInfo.enabledExtensionCount   = requiredExtensions.size();
+		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
 		if (VK_FAILED(vkCreateInstance(&createInfo, nullptr, &this->m_pObject)))
 			throw std::runtime_error("[VULKAN] Failed To Create Instance");
+	}
 
+	void VKInstance::operator=(VKInstance&& instance) noexcept
+	{
+		this->m_pObject    = instance.m_pObject;
+		instance.m_pObject = VK_NULL_HANDLE;
+	}
+
+	VKInstance::~VKInstance()
+	{
+		if (this->m_pObject != VK_NULL_HANDLE)
+			vkDestroyInstance(this->m_pObject, nullptr);
+	}
+
+	std::vector<std::string> VKInstance::GetAvailableExtensions() noexcept
+	{
 		uint32_t extensionCount = 0;
 		if (VK_FAILED(vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr)))
 			throw std::runtime_error("[VULKAN] Failed To Enumerate Instance Extension Propreties");
@@ -34,22 +74,31 @@ namespace VK       {
 		if (VK_FAILED(vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data())))
 			throw std::runtime_error("[VULKAN] Failed To Enumerate Instance Extension Propreties");
 
-		std::cout << "available extensions:\n";
+		std::vector<std::string> extensionNames(extensionCount);
+		for (const VkExtensionProperties& extension : extensions)
+			extensionNames.push_back(extension.extensionName);
 
-		for (const auto& extension : extensions) {
-			std::cout << '\t' << extension.extensionName << '\n';
-		}
+		return extensionNames;
 	}
 
-	void VKInstance::operator=(VKInstance&& instance) noexcept
+	std::vector<const char*> VKInstance::GetRequiredExtensions() noexcept
 	{
-		this->m_pObject    = instance.m_pObject;
-		instance.m_pObject = nullptr;
-	}
+		std::vector<const char*> extensions;
 
-	VKInstance::~VKInstance()
-	{
-		vkDestroyInstance(this->m_pObject, nullptr);
+#ifdef _DEBUG
+
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+#endif // _DEBUG
+
+#ifdef __WEISS__OS_WINDOWS
+
+		extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+		extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+
+#endif // __WEISS__OS_WINDOWS
+
+		return extensions;
 	}
 
 }; // VK
