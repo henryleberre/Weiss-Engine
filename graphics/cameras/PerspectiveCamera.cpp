@@ -2,31 +2,6 @@
 
 namespace WS {
 
-	[[nodiscard]] DirectX::XMMATRIX PerspectiveCamera::GetViewMatrix()
-	{
-#ifdef __WEISS__OS_WINDOWS
-
-		DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYawFromVector(this->m_rotation);
-		DirectX::XMVECTOR focusPosition = DirectX::XMVectorAdd(DirectX::XMVector3TransformCoord(FORWARD_VECTOR, rotationMatrix), this->m_position);
-		DirectX::XMVECTOR upDirection = DirectX::XMVector3TransformCoord(UP_VECTOR, rotationMatrix);
-
-		this->m_forwardVector = DirectX::XMVector3TransformCoord(FORWARD_VECTOR, rotationMatrix);
-		this->m_rightVector = DirectX::XMVector3TransformCoord(RIGHT_VECTOR, rotationMatrix);
-
-		return DirectX::XMMatrixLookAtLH(this->m_position, focusPosition, upDirection);
-
-#endif // __WEISS__OS_WINDOWS
-	}
-
-	[[nodiscard]] DirectX::XMMATRIX PerspectiveCamera::GetProjectionMatrix()
-	{
-#ifdef __WEISS__OS_WINDOWS
-
-		return DirectX::XMMatrixPerspectiveFovLH(this->m_fov, this->m_aspectRatio, this->m_zNear, this->m_zFar);
-
-#endif // __WEISS__OS_WINDOWS
-	}
-
 	PerspectiveCamera::PerspectiveCamera(Window* pWindow, const PerspectiveCameraDescriptor& descriptor)
 		: Camera(descriptor.position, descriptor.rotation), m_fov(descriptor.fov), m_zNear(descriptor.zNear), m_zFar(descriptor.zFar)
 	{
@@ -40,7 +15,20 @@ namespace WS {
 		pWindow->OnResize(recalculateAspectRatio);
 	}
 
-	void PerspectiveCamera::CalculateTransform() { this->m_transform = this->GetViewMatrix() * this->GetProjectionMatrix(); }
+	void PerspectiveCamera::CalculateTransform()
+	{
+#ifdef __WEISS__OS_WINDOWS
+		DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationRollPitchYawFromVector(this->m_rotation);
+		DirectX::XMVECTOR focusPosition  = DirectX::XMVectorAdd(DirectX::XMVector3TransformCoord(FORWARD_VECTOR, rotationMatrix), this->m_position);
+		DirectX::XMVECTOR upDirection    = DirectX::XMVector3TransformCoord(UP_VECTOR, rotationMatrix);
+
+		this->m_forwardVector = DirectX::XMVector3TransformCoord(FORWARD_VECTOR, rotationMatrix);
+		this->m_rightVector   = DirectX::XMVector3TransformCoord(RIGHT_VECTOR, rotationMatrix);
+
+		this->m_transform = DirectX::XMMatrixLookAtLH(this->m_position, focusPosition, upDirection) *
+							DirectX::XMMatrixPerspectiveFovLH(this->m_fov, this->m_aspectRatio, this->m_zNear, this->m_zFar);
+#endif // __WEISS__OS_WINDOWS
+	}
 
 	void PerspectiveCamera::HandleMouseMovements(Mouse& mouse, const float sensitivity)
 	{
