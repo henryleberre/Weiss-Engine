@@ -16,19 +16,14 @@ namespace WS {
 	class PerspectiveCamera : public Camera
 	{
 	private:
-		const DirectX::XMVECTOR UP_VECTOR      = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		const DirectX::XMVECTOR FORWARD_VECTOR = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-		const DirectX::XMVECTOR RIGHT_VECTOR   = DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+		const Vec3f UP_VECTOR      { 0.0f, 1.0f, 0.0f };
+		const Vec3f FORWARD_VECTOR { 0.0f, 0.0f, 1.0f };
+		const Vec3f RIGHT_VECTOR   { 1.0f, 0.0f, 0.0f };
 
-		DirectX::XMVECTOR m_forwardVector = FORWARD_VECTOR;
-		DirectX::XMVECTOR m_rightVector = RIGHT_VECTOR;
+		Vec3f m_forwardVector = FORWARD_VECTOR;
+		Vec3f m_rightVector   = RIGHT_VECTOR;
 
 		float m_fov = 0.0f, m_aspectRatio = 0.0f, m_zNear = 0.0f, m_zFar = 0.0f;
-
-	private:
-		[[nodiscard]] DirectX::XMMATRIX GetViewMatrix();
-
-		[[nodiscard]] DirectX::XMMATRIX GetProjectionMatrix();
 
 	public:
 		PerspectiveCamera(Window* pWindow, const PerspectiveCameraDescriptor& descriptor);
