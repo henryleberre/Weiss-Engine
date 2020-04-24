@@ -10,6 +10,7 @@ namespace VK       {
 	class VKRenderAPI : public RenderAPI {
 	private:
 		VKInstance m_instance;
+		VKDevice m_device;
 
 	public:
 		VKRenderAPI();

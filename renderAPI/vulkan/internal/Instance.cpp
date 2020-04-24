@@ -11,8 +11,6 @@ namespace VK       {
 
 	VKInstance::VKInstance(const char* appName)
 	{
-		std::cout << "here\n";
-
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "My Super App Using Weiss Engine";
@@ -41,6 +39,12 @@ namespace VK       {
 		for (const auto& extension : extensions) {
 			std::cout << '\t' << extension.extensionName << '\n';
 		}
+	}
+
+	void VKInstance::operator=(VKInstance&& instance) noexcept
+	{
+		this->m_pObject    = instance.m_pObject;
+		instance.m_pObject = nullptr;
 	}
 
 	VKInstance::~VKInstance()

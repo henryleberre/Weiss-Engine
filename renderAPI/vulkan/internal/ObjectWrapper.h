@@ -12,15 +12,26 @@ namespace VK       {
 	 */
 	template <typename T>
 	class VKObjectWrapper {
-	protected:
+	public:
 		T m_pObject = VK_NULL_HANDLE;
 
 	public:
 		VKObjectWrapper() = default;
 
+		VKObjectWrapper(T& obj) : m_pObject(obj) {  }
+
+		VKObjectWrapper(VKObjectWrapper&& other)
+		{
+			this->m_pObject = other.m_pObject;
+			other.m_pObject = VK_NULL_HANDLE;
+		}
+
+		T* GetPtr() noexcept { return this->m_pObject; }
+
 		T* operator->() { return &this->m_pObject; }
 
-		operator const T () const noexcept { return this->m_pObject; }
+		operator       T& ()       noexcept { return this->m_pObject; }
+		operator const T& () const noexcept { return this->m_pObject; }
 	};
 
 }; // VK
