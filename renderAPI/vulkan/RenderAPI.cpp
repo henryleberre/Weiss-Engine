@@ -8,7 +8,7 @@ namespace VK       {
 		: RenderAPI(RenderAPIName::VULKAN)
 	{
 		this->m_instance = VKInstance("App Made With Weiss Engine");
-		
+		this->m_device   = VKDevice(this->m_instance);
 	}
 
 	void VKRenderAPI::InitRenderAPI(Window* pWindow, const uint16_t maxFps)

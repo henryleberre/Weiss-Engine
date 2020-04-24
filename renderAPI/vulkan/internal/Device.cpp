@@ -4,7 +4,90 @@ namespace WS       {
 namespace Internal {
 namespace VK       {
 
-	VKPhysicalDevice::VKPhysicalDevice(const VKInstanceObjectWrapper& instance)
+	VKQueue::VKQueue(VKDevice& device, const size_t queueIndex)
+	{
+		vkGetDeviceQueue(device, queueIndex, 0, &this->m_pObject);
+	}
+
+	void VKQueue::operator=(VKQueue& other)
+	{
+		this->m_pObject = other.m_pObject;
+		other.m_pObject = VK_NULL_HANDLE;
+	}
+
+	void VKQueue::operator=(VKQueue&& other)
+	{
+		this->m_pObject = other.m_pObject;
+		other.m_pObject = VK_NULL_HANDLE;
+	}
+
+
+	VKPhysicalDeviceDataWrapper::VKPhysicalDeviceDataWrapper()
+	{
+		
+	}
+
+	VKPhysicalDeviceDataWrapper::VKPhysicalDeviceDataWrapper(const VkPhysicalDevice& physicalDevice)
+		: m_physicalDevice(physicalDevice)
+	{
+		vkGetPhysicalDeviceFeatures  (physicalDevice, &this->m_features);
+		vkGetPhysicalDeviceProperties(physicalDevice, &this->m_propreties);
+
+		uint32_t familyCount;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &familyCount, nullptr);
+
+		this->m_queueFamilyPropreties.resize(familyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &familyCount, this->m_queueFamilyPropreties.data());
+
+		uint32_t i = 0u;
+		for (const VkQueueFamilyProperties& queueFamily : this->m_queueFamilyPropreties)
+		{
+			const VkQueueFlags queueFlags = queueFamily.queueFlags;
+
+			if (queueFlags & VK_QUEUE_GRAPHICS_BIT)
+				this->m_graphicsQueueIndex = i;
+
+			//TODO:: Present Support
+
+			i++;
+		}
+		
+		switch (this->m_propreties.deviceType)
+		{
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			this->m_rating += 10u;
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			this->m_rating += 3;
+			break;
+		}
+	}
+
+	VKDevice::VKDevice()
+	{
+
+	}
+
+	VKDevice::VKDevice(const VKInstance& instance)
+	{
+		this->PickPhysicalDevice(instance);
+		this->CreateLogicalDeviceAndQueues(instance);
+	}
+
+	void VKDevice::operator=(VKDevice&& device) noexcept
+	{
+		this->m_graphicsQueue = device.m_graphicsQueue;
+		this->m_physicalDeviceData = device.m_physicalDeviceData;
+		this->m_presentQueue = device.m_presentQueue;
+		this->m_queues = device.m_queues;
+	}
+
+	VKDevice::~VKDevice()
+	{
+
+	}
+
+	void VKDevice::PickPhysicalDevice(const VKInstance& instance)
 	{
 		// Get Physical Devices
 		uint32_t deviceCount = 0;
@@ -18,30 +101,53 @@ namespace VK       {
 		if (VK_FAILED(vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data())))
 			throw std::runtime_error("[VULKAN] Failed To Enumerate Physical Devices");
 
-		// Pick Physical Device
-		std::multimap<uint64_t, VkPhysicalDevice> candidates;
-		for (const VkPhysicalDevice& device : devices)
+		// Pick
+		std::multimap<uint64_t, VKPhysicalDeviceDataWrapper> candidates;
+		for (const VkPhysicalDevice& physicalDevice : devices)
 		{
-			VkPhysicalDeviceFeatures   deviceFeatures;
-			VkPhysicalDeviceProperties deviceProperties;
-			vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-			vkGetPhysicalDeviceProperties(device, &deviceProperties);
+			const VKPhysicalDeviceDataWrapper physicalDeviceDataWrapper(physicalDevice);
 
-			uint64_t deviceRating = 0u;
-			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-				deviceRating += 10000u;
-
-			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
-				deviceRating += 2500u;
-
-			if (deviceFeatures.geometryShader)
-				candidates.insert({ deviceRating, device });
+			if (physicalDeviceDataWrapper.m_graphicsQueueIndex.has_value() && physicalDeviceDataWrapper.m_presentQueueIndex.has_value())
+				candidates.insert({ physicalDeviceDataWrapper.m_rating, physicalDeviceDataWrapper });
 		}
 
 		if (candidates.size() == 0u)
 			throw std::runtime_error("[VULKAN] No Suitable Vulkan Compatible GPU Was Found");
 
-		this->m_pObject = candidates.rbegin()->second;
+		this->m_physicalDeviceData = candidates.rbegin()->second;
+	}
+
+	void VKDevice::CreateLogicalDeviceAndQueues(const VKInstance& instance)
+	{
+		std::array<VkDeviceQueueCreateInfo, 2u> queueCreateInfos;
+
+		uint32_t i = 0u;
+		for (VkDeviceQueueCreateInfo& queueCreateInfo : queueCreateInfos)
+		{
+			queueCreateInfo.sType      = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueCount = 1u;
+			queueCreateInfo.queueFamilyIndex = this->m_physicalDeviceData.m_queueIndices[i++].value();
+
+			float queuePriority = 1.0f;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+		}
+
+		VkPhysicalDeviceFeatures deviceFeatures = {};
+
+		VkDeviceCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos       = queueCreateInfos.data();
+		createInfo.queueCreateInfoCount    = queueCreateInfos.size();
+		createInfo.pEnabledFeatures        = &deviceFeatures;
+		createInfo.ppEnabledExtensionNames = nullptr;
+		createInfo.enabledExtensionCount   = 0u;
+		createInfo.enabledLayerCount       = 0u;
+
+		if (VK_FAILED(vkCreateDevice(this->m_physicalDeviceData.m_physicalDevice, &createInfo, nullptr, &this->m_pObject)))
+			throw std::runtime_error("|VULKAN] Failed To Create Logical Device");
+
+		for (size_t i = 0u; i < queueCreateInfos.size(); i++)
+			this->m_queues[i] = VKQueue(*this, this->m_physicalDeviceData.m_queueIndices[i].value());
 	}
 
 }; // VK

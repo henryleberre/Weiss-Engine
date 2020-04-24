@@ -4,16 +4,16 @@
 
 ## Current Support
 
-| Icon    | :heavy_check_mark:         | :x:                   | :warning:         | Triangle Rendering   |
+| Icon    | :heavy_check_mark:         | :x:                   | :warning:         | :small_red_triangle: |
 | ------- | -------------------------- | --------------------- | ----------------- | -------------------- |
-| Meaning | Fully Integrated & Working | Haven't Started (yet) | Being Implemented | :small_red_triangle: |
+| Meaning | Fully Integrated & Working | Haven't Started (yet) | Being Implemented | Triangle Rendering   |
 
 | Render API | Status                            | Operating System | Status             |
 | ---------- | --------------------------------- | ---------------- | ------------------ |
 | DirectX 11 | :warning: (:small_red_triangle:)  | Windows          | :heavy_check_mark: |
 | DirectX 12 | :warning: (:small_red_triangle:)  | Linux            | :x:                |
 | OpenGL     | :x:                               | Mac OSX          | :x:                |
-| Vulkan     | :x:                               | | |
+| Vulkan     | :warning:                         | | |
 
 ## Getting Started
 

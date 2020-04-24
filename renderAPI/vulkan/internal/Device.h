@@ -1,25 +1,67 @@
 #pragma once
 
-#include "ObjectWrapper.h"
 #include "Instance.h"
+#include "ObjectWrapper.h"
 
 namespace WS       {
 namespace Internal {
 namespace VK       {
 
-	typedef VKObjectWrapper<VkPhysicalDevice> VKPhysicalDeviceObjectWrapper;
+	class VKDevice;
 
-	class VKPhysicalDevice : public VKPhysicalDeviceObjectWrapper {
+	typedef VKObjectWrapper<VkQueue> VKQueueObjectWrapper;
+
+	class VKQueue : public VKQueueObjectWrapper {
 	public:
-		VKPhysicalDevice() = default;
+		VKQueue() = default;
+		VKQueue(VKDevice& device, const size_t queueIndex);
 
-		VKPhysicalDevice(const VKInstanceObjectWrapper& instance);
+		void operator=(VKQueue& other);
+		void operator=(VKQueue&& other);
+	};
+	
+	struct VKPhysicalDeviceDataWrapper {
+		VkPhysicalDevice                     m_physicalDevice;
+		VkPhysicalDeviceFeatures             m_features;
+		VkPhysicalDeviceProperties           m_propreties;
+		std::vector<VkQueueFamilyProperties> m_queueFamilyPropreties;
+
+		union {
+			struct {
+				std::optional<uint32_t> m_graphicsQueueIndex;
+				std::optional<uint32_t> m_presentQueueIndex;
+			};
+			struct { std::optional<uint32_t> m_queueIndices[2]; };
+		};
+
+		uint32_t m_rating = 0u;
+
+		VKPhysicalDeviceDataWrapper();
+		VKPhysicalDeviceDataWrapper(const VkPhysicalDevice& physicalDevice);
 	};
 
-	typedef VKObjectWrapper<VkDevice> VKLogicalDeviceObjectWrapper;
+	typedef VKObjectWrapper<VkDevice> VKDeviceObjectWrapper;
 
-	class VKLogicalDevice : public VKLogicalDeviceObjectWrapper {
+	class VKDevice : public VKDeviceObjectWrapper {
+	private:
+		VKPhysicalDeviceDataWrapper m_physicalDeviceData;
+		
+		union {
+			struct { VKQueue m_graphicsQueue, m_presentQueue; };
+			struct { std::array<VKQueue, 2u> m_queues; };
+		};
 
+	public:
+		VKDevice();
+		VKDevice(const VKInstance& instance);
+
+		void operator=(VKDevice&& device) noexcept;
+
+		~VKDevice();
+
+	private:
+		void PickPhysicalDevice(const VKInstance& instance);
+		void CreateLogicalDeviceAndQueues(const VKInstance& instance);
 	};
 
 }; // VK

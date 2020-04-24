@@ -14,6 +14,8 @@ namespace VK       {
 		VKInstance();
 		VKInstance(const char* appName);
 
+		void operator=(VKInstance&& instance) noexcept;
+
 		~VKInstance();
 	};
 
