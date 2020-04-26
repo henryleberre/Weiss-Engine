@@ -33,7 +33,7 @@ namespace D3D11    {
 		scd.SampleDesc.Quality = 0;
 		scd.BufferUsage  = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		scd.BufferCount  = 1;
-		scd.OutputWindow = reinterpret_cast<WIN::WindowsWindow*>(pWindow)->GetHandle();
+		scd.OutputWindow = reinterpret_cast<WS::WIN::WindowsWindow*>(pWindow)->GetHandle();
 		scd.Windowed     = TRUE;
 		scd.SwapEffect   = DXGI_SWAP_EFFECT_DISCARD;
 		scd.Flags = 0;

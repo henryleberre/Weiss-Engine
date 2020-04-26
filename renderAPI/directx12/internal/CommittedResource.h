@@ -20,7 +20,7 @@ namespace D3D12    {
 		D3D12CommittedResource() = default;
 
 		D3D12CommittedResource(D3D12DeviceObjectWrapper&    pDevice, const D3D12_HEAP_TYPE& heapType,
-							   const D3D12_HEAP_FLAGS&      flags,   const D3D12_RESOURCE_DESC& desc,
+							   const D3D12_HEAP_FLAGS&      flags,   const D3D12_RESOURCE_DESC* descPtr,
 							   const D3D12_RESOURCE_STATES& states,  const char* name = "(PLACEHOLDER NAME)");
 
 		void operator=(D3D12CommittedResource&& other) noexcept;

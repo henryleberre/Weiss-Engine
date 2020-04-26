@@ -13,10 +13,10 @@ namespace D3D12    {
 	{
 		const UINT bufferSize = static_cast<UINT>(vertexSize * nVertices);
 
-		this->m_pVertexBuffer = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+		this->m_pVertexBuffer = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 													   D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, "Vertex Buffer");
 
-		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 													 D3D12_RESOURCE_STATE_GENERIC_READ, "Vertex Buffer Upload Heap");
 
 		this->m_vertexData.resize(bufferSize);
@@ -54,10 +54,10 @@ namespace D3D12    {
 	{
 		const UINT bufferSize = static_cast<UINT>(nIndices * sizeof(uint32_t));
 
-		this->m_pIndexBuffer = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+		this->m_pIndexBuffer = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 													  D3D12_RESOURCE_STATE_INDEX_BUFFER, "Index Buffer");
 
-		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
+		this->m_pUploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD,  D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(bufferSize),
 													 D3D12_RESOURCE_STATE_GENERIC_READ, "Index Buffer Upload Heap");
 
 		this->m_indexData.resize(bufferSize);
@@ -101,7 +101,7 @@ namespace D3D12    {
 
 		for (int i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
 		{
-			this->m_pUploadHeaps[i] = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, CD3DX12_RESOURCE_DESC::Buffer(1024 * 64),
+			this->m_pUploadHeaps[i] = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(1024 * 64),
 															 D3D12_RESOURCE_STATE_GENERIC_READ, "Constant Buffer Upload Heap");
 
 			this->m_constantBufferViews[i].BufferLocation = this->m_pUploadHeaps[i]->GetGPUVirtualAddress();

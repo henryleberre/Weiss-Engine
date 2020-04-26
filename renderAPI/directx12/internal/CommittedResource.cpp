@@ -7,11 +7,12 @@ namespace Internal {
 namespace D3D12    {
 
 	D3D12CommittedResource::D3D12CommittedResource(D3D12DeviceObjectWrapper& pDevice,   const D3D12_HEAP_TYPE& heapType,
-												   const D3D12_HEAP_FLAGS& flags,       const D3D12_RESOURCE_DESC& desc,
+												   const D3D12_HEAP_FLAGS& flags,       const D3D12_RESOURCE_DESC* descPtr,
 												   const D3D12_RESOURCE_STATES& states, const char* name)
 		: m_originalState(states), m_currentState(states)
 	{
-		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(heapType), flags, &desc, states,
+		
+		if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(heapType), flags, descPtr, states,
 													nullptr, IID_PPV_ARGS(&this->m_pObject))))
 		{
 			const std::string errorString = "[DIRECTX 12] Failed To Create A Committed Resource Named " + std::string(name);

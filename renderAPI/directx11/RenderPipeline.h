@@ -7,7 +7,6 @@
 
 #ifdef __WEISS__OS_WINDOWS
 
-
 namespace WS       {
 namespace Internal {
 namespace D3D11    {
@@ -21,13 +20,17 @@ namespace D3D11    {
 		D3D11DeviceContextObjectWrapper* m_pDeviceContext;
 
 		std::vector<uint32_t> m_constantBufferIndices;
+		std::vector<uint32_t> m_textureIndices;
+		std::vector<uint32_t> m_textureSamplerIndices;
 
 	public:
 		D3D11RenderPipeline(D3D11DeviceObjectWrapper& pDevice,
 							D3D11DeviceContextObjectWrapper* m_pDeviceContext,
 							const RenderPipelineDesc& desc);
 
-		void Bind(std::vector<ConstantBuffer*>& constantBuffers) noexcept;
+		void Bind(std::vector<ConstantBuffer*>& constantBuffers,
+				  std::vector<Texture*>& textures,
+				  std::vector<D3D11TextureSampler*> textureSamplers) noexcept;
 	};
 
 }; // D3D11

@@ -36,7 +36,7 @@ namespace D3D12    {
 		swapChainDesc.BufferDesc   = backBufferDesc;
 		swapChainDesc.BufferUsage  = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.SwapEffect   = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.OutputWindow = reinterpret_cast<const WIN::WindowsWindow*>(pWindow)->GetHandle();
+		swapChainDesc.OutputWindow = reinterpret_cast<const WS::WIN::WindowsWindow*>(pWindow)->GetHandle();
 		swapChainDesc.SampleDesc   = sampleDesc;
 		swapChainDesc.Windowed     = true; 
 

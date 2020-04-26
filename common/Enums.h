@@ -10,6 +10,12 @@ namespace WS {
 		VECTOR_4D_FLOAT_32
 	};
 
+	enum class TextureFilter {
+		POINT,
+		BILINEAR,
+		TRILINEAR
+	};
+
 	enum class PrimitiveTopology {
 		TRIANGLES,
 		TRIANGLE_STRIP

@@ -17,11 +17,14 @@ namespace D3D12    {
 		other.m_pObject = nullptr;
 
 		this->m_topology = other.m_topology;
+		this->m_pRootSignature = std::move(other.m_pRootSignature);
 		this->m_constantBufferIndices = other.m_constantBufferIndices;
+		this->m_textureIndices = other.m_textureIndices;
 	}
 
-	D3D12RenderPipeline::D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc, std::vector<ConstantBuffer*>& pConstantBuffers)
-		: m_constantBufferIndices(pipelineDesc.constantBufferIndices)
+	D3D12RenderPipeline::D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc,
+											 std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures)
+		: m_constantBufferIndices(pipelineDesc.constantBufferIndices), m_textureIndices(pipelineDesc.textureIndices)
 	{
 		// Specify Compilation Flags
 		UINT compileFlags = 0u;
@@ -146,29 +149,59 @@ namespace D3D12    {
 		psoDesc.NumRenderTargets = 1;
 
 		// Root Signature
-		std::vector<D3D12_DESCRIPTOR_RANGE1> descriptorRanges(pipelineDesc.constantBufferIndices.size());
-		std::vector<D3D12_ROOT_PARAMETER1>   rootParameters(1);
+		std::vector<D3D12_DESCRIPTOR_RANGE1> descriptorRangesCBV(pipelineDesc.constantBufferIndices.size());
+		std::vector<D3D12_DESCRIPTOR_RANGE1> descriptorRangesTEX(pipelineDesc.textureIndices.size());
 
-		size_t i = 0u;
-		for (const size_t cbIndex : pipelineDesc.constantBufferIndices)
+		std::vector<D3D12_ROOT_PARAMETER1> rootParameters;
+
 		{
-			D3D12ConstantBuffer* pConstantBufferX12 = dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex]);
+			for (size_t i = 0; i < pipelineDesc.constantBufferIndices.size(); i++)
+			{
+				D3D12ConstantBuffer* pConstantBufferX12 = dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[pipelineDesc.constantBufferIndices[i]]);
 
-			descriptorRanges[i].RangeType      = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-			descriptorRanges[i].NumDescriptors = 1u;
-			descriptorRanges[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlot();
+				descriptorRangesCBV[i].RangeType      = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+				descriptorRangesCBV[i].NumDescriptors = 1u;
+				descriptorRangesCBV[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlot();
+			}
+
+			D3D12_ROOT_PARAMETER1 constantBufferRootParam;
+			constantBufferRootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			constantBufferRootParam.DescriptorTable.NumDescriptorRanges = (UINT)descriptorRangesCBV.size();
+			constantBufferRootParam.DescriptorTable.pDescriptorRanges   = descriptorRangesCBV.data();
+			constantBufferRootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL;
+
+			rootParameters.push_back(constantBufferRootParam);
 		}
 
-		rootParameters[0].DescriptorTable.NumDescriptorRanges = (UINT)descriptorRanges.size();
-		rootParameters[0].DescriptorTable.pDescriptorRanges   = descriptorRanges.data();
-		rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY::D3D12_SHADER_VISIBILITY_ALL;
+		{
+			for (size_t i = 0; i < pipelineDesc.textureIndices.size(); i++)
+			{
+				D3D12_DESCRIPTOR_RANGE1& texDescriptorRange = descriptorRangesTEX[i];
 
-		this->m_pRootSignature = D3D12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, (pipelineDesc.constantBufferIndices.size() > 0) ? rootParameters : std::vector<D3D12_ROOT_PARAMETER1>{}),
+				texDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+				texDescriptorRange.NumDescriptors = 1u;
+				texDescriptorRange.BaseShaderRegister = (UINT)dynamic_cast<D3D12Texture*>(pTextures[i])->GetSlot();
+				texDescriptorRange.RegisterSpace = 0;
+				texDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+			}
+
+			D3D12_ROOT_PARAMETER1 textureRootParam;
+			textureRootParam.ParameterType    = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			textureRootParam.DescriptorTable.NumDescriptorRanges = (UINT)descriptorRangesTEX.size();
+			textureRootParam.DescriptorTable.pDescriptorRanges   = descriptorRangesTEX.data();
+			textureRootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+			rootParameters.push_back(textureRootParam);
+		}
+
+		this->m_pRootSignature = D3D12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, rootParameters);
 
 		psoDesc.pRootSignature = this->m_pRootSignature;
 
 		// create the pso
-		if (FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
+		HRESULT hr = pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject);
+
+		if (FAILED(hr))
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 	}
 
@@ -178,15 +211,17 @@ namespace D3D12    {
 		other.m_pObject = nullptr;
 	}
 
-	void D3D12RenderPipeline::Bind(D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& constantBufferss, const size_t frameIndex) const noexcept
+	void D3D12RenderPipeline::Bind(D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
+								   std::vector<Texture*> pTextures, const size_t frameIndex) const noexcept
 	{
 		pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
 		pCommandList->SetPipelineState(this->m_pObject);
 
 		for (const size_t cbIndex : this->m_constantBufferIndices)
-		{
-			dynamic_cast<D3D12ConstantBuffer*>(constantBufferss[cbIndex])->Bind(frameIndex);
-		}
+			dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex])->Bind(frameIndex);
+
+		for (const size_t texIndex : this->m_textureIndices)
+			dynamic_cast<D3D12Texture*>(pTextures[texIndex])->Bind();
 
 		pCommandList->IASetPrimitiveTopology(this->m_topology);
 	}

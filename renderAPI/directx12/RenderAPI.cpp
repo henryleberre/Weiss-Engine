@@ -56,14 +56,14 @@ namespace D3D12    {
 	{
 		// Create Pipelines
 		for (const RenderPipelineDesc& pipelineDesc : pipelineDescs)
-			this->m_renderPipelines.emplace_back(this->m_pDevice, pipelineDesc, this->m_pConstantBuffers);
+			this->m_renderPipelines.emplace_back(this->m_pDevice, pipelineDesc, this->m_pConstantBuffers, this->m_pTextures);
 	}
 
 	void D3D12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	{
 		D3D12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
-		this->m_renderPipelines[drawable.pipelineIndex].Bind(pGfxCommandList, this->m_pConstantBuffers, this->currentFrameIndex);
+		this->m_renderPipelines[drawable.pipelineIndex].Bind(pGfxCommandList, this->m_pConstantBuffers, this->m_pTextures, this->currentFrameIndex);
 		dynamic_cast<D3D12VertexBuffer*>(this->m_pVertexBuffers[drawable.vertexBufferIndex])->Bind();
 
 		if (drawable.indexBufferIndex.has_value()) {
@@ -138,6 +138,20 @@ namespace D3D12    {
 		this->m_pConstantBuffers.push_back(new D3D12ConstantBuffer(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), objSize, slot));
 
 		return this->m_pConstantBuffers.size() - 1u;
+	}
+
+	size_t D3D12RenderAPI::CreateTexture(const Image& image, const size_t slot, const bool useMipmaps)
+	{
+		this->m_pTextures.push_back(new D3D12Texture(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), image, slot, useMipmaps));
+
+		return this->m_pTextures.size() - 1u;
+	}
+
+	size_t D3D12RenderAPI::CreateTextureSampler(const TextureFilter& filter, const size_t slot)
+	{
+
+
+		return 0u;
 	}
 
 	void D3D12RenderAPI::Fill(const Colorf32& color)

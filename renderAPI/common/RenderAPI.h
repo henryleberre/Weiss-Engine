@@ -2,7 +2,9 @@
 
 #include "Shaders.h"
 #include "Buffers.h"
+#include "Texture.h"
 #include "Drawable.h"
+#include "../../image/Include.h"
 #include "../../common/Include.h"
 #include "../../window/Include.h"
 
@@ -13,6 +15,8 @@ namespace WS {
 		std::vector<ShaderInputElement> sies;
 		const char* psFilename;
 		std::vector<uint32_t> constantBufferIndices;
+		std::vector<uint32_t> textureIndices;
+		std::vector<uint32_t> textureSamplerIndices;
 		PrimitiveTopology topology = PrimitiveTopology::TRIANGLES;
 	};
 
@@ -26,6 +30,7 @@ namespace WS {
 		std::vector<VertexBuffer*>   m_pVertexBuffers;
 		std::vector<IndexBuffer*>    m_pIndexBuffers;
 		std::vector<ConstantBuffer*> m_pConstantBuffers;
+		std::vector<Texture*>        m_pTextures;
 
 	public:
 		RenderAPI(const RenderAPIName& apiName) : m_apiName(apiName) {}
@@ -55,6 +60,8 @@ namespace WS {
 		virtual size_t CreateVertexBuffer  (const size_t nVertices, const size_t vertexSize) = 0;
 		virtual size_t CreateIndexBuffer   (const size_t nIndices) = 0;
 		virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slot) = 0;
+		virtual size_t CreateTexture       (const Image& image, const size_t slot, const bool useMipmaps = false) = 0;
+		virtual size_t CreateTextureSampler(const TextureFilter& filter, const size_t slot) = 0;
 
 		virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
 
@@ -73,6 +80,11 @@ namespace WS {
 		inline ConstantBuffer& GetConstantBuffer(const size_t constantBufferIndex) noexcept
 		{
 			return *this->m_pConstantBuffers[constantBufferIndex];
+		}
+
+		inline Texture& GetTexture(const size_t textureIndex) noexcept
+		{
+			return *this->m_pTextures[textureIndex];
 		}
 
 		// ----- Non-Virtual Virtual Overloads ----- //
