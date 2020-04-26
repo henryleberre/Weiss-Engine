@@ -15,4 +15,4 @@ namespace WS {
     constexpr const ShaderBindingType shaderBindingTypePixelShader  = std::bitset<2u>(1u << 1u);
     constexpr const ShaderBindingType shaderBindingTypeBoth         = std::bitset<2u>((1u << 0u) | (1u << 1u));
 
-};
+}; // WS

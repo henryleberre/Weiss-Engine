@@ -42,7 +42,7 @@ namespace D3D11    {
 
 	void D3D11RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 	{
-		this->m_pRenderPipelines[drawable.pipelineIndex].Bind(this->m_pConstantBuffers);
+		this->m_pRenderPipelines[drawable.pipelineIndex].Bind(this->m_pConstantBuffers, this->m_pTextures, this->m_pTextureSamplers);
 		dynamic_cast<D3D11VertexBuffer*>(this->m_pVertexBuffers[drawable.vertexBufferIndex])->Bind();
 
 		if (drawable.indexBufferIndex.has_value()) {
@@ -88,6 +88,20 @@ namespace D3D11    {
 		this->m_pConstantBuffers.push_back(new D3D11ConstantBuffer(this->m_pDevice, &this->m_pDeviceContext, objSize, slot));
 
 		return this->m_pConstantBuffers.size() - 1u;
+	}
+
+	size_t D3D11RenderAPI::CreateTexture(const Image& image, const size_t slot, const bool useMipmaps)
+	{
+		this->m_pTextures.push_back(new D3D11Texture(this->m_pDevice, &this->m_pDeviceContext, image, slot, useMipmaps));
+
+		return this->m_pTextures.size() - 1u;
+	}
+
+	size_t D3D11RenderAPI::CreateTextureSampler(const TextureFilter& filter, const size_t slot)
+	{
+		this->m_pTextureSamplers.push_back(new D3D11TextureSampler(this->m_pDevice, &this->m_pDeviceContext, filter, slot));
+
+		return this->m_pTextureSamplers.size() - 1u;
 	}
 
 	void D3D11RenderAPI::Fill(const Colorf32& color)
