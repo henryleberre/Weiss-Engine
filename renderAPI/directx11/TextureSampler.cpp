@@ -11,25 +11,23 @@ namespace D3D11    {
                                              const TextureFilter& filter, const size_t slot)
         : m_pDeviceContext(pDeviceContext), m_slot(slot)
     {
-        D3D11_FILTER filterD3D11;
+        D3D11_SAMPLER_DESC samplerDescriptor;
 
         switch (filter)
         {
         case TextureFilter::POINT:
-            filterD3D11 = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            samplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
             break;
         case TextureFilter::BILINEAR:
-            filterD3D11 = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+            samplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
             break;
         case TextureFilter::TRILINEAR:
-            filterD3D11 = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            samplerDescriptor.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
             break;
         default:
             throw std::runtime_error("[DIRECTX 11] Your Filtering Method Is Not Supported");
         }
 
-        D3D11_SAMPLER_DESC samplerDescriptor;
-        samplerDescriptor.Filter   = filterD3D11;
         samplerDescriptor.AddressU = D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP;
         samplerDescriptor.AddressV = D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP;
         samplerDescriptor.AddressW = D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP;

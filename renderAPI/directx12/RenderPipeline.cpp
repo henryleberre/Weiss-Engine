@@ -23,7 +23,7 @@ namespace D3D12    {
 	}
 
 	D3D12RenderPipeline::D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc,
-											 std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures)
+											 std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures, std::vector<D3D12TextureSampler*> pTextureSamplers)
 		: m_constantBufferIndices(pipelineDesc.constantBufferIndices), m_textureIndices(pipelineDesc.textureIndices)
 	{
 		// Specify Compilation Flags
@@ -46,7 +46,7 @@ namespace D3D12    {
 		}
 
 		if (FAILED(D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
-			0, &pVertexShaderByteCode, &pErrorBuff)))
+				   0, &pVertexShaderByteCode, &pErrorBuff)))
 		{
 #ifdef _DEBUG
 			OutputDebugStringA((char*)pErrorBuff->GetBufferPointer());
@@ -161,7 +161,9 @@ namespace D3D12    {
 
 				descriptorRangesCBV[i].RangeType      = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
 				descriptorRangesCBV[i].NumDescriptors = 1u;
-				descriptorRangesCBV[i++].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlot();
+				descriptorRangesCBV[i].RegisterSpace  = 0u;
+				descriptorRangesCBV[i].BaseShaderRegister = (UINT)pConstantBufferX12->GetSlot();
+				descriptorRangesCBV[i++].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 			}
 
 			D3D12_ROOT_PARAMETER1 constantBufferRootParam;
@@ -180,7 +182,7 @@ namespace D3D12    {
 
 				texDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 				texDescriptorRange.NumDescriptors = 1u;
-				texDescriptorRange.BaseShaderRegister = (UINT)dynamic_cast<D3D12Texture*>(pTextures[i])->GetSlot();
+				texDescriptorRange.BaseShaderRegister = (UINT)dynamic_cast<D3D12Texture*>(pTextures[pipelineDesc.textureIndices[i]])->GetSlot();
 				texDescriptorRange.RegisterSpace = 0;
 				texDescriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 			}
@@ -194,14 +196,16 @@ namespace D3D12    {
 			rootParameters.push_back(textureRootParam);
 		}
 
-		this->m_pRootSignature = D3D12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, rootParameters);
+		std::vector<D3D12_STATIC_SAMPLER_DESC> samplers(pipelineDesc.textureSamplerIndices.size());
+		for (size_t i = 0u; i < samplers.size(); i++)
+			samplers[i] = pTextureSamplers[pipelineDesc.textureSamplerIndices[i]]->GetSamplerDesc();
+
+		this->m_pRootSignature = D3D12RootSignature(pDevice, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT, rootParameters, samplers);
 
 		psoDesc.pRootSignature = this->m_pRootSignature;
 
 		// create the pso
-		HRESULT hr = pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject);
-
-		if (FAILED(hr))
+		if (FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 	}
 
@@ -209,6 +213,11 @@ namespace D3D12    {
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		this->m_topology = other.m_topology;
+		this->m_pRootSignature = std::move(other.m_pRootSignature);
+		this->m_constantBufferIndices = other.m_constantBufferIndices;
+		this->m_textureIndices = other.m_textureIndices;
 	}
 
 	void D3D12RenderPipeline::Bind(D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,

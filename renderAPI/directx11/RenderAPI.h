@@ -26,7 +26,6 @@ namespace D3D11    {
 		D3D11DepthBuffer  m_pDepthBuffer;
 
 		std::vector<D3D11RenderPipeline> m_pRenderPipelines;
-
 		std::vector<D3D11TextureSampler*> m_pTextureSamplers;
 
 	public:

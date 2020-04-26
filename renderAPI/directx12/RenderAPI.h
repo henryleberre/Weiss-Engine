@@ -2,6 +2,7 @@
 
 #include "Buffers.h"
 #include "Texture.h"
+#include "TextureSampler.h"
 #include "RenderPipeline.h"
 #include "internal/Include.h"
 #include "CommandSubmitter.h"
@@ -35,6 +36,8 @@ namespace D3D12    {
 
 		D3D12_RECT     m_scissors;
 		D3D12_VIEWPORT m_viewport;
+
+		std::vector<D3D12TextureSampler*> m_pTextureSamplers;
 
 	private:
 		void CreateRenderTargets();
