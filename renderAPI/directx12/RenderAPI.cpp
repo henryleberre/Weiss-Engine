@@ -56,7 +56,7 @@ namespace D3D12    {
 	{
 		// Create Pipelines
 		for (const RenderPipelineDesc& pipelineDesc : pipelineDescs)
-			this->m_renderPipelines.emplace_back(this->m_pDevice, pipelineDesc, this->m_pConstantBuffers, this->m_pTextures);
+			this->m_renderPipelines.emplace_back(this->m_pDevice, pipelineDesc, this->m_pConstantBuffers, this->m_pTextures, this->m_pTextureSamplers);
 	}
 
 	void D3D12RenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
@@ -149,9 +149,9 @@ namespace D3D12    {
 
 	size_t D3D12RenderAPI::CreateTextureSampler(const TextureFilter& filter, const size_t slot)
 	{
+		this->m_pTextureSamplers.push_back(new D3D12TextureSampler(filter));
 
-
-		return 0u;
+		return this->m_pTextureSamplers.size() - 1u;
 	}
 
 	void D3D12RenderAPI::Fill(const Colorf32& color)

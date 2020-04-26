@@ -16,7 +16,7 @@ namespace D3D12    {
 		D3D12RootSignature() {  }
 
 		D3D12RootSignature(D3D12DeviceObjectWrapper& pDevice, const D3D12_ROOT_SIGNATURE_FLAGS& flags,
-							   const std::vector<D3D12_ROOT_PARAMETER1>& rootParameters = {});
+							   const std::vector<D3D12_ROOT_PARAMETER1>& rootParameters, const std::vector<D3D12_STATIC_SAMPLER_DESC>& samplers);
 
 		void operator=(D3D12RootSignature&& other) noexcept;
 	};

@@ -2,6 +2,7 @@
 
 #include "Buffers.h"
 #include "Texture.h"
+#include "TextureSampler.h"
 #include "internal/Include.h"
 #include "../../common/Include.h"
 
@@ -28,7 +29,7 @@ namespace D3D12    {
 		D3D12RenderPipeline(D3D12RenderPipeline&& other);
 
 		D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc,
-							std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures);
+							std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures, std::vector<D3D12TextureSampler*> pTextureSamplers);
 
 		void operator=(D3D12RenderPipeline&& other) noexcept;
 
