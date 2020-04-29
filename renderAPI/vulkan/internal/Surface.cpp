@@ -13,7 +13,7 @@ namespace VK       {
 
 		VkWin32SurfaceCreateInfoKHR createInfo = {};
 		createInfo.sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-		createInfo.hwnd      = reinterpret_cast<const WIN::WindowsWindow*>(pWindow)->GetHandle();
+		createInfo.hwnd      = reinterpret_cast<const WS::WIN::WindowsWindow*>(pWindow)->GetHandle();
 		createInfo.hinstance = GetModuleHandle(NULL);
 
 		if (VK_FAILED(vkCreateWin32SurfaceKHR(*this->m_pInstance, &createInfo, nullptr, &this->m_pObject)))
