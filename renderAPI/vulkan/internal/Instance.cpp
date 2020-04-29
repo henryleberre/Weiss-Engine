@@ -11,16 +11,16 @@ namespace VK       {
 
 	VKInstance::VKInstance(const char* appName)
 	{
-		const std::vector<std::string> availableExtensions = VKInstance::GetAvailableExtensions();
-		const std::vector<const char*> requiredExtensions  = VKInstance::GetRequiredExtensions();
+		const std::vector<VkExtensionProperties> availableExtensionsPropreties = VKInstance::GetAvailableExtensionsPropreties();
+		const std::vector<const char*>           requiredExtensions           = VKInstance::GetRequiredExtensions();
 
 		for (const char* requiredExtension : requiredExtensions)
 		{
 			bool bFound = false;
 
-			for (std::string availableExtension : availableExtensions)
+			for (const VkExtensionProperties& availableExtensionPropreties : availableExtensionsPropreties)
 			{
-				if (requiredExtension == availableExtension)
+				if (strcmp(requiredExtension, availableExtensionPropreties.extensionName) == 0)
 				{
 					bFound = true;
 					break;
@@ -64,7 +64,7 @@ namespace VK       {
 			vkDestroyInstance(this->m_pObject, nullptr);
 	}
 
-	std::vector<std::string> VKInstance::GetAvailableExtensions() noexcept
+	std::vector<VkExtensionProperties> VKInstance::GetAvailableExtensionsPropreties() noexcept
 	{
 		uint32_t extensionCount = 0;
 		if (VK_FAILED(vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr)))
@@ -74,18 +74,14 @@ namespace VK       {
 		if (VK_FAILED(vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data())))
 			throw std::runtime_error("[VULKAN] Failed To Enumerate Instance Extension Propreties");
 
-		std::vector<std::string> extensionNames(extensionCount);
-		for (const VkExtensionProperties& extension : extensions)
-			extensionNames.push_back(extension.extensionName);
-
-		return extensionNames;
+		return extensions;
 	}
 
 	std::vector<const char*> VKInstance::GetRequiredExtensions() noexcept
 	{
 		std::vector<const char*> extensions;
 
-#ifdef _DEBUG
+#ifdef __WEISS__DEBUG_MODE
 
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 

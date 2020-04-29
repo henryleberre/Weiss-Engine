@@ -66,6 +66,12 @@ namespace VK       {
 			this->m_rating += 3;
 			break;
 		}
+
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+		this->m_extensionPropreties.resize(extensionCount);
+		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, this->m_extensionPropreties.data());
 	}
 
 	VKDevice::VKDevice()
@@ -124,6 +130,31 @@ namespace VK       {
 
 	void VKDevice::CreateLogicalDeviceAndQueues(const VKInstance& instance)
 	{
+		/* Check Extension Support */
+		const std::vector<const char*> requiredExtensions  = VKDevice::GetRequiredExtensions();
+
+		for (const char* requiredExtension : requiredExtensions)
+		{
+			bool bFound = false;
+
+			for (VkExtensionProperties& availableExtensionPropreties : this->m_physicalDeviceData.m_extensionPropreties)
+			{
+				if (strcmp(requiredExtension, availableExtensionPropreties.extensionName) == 0)
+				{
+					bFound = true;
+					break;
+				}
+			}
+
+			if (!bFound)
+			{
+				const std::string errorString = "[VULKAN] Extension \"" + std::string(requiredExtension) + std::string("\" Is Not Supported");
+				throw std::runtime_error(errorString.c_str());
+			}
+		}
+
+		/* Create Logical Device */
+
 		std::array<VkDeviceQueueCreateInfo, 2u> queueCreateInfos;
 
 		uint32_t i = 0u;
@@ -138,9 +169,6 @@ namespace VK       {
 			queueCreateInfo.pQueuePriorities = &queuePriority;
 		}
 
-		std::cout << queueCreateInfos[0].queueFamilyIndex << '\n';
-		std::cout << queueCreateInfos[1].queueFamilyIndex << '\n';
-
 		VkPhysicalDeviceFeatures deviceFeatures = {};
 
 		VkDeviceCreateInfo createInfo = {};
@@ -149,20 +177,22 @@ namespace VK       {
 		createInfo.queueCreateInfoCount    = queueCreateInfos.size();
 		createInfo.pEnabledFeatures        = &deviceFeatures;
 		createInfo.enabledLayerCount       = 0u;
-
-		const std::vector<const char*> extensions{
-			VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
-
 		createInfo.ppEnabledLayerNames     = nullptr;
-		createInfo.enabledExtensionCount   = extensions.size();
-		createInfo.ppEnabledExtensionNames = extensions.data();
+		createInfo.enabledExtensionCount   = requiredExtensions.size();
+		createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
 		if (VK_FAILED(vkCreateDevice(this->m_physicalDeviceData.m_physicalDevice, &createInfo, nullptr, &this->m_pObject)))
 			throw std::runtime_error("|VULKAN] Failed To Create Logical Device");
 
+		/* Create The Queues */
+
 		for (size_t i = 0u; i < queueCreateInfos.size(); i++)
 			this->m_queues[i] = VKQueue(*this, this->m_physicalDeviceData.m_queueIndices[i].value());
+	}
+
+	std::vector<const char*> VKDevice::GetRequiredExtensions()  noexcept
+	{
+		return { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	}
 
 }; // VK

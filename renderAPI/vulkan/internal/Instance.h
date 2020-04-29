@@ -19,8 +19,8 @@ namespace VK       {
 		~VKInstance();
 
 	private:
-		static std::vector<std::string> GetAvailableExtensions() noexcept;
-		static std::vector<const char*> GetRequiredExtensions()  noexcept;
+		static std::vector<VkExtensionProperties> GetAvailableExtensionsPropreties() noexcept;
+		static std::vector<const char*>           GetRequiredExtensions()  noexcept;
 	};
 
 }; // VK
