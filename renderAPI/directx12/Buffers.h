@@ -76,6 +76,8 @@ namespace D3D12    {
 							D3D12CommandList* pCommandList,
 							const size_t objSize, const size_t slot);
 
+		D3D12DescriptorHeap& GetDescriptorHeap(const size_t frameIndex);
+
 		void Bind(const size_t frameIndex);
 
 		size_t GetSlot() const noexcept;

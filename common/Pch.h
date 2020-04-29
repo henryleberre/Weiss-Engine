@@ -103,4 +103,14 @@
 #include <algorithm>
 #include <functional>
 
+#if defined(_NDEBUG) or defined(NDEBUG)
+
+	#define __WEISS__RELEASE_MODE
+
+#else
+
+	#define __WEISS__DEBUG_MODE
+
+#endif
+
 #undef _CRT_SECURE_NO_WARNINGS

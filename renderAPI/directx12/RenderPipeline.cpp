@@ -29,11 +29,11 @@ namespace D3D12    {
 		// Specify Compilation Flags
 		UINT compileFlags = 0u;
 
-#ifdef _DEBUG
+#ifdef __WEISS__DEBUG_MODE
 
 		compileFlags |= D3DCOMPILE_DEBUG;
 
-#endif // _DEBUG
+#endif // __WEISS__DEBUG_MODE
 
 		// Vertex Shader
 		Microsoft::WRL::ComPtr<ID3DBlob> pVertexShaderByteCode;
@@ -48,9 +48,9 @@ namespace D3D12    {
 		if (FAILED(D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
 				   0, &pVertexShaderByteCode, &pErrorBuff)))
 		{
-#ifdef _DEBUG
+#ifdef __WEISS__DEBUG_MODE
 			OutputDebugStringA((char*)pErrorBuff->GetBufferPointer());
-#endif // _DEBUG
+#endif // __WEISS__DEBUG_MODE
 
 			throw std::runtime_error("[DIRECTX 12] Failed To Compile Vertex Shader");
 		}
@@ -71,9 +71,11 @@ namespace D3D12    {
 		if (FAILED(D3DCompileFromFile(psFilenameW, nullptr, nullptr, "main", "ps_5_0", compileFlags,
 			0, &pPixelShaderByteCode, &pErrorBuff)))
 		{
-#ifdef _DEBUG
+#ifdef __WEISS__DEBUG_MODE
+
 			OutputDebugStringA((char*)pErrorBuff->GetBufferPointer());
-	#endif // _DEBUG
+
+#endif // __WEISS__DEBUG_MODE
 
 			throw std::runtime_error("[DIRECTX 12] Failed To Compile Pixel Shader");
 		}
@@ -225,6 +227,24 @@ namespace D3D12    {
 	{
 		pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
 		pCommandList->SetPipelineState(this->m_pObject);
+
+		std::vector<ID3D12DescriptorHeap*> pDescriptorHeaps;
+		pDescriptorHeaps.resize(this->m_constantBufferIndices.size() + this->m_textureIndices.size());
+
+		size_t i = 0u;
+		for (const size_t cbIndex : this->m_constantBufferIndices) {
+			D3D12ConstantBuffer& cbBuffer = *dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex]);
+
+			pDescriptorHeaps[i++] = cbBuffer.GetDescriptorHeap(frameIndex);
+		}
+
+		for (const size_t texIndex : this->m_textureIndices) {
+			D3D12Texture& texture = *dynamic_cast<D3D12Texture*>(pTextures[texIndex]);
+
+			pDescriptorHeaps[i++] = texture.GetDescriptorHeap();
+		}
+
+		pCommandList->SetDescriptorHeaps(pDescriptorHeaps.size(), pDescriptorHeaps.data());
 
 		for (const size_t cbIndex : this->m_constantBufferIndices)
 			dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex])->Bind(frameIndex);

@@ -11,7 +11,8 @@ namespace D3D12    {
 		if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device2), (void**)&this->m_pObject)))
 			throw std::runtime_error("[D3D12] Failed To Create Device");
 
-#if defined(_DEBUG)
+#ifdef __WEISS__DEBUG_MODE
+
 		Microsoft::WRL::ComPtr<ID3D12InfoQueue> pInfoQueue;
 		if (SUCCEEDED(this->m_pObject->QueryInterface(IID_PPV_ARGS(&pInfoQueue))))
 		{
@@ -41,7 +42,8 @@ namespace D3D12    {
 			if (pInfoQueue->PushStorageFilter(&NewFilter) != S_OK)
 				throw std::runtime_error("[D3D12] Could Not Push Storage FIlter");
 		}
-#endif
+
+#endif // __WEISS__DEBUG_MODE
 	}
 
 	void D3D12Device::operator=(D3D12Device&& other) noexcept
