@@ -44,11 +44,13 @@ namespace D3D12    {
 		this->Update(image);
 	}
 
+	D3D12DescriptorHeap& D3D12Texture::GetDescriptorHeap()
+	{
+		return this->m_descriptorHeap;
+	}
+
 	void D3D12Texture::Bind()
 	{
-		ID3D12DescriptorHeap* descriptorHeaps[] = { this->m_descriptorHeap };
-
-		(*this->m_pCommandList)->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 		(*this->m_pCommandList)->SetGraphicsRootDescriptorTable(1u, this->m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	}
 

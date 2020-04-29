@@ -85,7 +85,7 @@ namespace VK       {
 
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-#endif // _DEBUG
+#endif // __WEISS__DEBUG_MODE
 
 #ifdef __WEISS__OS_WINDOWS
 

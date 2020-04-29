@@ -130,13 +130,7 @@ namespace WS {
 			const HICON hIcon = (HICON)LoadImageA(NULL, pathname, IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
 
 			if (hIcon == NULL)
-			{
-#ifdef __WEISS_SHOW_DEBUG_ERRORS
-				MESSAGE_BOX_ERROR("Could Not Load Icon");
-#endif // __WEISS_SHOW_DEBUG_ERRORS
-
 				throw std::runtime_error("Could Not Load Icon");
-			}
 
 			SendMessage(this->m_handle, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 		}

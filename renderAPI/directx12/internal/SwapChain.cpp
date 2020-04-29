@@ -14,11 +14,11 @@ namespace D3D12    {
 
 		UINT createFactoryFlags = 0;
 
-#if defined(_DEBUG)
+#ifdef __WEISS__DEBUG_MODE
 
 		createFactoryFlags = DXGI_CREATE_FACTORY_DEBUG;
 
-#endif // _DEBUG
+#endif // __WEISS__DEBUG_MODE
 
 		if (FAILED(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4))))
 			throw std::runtime_error("[D3D12] Could Not Create DXGIFactory2");
