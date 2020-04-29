@@ -26,6 +26,7 @@ namespace VK       {
 		VkPhysicalDeviceFeatures             m_features;
 		VkPhysicalDeviceProperties           m_propreties;
 		std::vector<VkQueueFamilyProperties> m_queueFamilyPropreties;
+		std::vector<VkExtensionProperties>   m_extensionPropreties;
 
 		union {
 			struct {
@@ -63,6 +64,8 @@ namespace VK       {
 	private:
 		void PickPhysicalDevice(const VKInstance& instance, const VKSurface& surface);
 		void CreateLogicalDeviceAndQueues(const VKInstance& instance);
+
+		static std::vector<const char*> GetRequiredExtensions() noexcept;
 	};
 
 }; // VK
