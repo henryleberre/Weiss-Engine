@@ -2,9 +2,11 @@
 x64/
 x86/
 .vs/
+*.png
 *.sln
 .git/
 *.obj
+*.jpg
 Debug/
 *.hlsl
 *.user

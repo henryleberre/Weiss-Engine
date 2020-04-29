@@ -57,6 +57,16 @@ namespace VK       {
 		return 0u;
 	}
 
+	size_t VKRenderAPI::CreateTexture(const Image& image, const size_t slot, const bool useMipmaps)
+	{
+		return 0u;
+	}
+
+	size_t VKRenderAPI::CreateTextureSampler(const TextureFilter& filter, const size_t slot)
+	{
+		return 0u;
+	}
+
 	void VKRenderAPI::Fill(const Colorf32& color)
 	{
 

@@ -129,6 +129,7 @@ namespace VK       {
 		uint32_t i = 0u;
 		for (VkDeviceQueueCreateInfo& queueCreateInfo : queueCreateInfos)
 		{
+			queueCreateInfo = {};
 			queueCreateInfo.sType      = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queueCreateInfo.queueCount = 1u;
 			queueCreateInfo.queueFamilyIndex = this->m_physicalDeviceData.m_queueIndices[i++].value();
