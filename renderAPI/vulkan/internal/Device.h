@@ -59,6 +59,8 @@ namespace VK       {
 
 		void operator=(VKDevice&& device) noexcept;
 
+		[[nodiscard]] inline VKPhysicalDeviceDataWrapper GetPhysicalDeviceData() const noexcept { return this->m_physicalDeviceData; }
+
 		~VKDevice();
 
 	private:

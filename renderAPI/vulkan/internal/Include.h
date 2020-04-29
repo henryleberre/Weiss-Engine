@@ -3,4 +3,5 @@
 #include "Device.h"
 #include "Surface.h"
 #include "Instance.h"
+#include "SwapChain.h"
 #include "ObjectWrapper.h"

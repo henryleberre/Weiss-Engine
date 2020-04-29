@@ -4,8 +4,6 @@ namespace WS       {
 namespace Internal {
 namespace VK       {
 
-	VKSurface::VKSurface() {}
-
 	VKSurface::VKSurface(VKInstance* pInstance, Window* pWindow)
 		: m_pInstance(pInstance)
 	{
