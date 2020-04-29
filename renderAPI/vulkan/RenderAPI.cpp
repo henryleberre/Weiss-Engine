@@ -12,9 +12,10 @@ namespace VK       {
 
 	void VKRenderAPI::InitRenderAPI(Window* pWindow, const uint16_t maxFps)
 	{
-		this->m_instance = VKInstance("App Made With Weiss Engine");
-		this->m_surface  = VKSurface(&this->m_instance, pWindow);
-		this->m_device   = VKDevice(this->m_instance, this->m_surface);
+		this->m_instance  = VKInstance("App Made With Weiss Engine");
+		this->m_surface   = VKSurface(&this->m_instance, pWindow);
+		this->m_device    = VKDevice(this->m_instance, this->m_surface);
+		this->m_swapChain = VKSwapChain(this->m_device, this->m_surface);
 	}
 
 	void VKRenderAPI::InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs)

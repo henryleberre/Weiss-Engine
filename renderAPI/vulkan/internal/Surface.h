@@ -14,12 +14,15 @@ namespace VK       {
 	private:
 		VKInstance* m_pInstance = nullptr;
 
-	public:
-		VKSurface();
+		Vec2u16 m_dimensions{ 0u, 0u };
 
+	public:
+		VKSurface() = default;
 		VKSurface(VKInstance* pInstance, Window* pWindow);
 
 		void operator=(VKSurface&& other) noexcept;
+
+		[[nodiscard]] inline Vec2u16 GetDimensions() const noexcept { return this->m_dimensions; }
 
 		~VKSurface();
 	};
