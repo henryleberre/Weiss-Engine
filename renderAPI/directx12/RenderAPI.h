@@ -57,7 +57,7 @@ namespace D3D12    {
 		virtual size_t CreateVertexBuffer  (const size_t nVertices, const size_t vertexSize) override;
 		virtual size_t CreateIndexBuffer   (const size_t nIndices) override;
 		virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slot) override;
-		virtual size_t CreateTexture       (const Image& image, const size_t slot, const bool useMipmaps = false) override;
+		virtual size_t CreateTexture       (const size_t width, const size_t height, const size_t slot, const bool useMipmaps = false) override;
 		virtual size_t CreateTextureSampler(const TextureFilter& filter, const size_t slot) override;
 
 		virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) override;

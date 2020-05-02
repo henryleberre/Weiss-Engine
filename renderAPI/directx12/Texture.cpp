@@ -6,15 +6,15 @@ namespace WS       {
 namespace Internal {
 namespace D3D12    {
 
-	D3D12Texture::D3D12Texture(D3D12DeviceObjectWrapper& pDevice, D3D12CommandList* pCommandList, const Image& image, const size_t slot, const bool useMipmaps)
+	D3D12Texture::D3D12Texture(D3D12DeviceObjectWrapper& pDevice, D3D12CommandList* pCommandList, const size_t width, const size_t height, const size_t slot, const bool useMipmaps)
 		: m_pCommandList(pCommandList), m_slot(slot)
 	{
 		D3D12_RESOURCE_DESC resourceDesc {};
 		resourceDesc = {};
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		resourceDesc.Alignment = 0; 
-		resourceDesc.Width = image.GetWidth();
-		resourceDesc.Height = image.GetHeight();
+		resourceDesc.Width  = width;
+		resourceDesc.Height = height;
 		resourceDesc.DepthOrArraySize = 1;
 		resourceDesc.MipLevels = useMipmaps ? 0 : 1;
 		resourceDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -40,8 +40,6 @@ namespace D3D12    {
 		this->m_textureResourceView.Texture2D.MipLevels = useMipmaps ? 0 : 1;
 		
 		pDevice->CreateShaderResourceView(this->m_textureResource, &this->m_textureResourceView, this->m_descriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-		this->Update(image);
 	}
 
 	D3D12DescriptorHeap& D3D12Texture::GetDescriptorHeap()
@@ -59,8 +57,8 @@ namespace D3D12    {
 		this->m_textureResource.TransitionTo(*this->m_pCommandList, D3D12_RESOURCE_STATE_COPY_DEST);
 
 		D3D12_SUBRESOURCE_DATA textureData{};
-		textureData.pData = image.GetBuffer();
-		textureData.RowPitch = image.GetWidth() * sizeof(Coloru8);
+		textureData.pData      = image.GetBuffer();
+		textureData.RowPitch   = image.GetWidth()      * sizeof(Coloru8);
 		textureData.SlicePitch = image.GetPixelCount() * sizeof(Coloru8);
  
 		UpdateSubresources(*this->m_pCommandList, this->m_textureResource, this->m_uploadHeap, 0, 0, 1, &textureData);

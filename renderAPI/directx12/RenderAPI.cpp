@@ -97,8 +97,8 @@ namespace D3D12    {
 
 	void D3D12RenderAPI::EndDrawing()
 	{
-		D3D12RenderTarget& renderTarget = this->m_pRenderTargets[this->currentFrameIndex];
-		D3D12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
+		D3D12RenderTarget& renderTarget    = this->m_pRenderTargets[this->currentFrameIndex];
+		D3D12CommandList&  pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 		D3D12Fence& pFence = this->m_commandSubmitter.GetFence(this->currentFrameIndex);
 
 		pGfxCommandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
@@ -140,9 +140,9 @@ namespace D3D12    {
 		return this->m_pConstantBuffers.size() - 1u;
 	}
 
-	size_t D3D12RenderAPI::CreateTexture(const Image& image, const size_t slot, const bool useMipmaps)
+	size_t D3D12RenderAPI::CreateTexture(const size_t width, const size_t height, const size_t slot, const bool useMipmaps)
 	{
-		this->m_pTextures.push_back(new D3D12Texture(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), image, slot, useMipmaps));
+		this->m_pTextures.push_back(new D3D12Texture(this->m_pDevice, this->m_commandSubmitter.GetCommandListPr(), width, height, slot, useMipmaps));
 
 		return this->m_pTextures.size() - 1u;
 	}
