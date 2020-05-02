@@ -15,15 +15,20 @@ namespace D3D11    {
 	class D3D11Texture : public Texture,
 						 public D3D11TextureObjectWrapper {
 	private:
+		D3D11DeviceObjectWrapper*        m_pDevice        = nullptr;
 		D3D11DeviceContextObjectWrapper* m_pDeviceContext = nullptr;
 
 		size_t m_slot = 0u;
+
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture2D;
+
+		bool m_useMipmaps;
 
 	public:
 		D3D11Texture() = default;
 		D3D11Texture(D3D11DeviceObjectWrapper& pDevice,
 					 D3D11DeviceContextObjectWrapper* pDeviceContext,
-					 const Image& image, const size_t slot, const bool useMipmaps);
+					 const size_t width, const size_t height, const size_t slot, const bool useMipmaps);
 
 		void Bind() const noexcept;
 

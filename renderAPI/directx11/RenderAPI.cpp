@@ -90,9 +90,9 @@ namespace D3D11    {
 		return this->m_pConstantBuffers.size() - 1u;
 	}
 
-	size_t D3D11RenderAPI::CreateTexture(const Image& image, const size_t slot, const bool useMipmaps)
+	size_t D3D11RenderAPI::CreateTexture(const size_t width, const size_t height, const size_t slot, const bool useMipmaps)
 	{
-		this->m_pTextures.push_back(new D3D11Texture(this->m_pDevice, &this->m_pDeviceContext, image, slot, useMipmaps));
+		this->m_pTextures.push_back(new D3D11Texture(this->m_pDevice, &this->m_pDeviceContext, width, height, slot, useMipmaps));
 
 		return this->m_pTextures.size() - 1u;
 	}
