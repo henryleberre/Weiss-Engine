@@ -24,7 +24,7 @@ namespace D3D12    {
 
 	public:
 		D3D12Texture() = default;
-		D3D12Texture(D3D12DeviceObjectWrapper& pDevice, D3D12CommandList* pCommandList, const Image& image, const size_t slot, const bool useMipmaps);
+		D3D12Texture(D3D12DeviceObjectWrapper& pDevice, D3D12CommandList* pCommandList, const size_t width, const size_t height, const size_t slot, const bool useMipmaps);
 
 		D3D12DescriptorHeap& GetDescriptorHeap();
 
