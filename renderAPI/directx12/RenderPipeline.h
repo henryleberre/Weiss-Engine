@@ -23,7 +23,7 @@ namespace D3D12    {
 		std::vector<uint32_t> m_constantBufferIndices;
 		std::vector<uint32_t> m_textureIndices;
 
-		D3D12DescriptorHeap m_gpuDescHeap;
+		D3D12DescriptorHeap m_gpuDescHeaps[WEISS__FRAME_BUFFER_COUNT];
 
 	public:
 		D3D12RenderPipeline();

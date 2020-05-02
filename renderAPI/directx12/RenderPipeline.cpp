@@ -200,8 +200,32 @@ namespace D3D12    {
 		if (FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 
-		this->m_gpuDescHeap = D3D12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, this->m_constantBufferIndices.size() + this->m_textureIndices.size(),
-												  D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		for (size_t frameIndex = 0u; frameIndex < WEISS__FRAME_BUFFER_COUNT; frameIndex++)
+		{
+			D3D12DescriptorHeap& gpuDescHeap = this->m_gpuDescHeaps[frameIndex];
+
+			gpuDescHeap = D3D12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, this->m_constantBufferIndices.size() + this->m_textureIndices.size(),
+											  D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+
+			CD3DX12_CPU_DESCRIPTOR_HANDLE gpuDescHeapHandleEnd(gpuDescHeap->GetCPUDescriptorHandleForHeapStart());
+			const UINT incrementSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			for (const size_t cbIndex : this->m_constantBufferIndices) {
+				D3D12ConstantBuffer& cbBuffer = *dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex]);
+
+				pDevice->CopyDescriptorsSimple(1u, gpuDescHeapHandleEnd, cbBuffer.GetDescriptorHeap(frameIndex)->GetCPUDescriptorHandleForHeapStart(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+				gpuDescHeapHandleEnd.Offset(1u, incrementSize);
+			}
+
+			for (const size_t texIndex : this->m_textureIndices) {
+				D3D12Texture& texture = *dynamic_cast<D3D12Texture*>(pTextures[texIndex]);
+
+				pDevice->CopyDescriptorsSimple(1u, gpuDescHeapHandleEnd, texture.GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+				gpuDescHeapHandleEnd.Offset(1u, incrementSize);
+			}
+		}
 	}
 
 	void D3D12RenderPipeline::operator=(D3D12RenderPipeline&& other) noexcept
@@ -212,7 +236,10 @@ namespace D3D12    {
 		this->m_pRootSignature = std::move(other.m_pRootSignature);
 		this->m_constantBufferIndices = other.m_constantBufferIndices;
 		this->m_textureIndices = other.m_textureIndices;
-		this->m_gpuDescHeap = std::move(other.m_gpuDescHeap);
+
+		size_t i = 0u;
+		for (D3D12DescriptorHeap& gpuHeap : this->m_gpuDescHeaps)
+			gpuHeap = std::move(other.m_gpuDescHeaps[i++]);
 	}
 
 	void D3D12RenderPipeline::Bind(D3D12DeviceObjectWrapper& pDevice, D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
@@ -220,30 +247,8 @@ namespace D3D12    {
 	{
 		pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
 		pCommandList->SetPipelineState(this->m_pObject);
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE gpuDescHeapHandleEnd(this->m_gpuDescHeap->GetCPUDescriptorHandleForHeapStart());
-		const UINT incrementSize = pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-		size_t i = 0u;
-		for (const size_t cbIndex : this->m_constantBufferIndices) {
-			D3D12ConstantBuffer& cbBuffer = *dynamic_cast<D3D12ConstantBuffer*>(pConstantBuffers[cbIndex]);
-
-			pDevice->CopyDescriptorsSimple(1u, gpuDescHeapHandleEnd, cbBuffer.GetDescriptorHeap(frameIndex)->GetCPUDescriptorHandleForHeapStart(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-			gpuDescHeapHandleEnd.Offset(1u, incrementSize);
-		}
-
-		i = 0u;
-		for (const size_t texIndex : this->m_textureIndices) {
-			D3D12Texture& texture = *dynamic_cast<D3D12Texture*>(pTextures[texIndex]);
-
-			pDevice->CopyDescriptorsSimple(1u, gpuDescHeapHandleEnd, texture.GetDescriptorHeap()->GetCPUDescriptorHandleForHeapStart(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		
-			gpuDescHeapHandleEnd.Offset(1u, incrementSize);
-		}
-
-		pCommandList->SetDescriptorHeaps(1u, this->m_gpuDescHeap.GetPtr());
-		pCommandList->SetGraphicsRootDescriptorTable(0u, this->m_gpuDescHeap->GetGPUDescriptorHandleForHeapStart());
+		pCommandList->SetDescriptorHeaps(1u, this->m_gpuDescHeaps[frameIndex].GetPtr());
+		pCommandList->SetGraphicsRootDescriptorTable(0u, this->m_gpuDescHeaps[frameIndex]->GetGPUDescriptorHandleForHeapStart());
 		pCommandList->IASetPrimitiveTopology(this->m_topology);
 	}
 
