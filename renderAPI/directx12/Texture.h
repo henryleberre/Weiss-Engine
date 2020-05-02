@@ -28,8 +28,6 @@ namespace D3D12    {
 
 		D3D12DescriptorHeap& GetDescriptorHeap();
 
-		void Bind();
-
 		size_t GetSlot() const noexcept;
 
 		virtual void Update(const Image& image) override;

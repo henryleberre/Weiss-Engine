@@ -116,13 +116,6 @@ namespace D3D12    {
 		return this->m_descriptorHeaps[frameIndex];
 	}
 
-	void D3D12ConstantBuffer::Bind(const size_t frameIndex)
-	{
-		D3D12DescriptorHeap& descriptorHeap = this->m_descriptorHeaps[frameIndex];
-
-		this->m_pCommandList->Get()->SetGraphicsRootDescriptorTable(0u, descriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	}
-
 	size_t D3D12ConstantBuffer::GetSlot() const noexcept { return this->m_slot; }
 
 	void D3D12ConstantBuffer::Update()
