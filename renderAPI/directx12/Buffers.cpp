@@ -97,7 +97,7 @@ namespace D3D12    {
 		std::memset(this->m_constantBufferData.data(), 0u, objSize);
 
 		for (int i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
-			this->m_descriptorHeaps[i] = D3D12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1u, D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+			this->m_descriptorHeaps[i] = D3D12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1u, D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
 		for (int i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
 		{

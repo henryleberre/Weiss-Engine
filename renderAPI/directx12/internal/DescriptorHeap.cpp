@@ -13,7 +13,7 @@ namespace D3D12    {
 		desc.Type  = type;
 		desc.Flags = flags;
 
-		if (pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&this->m_pObject)) != S_OK)
+		if (FAILED(pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&this->m_pObject))))
 			throw std::runtime_error("[D3D12] Could Not Create Descriptor Heap");
 	}
 
