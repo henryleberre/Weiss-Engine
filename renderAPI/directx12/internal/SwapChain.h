@@ -23,6 +23,9 @@ namespace D3D12    {
 		void operator=(D3D12SwapChain&& other) noexcept;
 
 		void Present(const bool vSync) const;
+	
+	private:
+		static bool IsTearingSupported();
 	};
 
 }; // D3D12
