@@ -60,7 +60,7 @@ namespace WS {
 		virtual size_t CreateVertexBuffer  (const size_t nVertices, const size_t vertexSize) = 0;
 		virtual size_t CreateIndexBuffer   (const size_t nIndices) = 0;
 		virtual size_t CreateConstantBuffer(const size_t objSize, const size_t slot) = 0;
-		virtual size_t CreateTexture       (const Image& image, const size_t slot, const bool useMipmaps = false) = 0;
+		virtual size_t CreateTexture       (const size_t width, const size_t height, const size_t slot, const bool useMipmaps = false) = 0;
 		virtual size_t CreateTextureSampler(const TextureFilter& filter, const size_t slot) = 0;
 
 		virtual void Fill(const Colorf32& color = { 1.f, 1.f, 1.f, 1.f }) = 0;
@@ -129,6 +129,14 @@ namespace WS {
 			this->GetConstantBuffer(constantBufferIndex).Update();
 
 			return constantBufferIndex;
+		}
+
+		inline size_t CreateTexture(Image& image, const size_t slot, const bool useMipmaps = false)
+		{
+			const size_t textureIndex = this->CreateTexture(image.GetWidth(), image.GetHeight(), false);
+			this->GetTexture(textureIndex).Update(image);
+
+			return textureIndex;
 		}
 
 		// ----- Getter Functions ----- //
