@@ -23,6 +23,8 @@ namespace D3D12    {
 		std::vector<uint32_t> m_constantBufferIndices;
 		std::vector<uint32_t> m_textureIndices;
 
+		D3D12DescriptorHeap m_gpuDescHeap;
+
 	public:
 		D3D12RenderPipeline();
 
@@ -33,8 +35,8 @@ namespace D3D12    {
 
 		void operator=(D3D12RenderPipeline&& other) noexcept;
 
-		void Bind(D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
-				  std::vector<Texture*> pTextures, const size_t frameIndex) const noexcept;
+		void Bind(D3D12DeviceObjectWrapper& pDevice, D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
+				  std::vector<Texture*> pTextures, const size_t frameIndex) noexcept;
 	};
 
 }; // D3D12

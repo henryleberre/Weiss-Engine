@@ -34,7 +34,7 @@ namespace D3D12    {
 		this->m_samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
 		this->m_samplerDesc.ShaderRegister = 0;
 		this->m_samplerDesc.RegisterSpace  = 0;
-		this->m_samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		this->m_samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 	}
 
 	D3D12_STATIC_SAMPLER_DESC D3D12TextureSampler::GetSamplerDesc() const noexcept

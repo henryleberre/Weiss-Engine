@@ -24,7 +24,7 @@ namespace D3D12    {
 		resourceDesc.Flags  = D3D12_RESOURCE_FLAG_NONE;
 
 		this->m_textureResource = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_DEFAULT, D3D12_HEAP_FLAG_NONE, &resourceDesc,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, "Texture Committed Resource");
+														 D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, "Texture Committed Resource");
 
 		UINT64 textureUploadBufferSize;
 		pDevice->GetCopyableFootprints(&resourceDesc, 0, 1, 0, nullptr, nullptr, nullptr, &textureUploadBufferSize);
@@ -32,7 +32,7 @@ namespace D3D12    {
 		this->m_uploadHeap = D3D12CommittedResource(pDevice, D3D12_HEAP_TYPE_UPLOAD, D3D12_HEAP_FLAG_NONE, &CD3DX12_RESOURCE_DESC::Buffer(textureUploadBufferSize),
 													D3D12_RESOURCE_STATE_GENERIC_READ, "Texture Upload Heap");
 
-		this->m_descriptorHeap = D3D12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		this->m_descriptorHeap = D3D12DescriptorHeap(pDevice, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
 		this->m_textureResourceView.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		this->m_textureResourceView.Format = resourceDesc.Format;
@@ -58,7 +58,7 @@ namespace D3D12    {
 	{
 		return this->m_slot;
 	}
-
+	 
 	void D3D12Texture::Update(const Image& image)
 	{
 		this->m_textureResource.TransitionTo(*this->m_pCommandList, D3D12_RESOURCE_STATE_COPY_DEST);
@@ -67,7 +67,7 @@ namespace D3D12    {
 		textureData.pData = image.GetBuffer();
 		textureData.RowPitch = image.GetWidth() * sizeof(Coloru8);
 		textureData.SlicePitch = image.GetPixelCount() * sizeof(Coloru8);
-		
+ 
 		UpdateSubresources(*this->m_pCommandList, this->m_textureResource, this->m_uploadHeap, 0, 0, 1, &textureData);
 
 		this->m_textureResource.TransitionBack(*this->m_pCommandList);
