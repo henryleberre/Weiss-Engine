@@ -39,6 +39,7 @@ namespace D3D12    {
 		swapChainDesc.OutputWindow = reinterpret_cast<const WS::WIN::WindowsWindow*>(pWindow)->GetHandle();
 		swapChainDesc.SampleDesc   = sampleDesc;
 		swapChainDesc.Windowed     = true; 
+		swapChainDesc.Flags        = D3D12SwapChain::IsTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 		if (FAILED(dxgiFactory4->CreateSwapChain(pCommandQueue, &swapChainDesc, (IDXGISwapChain**) &this->m_pObject)))
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Swap Chain");
@@ -54,6 +55,25 @@ namespace D3D12    {
 	{
 		if (FAILED(this->m_pObject->Present(vSync ? 1 : 0u, 0u)))
 			throw std::runtime_error("[DIRECTX 12] Presentation Failed");
+	}
+
+	bool D3D12SwapChain::IsTearingSupported()
+	{
+		BOOL isTearingSupported = FALSE;
+
+		Microsoft::WRL::ComPtr<IDXGIFactory4> factory4;
+		Microsoft::WRL::ComPtr<IDXGIFactory5> factory5;
+
+		if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+			throw std::runtime_error("[DIRECTX 12] Failed To Check Tearing (While Running CreateDXGIFactory1)");
+
+		if (FAILED(factory4.As(&factory5)))
+			throw std::runtime_error("[DIRECTX 12] Failed To Check Tearing (While Running CreateDXGIFactory1)");
+
+		if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingSupported, sizeof(isTearingSupported))))
+			return false;
+
+		return true;
 	}
 
 }; // D3D12
