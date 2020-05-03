@@ -20,11 +20,13 @@ namespace VK       {
 #endif // __WEISS__OS_WINDOWS
 	}
 
-	void VKSurface::operator=(VKSurface&& other) noexcept
+	VKSurface& VKSurface::operator=(VKSurface&& other) noexcept
 	{
 		this->m_pInstance = other.m_pInstance;
 		this->m_pObject   = other.m_pObject;
 		other.m_pObject   = VK_NULL_HANDLE;
+
+		return *this;
 	}
 
 	VKSurface::~VKSurface()

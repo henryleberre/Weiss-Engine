@@ -52,10 +52,12 @@ namespace VK       {
 			throw std::runtime_error("[VULKAN] Failed To Create Instance");
 	}
 
-	void VKInstance::operator=(VKInstance&& instance) noexcept
+	VKInstance& VKInstance::operator=(VKInstance&& instance) noexcept
 	{
 		this->m_pObject    = instance.m_pObject;
 		instance.m_pObject = VK_NULL_HANDLE;
+
+		return *this;
 	}
 
 	VKInstance::~VKInstance()

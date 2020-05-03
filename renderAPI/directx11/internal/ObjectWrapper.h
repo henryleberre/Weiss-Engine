@@ -25,10 +25,12 @@ namespace D3D11    {
 		 * This is done to ensure that the resource isn't freed while this object is being created.
 		 * (Preventing a "use after free")
 		*/
-		void operator=(D3D11ObjectWrapper<T>&& other)
+		D3D11ObjectWrapper<T>& operator=(D3D11ObjectWrapper<T>&& other)
 		{
 			this->m_pObject = other.m_pObject;
 			other.m_pObject = nullptr;
+
+			return *this;
 		}
 
 		virtual ~D3D11ObjectWrapper()

@@ -228,7 +228,7 @@ namespace D3D12    {
 		}
 	}
 
-	void D3D12RenderPipeline::operator=(D3D12RenderPipeline&& other) noexcept
+	D3D12RenderPipeline& D3D12RenderPipeline::operator=(D3D12RenderPipeline&& other) noexcept
 	{
 		this->m_pObject = std::move(other.m_pObject);
 
@@ -240,6 +240,8 @@ namespace D3D12    {
 		size_t i = 0u;
 		for (D3D12DescriptorHeap& gpuHeap : this->m_gpuDescHeaps)
 			gpuHeap = std::move(other.m_gpuDescHeaps[i++]);
+
+		return *this;
 	}
 
 	void D3D12RenderPipeline::Bind(D3D12DeviceObjectWrapper& pDevice, D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,

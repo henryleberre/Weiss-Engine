@@ -45,10 +45,12 @@ namespace D3D12    {
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Swap Chain");
 	}
 
-	void D3D12SwapChain::operator=(D3D12SwapChain&& other) noexcept
+	D3D12SwapChain& D3D12SwapChain::operator=(D3D12SwapChain&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 	void D3D12SwapChain::Present(const bool vSync) const

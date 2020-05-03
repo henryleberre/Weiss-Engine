@@ -24,13 +24,11 @@ namespace D3D11    {
 	public:
 		D3D11VertexBuffer() = default;
 
-		D3D11VertexBuffer(D3D11VertexBuffer&& other) noexcept;
-
 		D3D11VertexBuffer(D3D11DeviceObjectWrapper& pDevice,
 						  D3D11DeviceContextObjectWrapper* pDeviceContext,
 						  const size_t nVertices, const size_t vertexSize);
 
-		void operator=(D3D11VertexBuffer&& other) noexcept;
+		D3D11VertexBuffer& operator=(D3D11VertexBuffer&& other) noexcept;
 
 		void Bind();
 
@@ -47,13 +45,11 @@ namespace D3D11    {
 	public:
 		D3D11IndexBuffer() = default;
 
-		D3D11IndexBuffer(D3D11IndexBuffer&& other) noexcept;
-
 		D3D11IndexBuffer(D3D11DeviceObjectWrapper& pDevice,
 						 D3D11DeviceContextObjectWrapper* pDeviceContext,
 						 const size_t nIndices);
 
-		void operator=(D3D11IndexBuffer&& other) noexcept;
+		D3D11IndexBuffer& operator=(D3D11IndexBuffer&& other) noexcept;
 
 		void Bind();
 
@@ -72,13 +68,11 @@ namespace D3D11    {
 	public:
 		D3D11ConstantBuffer() = default;
 
-		D3D11ConstantBuffer(D3D11ConstantBuffer&& other) noexcept;
-
 		D3D11ConstantBuffer(D3D11DeviceObjectWrapper& pDevice,
 							D3D11DeviceContextObjectWrapper* pDeviceContext,
 							const size_t objSize, const size_t slot);
 
-		void operator=(D3D11ConstantBuffer&& other) noexcept;
+		D3D11ConstantBuffer& operator=(D3D11ConstantBuffer&& other) noexcept;
 
 		void Bind();
 

@@ -20,10 +20,12 @@ namespace VK       {
 
 		VKObjectWrapper(T& obj) : m_pObject(obj) {  }
 
-		VKObjectWrapper(VKObjectWrapper&& other)
+		VKObjectWrapper<T>& operator=(VKObjectWrapper<T>&& other)
 		{
 			this->m_pObject = other.m_pObject;
 			other.m_pObject = VK_NULL_HANDLE;
+
+			return *this;
 		}
 
 		T* GetPtr() noexcept { return this->m_pObject; }

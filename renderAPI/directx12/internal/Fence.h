@@ -24,7 +24,7 @@ namespace D3D12    {
 		
 		~D3D12Fence();
 
-		void operator=(D3D12Fence&& other) noexcept;
+		D3D12Fence& operator=(D3D12Fence&& other) noexcept;
 
 		HANDLE GetEvent() const noexcept;
 	};

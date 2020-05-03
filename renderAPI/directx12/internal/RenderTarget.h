@@ -23,7 +23,7 @@ namespace D3D12    {
 						  const CD3DX12_CPU_DESCRIPTOR_HANDLE& rtvHandle,
 						  const uint16_t frameIndex);
 
-		void operator=(D3D12RenderTarget&& other) noexcept;
+		D3D12RenderTarget& operator=(D3D12RenderTarget&& other) noexcept;
 	};
 
 }; // D3D12

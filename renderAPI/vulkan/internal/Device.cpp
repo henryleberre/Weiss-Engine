@@ -15,10 +15,12 @@ namespace VK       {
 		other.m_pObject = VK_NULL_HANDLE;
 	}
 
-	void VKQueue::operator=(VKQueue&& other)
+	VKQueue& VKQueue::operator=(VKQueue&& other)
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = VK_NULL_HANDLE;
+
+		return *this;
 	}
 
 
@@ -85,12 +87,14 @@ namespace VK       {
 		this->CreateLogicalDeviceAndQueues(instance);
 	}
 
-	void VKDevice::operator=(VKDevice&& device) noexcept
+	VKDevice& VKDevice::operator=(VKDevice&& device) noexcept
 	{
 		this->m_graphicsQueue = device.m_graphicsQueue;
 		this->m_physicalDeviceData = device.m_physicalDeviceData;
 		this->m_presentQueue = device.m_presentQueue;
 		this->m_queues = device.m_queues;
+
+		return *this;
 	}
 
 	VKDevice::~VKDevice()

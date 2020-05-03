@@ -23,7 +23,7 @@ namespace D3D12    {
 
 		~D3D12CommandList() = default;
 
-		void operator=(D3D12CommandList&& other) noexcept;
+		D3D12CommandList& operator=(D3D12CommandList&& other) noexcept;
 
 		void Close();
 

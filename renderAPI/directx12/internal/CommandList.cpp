@@ -14,10 +14,12 @@ namespace D3D12    {
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Command List");
 	}
 
-	void D3D12CommandList::operator=(D3D12CommandList&& other) noexcept
+	D3D12CommandList& D3D12CommandList::operator=(D3D12CommandList&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 	void D3D12CommandList::Close()

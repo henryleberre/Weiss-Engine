@@ -17,10 +17,12 @@ namespace D3D12    {
 			throw std::runtime_error("[D3D12] Could Not Create Descriptor Heap");
 	}
 
-	void D3D12DescriptorHeap::operator=(D3D12DescriptorHeap&& other) noexcept
+	D3D12DescriptorHeap& D3D12DescriptorHeap::operator=(D3D12DescriptorHeap&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 }; // D3D12

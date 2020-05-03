@@ -27,10 +27,12 @@ namespace D3D12    {
 			throw std::runtime_error("[DIRECTX 12] Failed To Create Root Signature");
 	}
 
-	void D3D12RootSignature::operator=(D3D12RootSignature&& other) noexcept
+	D3D12RootSignature& D3D12RootSignature::operator=(D3D12RootSignature&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 }; // D3D12

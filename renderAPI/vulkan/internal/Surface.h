@@ -20,7 +20,7 @@ namespace VK       {
 		VKSurface() = default;
 		VKSurface(VKInstance* pInstance, Window* pWindow);
 
-		void operator=(VKSurface&& other) noexcept;
+		VKSurface& operator=(VKSurface&& other) noexcept;
 
 		[[nodiscard]] inline Vec2u16 GetDimensions() const noexcept { return this->m_dimensions; }
 

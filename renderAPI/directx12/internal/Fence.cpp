@@ -22,10 +22,12 @@ namespace D3D12    {
 		CloseHandle(this->m_fenceEvent);
 	}
 
-	void D3D12Fence::operator=(D3D12Fence&& other) noexcept
+	D3D12Fence& D3D12Fence::operator=(D3D12Fence&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 	HANDLE D3D12Fence::GetEvent() const noexcept

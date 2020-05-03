@@ -20,7 +20,7 @@ namespace D3D12    {
 						   D3D12CommandQueueObjectWrapper& pCommandQueue,
 						   const Window* pWindow, const uint16_t maxFps, const UINT bufferCount);
 
-		void operator=(D3D12SwapChain&& other) noexcept;
+		D3D12SwapChain& operator=(D3D12SwapChain&& other) noexcept;
 
 		void Present(const bool vSync) const;
 	

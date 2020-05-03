@@ -46,10 +46,12 @@ namespace D3D12    {
 #endif // __WEISS__DEBUG_MODE
 	}
 
-	void D3D12Device::operator=(D3D12Device&& other) noexcept
+	D3D12Device& D3D12Device::operator=(D3D12Device&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 }; // D3D12

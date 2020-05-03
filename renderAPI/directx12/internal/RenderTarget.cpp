@@ -18,10 +18,12 @@ namespace D3D12    {
 		pDevice->CreateRenderTargetView(this->m_pObject, nullptr, rtvHandle);
 	}
 
-	void D3D12RenderTarget::operator=(D3D12RenderTarget&& other) noexcept
+	D3D12RenderTarget& D3D12RenderTarget::operator=(D3D12RenderTarget&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 }; // D3D12
