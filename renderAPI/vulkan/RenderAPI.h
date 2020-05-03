@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RenderPipeline.h"
 #include "internal/Include.h"
 #include "../common/Include.h"
 

@@ -16,6 +16,8 @@ namespace VK       {
 		this->m_surface   = VKSurface(&this->m_instance, pWindow);
 		this->m_device    = VKDevice(this->m_instance, this->m_surface);
 		this->m_swapChain = VKSwapChain(this->m_device, this->m_surface);
+
+		VKRenderPipeline::CreateRenderPasses(this->m_device, this->m_swapChain);
 	}
 
 	void VKRenderAPI::InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs)

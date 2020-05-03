@@ -8,6 +8,7 @@ namespace VK       {
 		: m_pDevice(&pDevice), m_pSurface(&pSurface)
 	{
 		this->CreateSwapChain();
+		this->CreateImagesAndViews();
 	}
 
 	VKSwapChain& VKSwapChain::operator=(VKSwapChain&& other) noexcept
@@ -19,7 +20,19 @@ namespace VK       {
 		this->m_pSurface = std::move(other.m_pSurface);
 		this->m_surfaceFormat = std::move(other.m_surfaceFormat);
 
+		other.m_pObject = nullptr;
+
 		return *this;
+	}
+
+	[[nodiscard]] VkExtent2D VKSwapChain::GetImageExtent() const noexcept
+	{
+		return this->m_imageExtent2D;
+	}
+
+	[[nodiscard]] VkSurfaceFormatKHR VKSwapChain::GetFormat() const noexcept
+	{
+		return this->m_surfaceFormat;
 	}
 
 	VKSwapChain::~VKSwapChain()
@@ -85,15 +98,16 @@ namespace VK       {
 		VkSurfaceKHR& surface = *this->m_pSurface;
 
 		this->m_surfaceFormat = this->PickSurfaceFormat();
+		this->m_imageExtent2D.width  = this->m_pSurface->GetDimensions().x;
+		this->m_imageExtent2D.height = this->m_pSurface->GetDimensions().y;
 
 		VkSwapchainCreateInfoKHR createInfo = {};
 		createInfo.sType              = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface            = surface;
-		createInfo.minImageCount      = 2u;
+		createInfo.minImageCount      = WEISS__FRAME_BUFFER_COUNT;
 		createInfo.imageFormat        = this->m_surfaceFormat.format;
 		createInfo.imageColorSpace    = this->m_surfaceFormat.colorSpace;
-		createInfo.imageExtent.width  = this->m_pSurface->GetDimensions().x;
-		createInfo.imageExtent.height = this->m_pSurface->GetDimensions().y;
+		createInfo.imageExtent        = this->m_imageExtent2D;
 		createInfo.imageArrayLayers   = 1;
 		createInfo.imageUsage         = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		createInfo.preTransform       = VkSurfaceTransformFlagBitsKHR::VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -120,9 +134,39 @@ namespace VK       {
 
 			createInfo.pQueueFamilyIndices = sharingQueueFamilyIndices.data();
 		}
-		 
+		
 		if (VK_FAILED(vkCreateSwapchainKHR(device, &createInfo, nullptr, &this->m_pObject)))
 			throw std::runtime_error("[VULKAN] Failed To Create Swap Chain");
+	}
+
+	void VKSwapChain::CreateImagesAndViews()
+	{
+		uint32_t imageCount;
+		vkGetSwapchainImagesKHR(*this->m_pDevice, this->m_pObject, &imageCount, nullptr);
+		this->m_images.resize(imageCount);
+		vkGetSwapchainImagesKHR(*this->m_pDevice, this->m_pObject, &imageCount, this->m_images.data());
+
+		this->m_imageViews.resize(imageCount);
+		for (size_t i = 0; i < imageCount; i++)
+		{
+			VkImageViewCreateInfo createInfo{};
+			createInfo.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			createInfo.image    = this->m_images[i];
+			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			createInfo.format   = this->m_surfaceFormat.format;
+			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+			createInfo.subresourceRange.aspectMask   = VK_IMAGE_ASPECT_COLOR_BIT;
+			createInfo.subresourceRange.baseMipLevel = 0;
+			createInfo.subresourceRange.levelCount   = 1;
+			createInfo.subresourceRange.baseArrayLayer = 0;
+			createInfo.subresourceRange.layerCount   = 1;
+
+			if (VK_FAILED(vkCreateImageView(*this->m_pDevice, &createInfo, nullptr, &this->m_imageViews[i])))
+				throw std::runtime_error("[VULKAN] Failed To Create An Image View");
+		}
 	}
 
 }; // VK

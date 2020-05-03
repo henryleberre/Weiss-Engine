@@ -93,6 +93,8 @@ namespace VK       {
 		this->m_physicalDeviceData = device.m_physicalDeviceData;
 		this->m_presentQueue = device.m_presentQueue;
 		this->m_queues = device.m_queues;
+		this->m_pObject = device.m_pObject;
+		device.m_pObject = nullptr;
 
 		return *this;
 	}
