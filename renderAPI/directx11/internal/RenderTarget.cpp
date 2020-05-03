@@ -17,10 +17,12 @@ namespace D3D11    {
 			throw std::runtime_error("[DIRECTX 11] Could Not Create RenderTargetView");
 	}
 
-	void D3D11RenderTarget::operator=(D3D11RenderTarget&& other) noexcept
+	D3D11RenderTarget& D3D11RenderTarget::operator=(D3D11RenderTarget&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 	void D3D11RenderTarget::SetCurrent(D3D11DeviceContextObjectWrapper& pDeviceContext) const noexcept

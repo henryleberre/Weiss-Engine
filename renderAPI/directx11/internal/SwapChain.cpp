@@ -42,10 +42,12 @@ namespace D3D11    {
 			throw std::runtime_error("[DIRECTX 11] Failed To Create Swap Chain");
 	}
 
-	void D3D11SwapChain::operator=(D3D11SwapChain&& other) noexcept
+	D3D11SwapChain& D3D11SwapChain::operator=(D3D11SwapChain&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 	void D3D11SwapChain::Present(const bool vSync)

@@ -24,13 +24,15 @@ namespace D3D12    {
 		this->m_pObject->SetName(nameW.c_str());
 	}
 	
-	void D3D12CommittedResource::operator=(D3D12CommittedResource&& other) noexcept
+	D3D12CommittedResource& D3D12CommittedResource::operator=(D3D12CommittedResource&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
 
 		this->m_currentState  = other.m_currentState;
 		this->m_originalState = other.m_originalState;
+
+		return *this;
 	}				
 
 }; // D3D12

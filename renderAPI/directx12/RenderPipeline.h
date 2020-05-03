@@ -33,7 +33,7 @@ namespace D3D12    {
 		D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc,
 							std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures, std::vector<D3D12TextureSampler*> pTextureSamplers);
 
-		void operator=(D3D12RenderPipeline&& other) noexcept;
+		D3D12RenderPipeline& operator=(D3D12RenderPipeline&& other) noexcept;
 
 		void Bind(D3D12DeviceObjectWrapper& pDevice, D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
 				  std::vector<Texture*> pTextures, const size_t frameIndex) noexcept;

@@ -18,7 +18,7 @@ namespace D3D11    {
 
 		D3D11RenderTarget(D3D11DeviceObjectWrapper& pDevice, D3D11SwapChainObjectWrapper& pSwapChain);
 
-		void operator=(D3D11RenderTarget&& other) noexcept;
+		D3D11RenderTarget& operator=(D3D11RenderTarget&& other) noexcept;
 
 		void SetCurrent(D3D11DeviceContextObjectWrapper& pDeviceContext) const noexcept;
 	};

@@ -16,7 +16,7 @@ namespace D3D12    {
 	public:
 		D3D12Adapter();
 
-		void operator=(D3D12Adapter&& other) noexcept;
+		D3D12Adapter& operator=(D3D12Adapter&& other) noexcept;
 	};
 
 }; // D3D12

@@ -6,15 +6,6 @@ namespace WS       {
 namespace Internal {
 namespace D3D11    {
 
-	D3D11VertexBuffer::D3D11VertexBuffer(D3D11VertexBuffer&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_vertexData = other.m_vertexData;
-		this->m_vertexSize = other.m_vertexSize;
-	}
-
 	D3D11VertexBuffer::D3D11VertexBuffer(D3D11DeviceObjectWrapper& pDevice,
 										 D3D11DeviceContextObjectWrapper* pDeviceContext,
 										 const size_t nVertices, const size_t vertexSize)
@@ -35,12 +26,14 @@ namespace D3D11    {
 			throw std::runtime_error("Unable To Create Vertex Buffer");
 	}
 
-	void D3D11VertexBuffer::operator=(D3D11VertexBuffer&& other) noexcept
+	D3D11VertexBuffer& D3D11VertexBuffer::operator=(D3D11VertexBuffer&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
-		this->m_vertexData = other.m_vertexData;
-		this->m_vertexSize = other.m_vertexSize;
+		this->m_vertexData = std::move(other.m_vertexData);
+		this->m_vertexSize = std::move(other.m_vertexSize);
+
+		return *this;
 	}
 
 	void D3D11VertexBuffer::Bind()
@@ -59,15 +52,6 @@ namespace D3D11    {
 
 		std::memcpy(resource.pData, this->m_vertexData.data(), this->m_vertexData.size());
 		(*this->m_pDeviceContext)->Unmap(this->m_pObject, 0);
-	}
-
-	D3D11IndexBuffer::D3D11IndexBuffer(D3D11IndexBuffer&& other) noexcept
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_indexData = other.m_indexData;
-		this->m_nIndices = other.m_nIndices;
 	}
 
 	D3D11IndexBuffer::D3D11IndexBuffer(D3D11DeviceObjectWrapper& pDevice,
@@ -90,13 +74,15 @@ namespace D3D11    {
 			throw std::runtime_error("Unable To Create Index Buffer");
 	}
 
-	void D3D11IndexBuffer::operator=(D3D11IndexBuffer&& other) noexcept
+	D3D11IndexBuffer& D3D11IndexBuffer::operator=(D3D11IndexBuffer&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
 	
 		other.m_nIndices  = other.m_nIndices;
-		other.m_indexData = other.m_indexData;
+		other.m_indexData = std::move(other.m_indexData);
+
+		return *this;
 	}
 
 	void D3D11IndexBuffer::Bind()
@@ -112,16 +98,6 @@ namespace D3D11    {
 
 		std::memcpy(resource.pData, this->m_indexData.data(), this->m_indexData.size());
 		(*this->m_pDeviceContext)->Unmap(this->m_pObject, 0);
-	}
-
-	D3D11ConstantBuffer::D3D11ConstantBuffer(D3D11ConstantBuffer&& other) noexcept
-		: m_slot(other.m_slot), m_objSize(other.m_objSize)
-	{
-		this->m_pObject = other.m_pObject;
-		other.m_pObject = nullptr;
-
-		this->m_slot = other.m_slot;
-		this->m_constantBufferData = other.m_constantBufferData;
 	}
 
 	D3D11ConstantBuffer::D3D11ConstantBuffer(D3D11DeviceObjectWrapper& pDevice,
@@ -143,14 +119,16 @@ namespace D3D11    {
 			throw std::runtime_error("[DIRECTX 11] Unable To Create Constant Buffer");
 	}
 
-	void D3D11ConstantBuffer::operator=(D3D11ConstantBuffer&& other) noexcept
+	D3D11ConstantBuffer& D3D11ConstantBuffer::operator=(D3D11ConstantBuffer&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
 
 		this->m_slot    = other.m_slot;
 		this->m_objSize = other.m_objSize;
-		this->m_constantBufferData = other.m_constantBufferData;
+		this->m_constantBufferData = std::move(other.m_constantBufferData);
+		
+		return *this;
 	}
 
 	void D3D11ConstantBuffer::Bind()

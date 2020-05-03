@@ -58,7 +58,7 @@ namespace VK       {
 		return 0u;
 	}
 
-	size_t VKRenderAPI::CreateTexture(const Image& image, const size_t slot, const bool useMipmaps)
+	size_t VKRenderAPI::CreateTexture(const size_t width, const size_t height, const size_t slot, const bool useMipmaps)
 	{
 		return 0u;
 	}

@@ -10,12 +10,14 @@ namespace WS {
 
 	class GraphicsEngine {
 	private:
-		RenderAPIHandle m_apiHandle;
+		RenderAPIHandle m_renderHandle;
+
+		WindowHandle m_windowHandle;
 
 	public:
 		GraphicsEngine(const RenderAPIName& apiName);
 
-		void Init();
+		void Init(WindowHandle windowHandle);
 
 		void Run(const size_t fps);
 

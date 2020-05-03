@@ -21,7 +21,8 @@ namespace WS {
 			if (!RegisterClassA(&wc))
 				throw std::runtime_error("[WINDOW] Could Not Register Window Class");
 
-			const uint32_t windowStyle = descriptor.isResizable ? WS_OVERLAPPEDWINDOW : (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+			// CS_OWNDC For Opengl
+			const uint32_t windowStyle = CS_OWNDC | (descriptor.isResizable ? WS_OVERLAPPEDWINDOW : (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX));
 
 			RECT windowRect{ 0, 0, descriptor.width, descriptor.height };
 			AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
@@ -57,7 +58,9 @@ namespace WS {
 				this->SetIcon(descriptor.iconPath);
 		}
 
-		[[nodiscard]] HWND WindowsWindow::GetHandle() const { return this->m_handle; }
+		[[nodiscard]] HWND WindowsWindow::GetHandle() const noexcept { return this->m_handle; }
+
+		[[nodiscard]] HDC  WindowsWindow::GetDeviceContextHandle() const noexcept { return GetDC(this->m_handle); }
 
 		[[nodiscard]] Rect WindowsWindow::GetWindowRectangle() const
 		{

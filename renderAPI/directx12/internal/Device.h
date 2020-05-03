@@ -18,7 +18,7 @@ namespace D3D12    {
 
 		D3D12Device(D3D12AdapterObjectWrapper& pAdapter);
 
-		void operator=(D3D12Device&& other) noexcept;
+		D3D12Device& operator=(D3D12Device&& other) noexcept;
 	};
 
 }; // D3D12

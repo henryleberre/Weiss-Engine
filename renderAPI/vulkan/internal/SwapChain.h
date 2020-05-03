@@ -25,7 +25,7 @@ namespace VK       {
 		VKSwapChain() = default;
 		VKSwapChain(VKDevice& pDevice, VKSurface& pSurface);
 
-		void operator=(VKSwapChain&& other) noexcept;
+		VKSwapChain& operator=(VKSwapChain&& other) noexcept;
 
 		~VKSwapChain();
 

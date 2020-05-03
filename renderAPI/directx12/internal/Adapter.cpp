@@ -31,10 +31,12 @@ namespace D3D12    {
 		throw std::runtime_error("[DIRECTX 12] Failed To Create Adapter");
 	}
 
-	void D3D12Adapter::operator=(D3D12Adapter&& other) noexcept
+	D3D12Adapter& D3D12Adapter::operator=(D3D12Adapter&& other) noexcept
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = nullptr;
+
+		return *this;
 	}
 
 }; // D3D12

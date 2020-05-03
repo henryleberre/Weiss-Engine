@@ -18,7 +18,7 @@ namespace D3D12    {
 		D3D12DescriptorHeap(D3D12DeviceObjectWrapper& pDevice, const D3D12_DESCRIPTOR_HEAP_TYPE type,
 								const uint32_t numDescriptors, const D3D12_DESCRIPTOR_HEAP_FLAGS& flags = D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 
-		void operator=(D3D12DescriptorHeap&& other) noexcept;
+		D3D12DescriptorHeap& operator=(D3D12DescriptorHeap&& other) noexcept;
 	};
 
 }; // D3D12

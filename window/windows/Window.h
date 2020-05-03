@@ -21,7 +21,8 @@ namespace WS {
 		public:
 			WindowsWindow(const WindowDescriptor& descriptor);
 
-			[[nodiscard]] HWND GetHandle() const;
+			[[nodiscard]] HWND GetHandle()              const noexcept;
+			[[nodiscard]] HDC  GetDeviceContextHandle() const noexcept;
 
 			[[nodiscard]] virtual Rect GetWindowRectangle() const override;
 			[[nodiscard]] virtual Rect GetClientRectangle() const override;

@@ -23,7 +23,7 @@ namespace D3D12    {
 							   const D3D12_HEAP_FLAGS&      flags,   const D3D12_RESOURCE_DESC* descPtr,
 							   const D3D12_RESOURCE_STATES& states,  const char* name = "(PLACEHOLDER NAME)");
 
-		void operator=(D3D12CommittedResource&& other) noexcept;
+		D3D12CommittedResource& operator=(D3D12CommittedResource&& other) noexcept;
 
 		inline void TransitionTo  (D3D12CommandListObjectWrapper& pCommandList, const D3D12_RESOURCE_STATES& state) noexcept;
 		inline void TransitionBack(D3D12CommandListObjectWrapper& pCommandList) noexcept;

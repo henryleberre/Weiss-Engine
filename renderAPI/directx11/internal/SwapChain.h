@@ -19,7 +19,7 @@ namespace D3D11    {
 
 		D3D11SwapChain(D3D11DeviceObjectWrapper& pDevice, Window* pWindow);
 
-		void operator=(D3D11SwapChain&& other) noexcept;
+		D3D11SwapChain& operator=(D3D11SwapChain&& other) noexcept;
 
 		void Present(const bool vSync);
 	};

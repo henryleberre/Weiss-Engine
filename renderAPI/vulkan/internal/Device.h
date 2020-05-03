@@ -18,7 +18,7 @@ namespace VK       {
 		VKQueue(VKDevice& device, const size_t queueIndex);
 
 		void operator=(VKQueue& other);
-		void operator=(VKQueue&& other);
+		VKQueue& operator=(VKQueue&& other);
 	};
 	
 	struct VKPhysicalDeviceDataWrapper {
@@ -57,7 +57,7 @@ namespace VK       {
 		VKDevice();
 		VKDevice(const VKInstance& instance, const VKSurface& surface);
 
-		void operator=(VKDevice&& device) noexcept;
+		VKDevice& operator=(VKDevice&& device) noexcept;
 
 		[[nodiscard]] inline VKPhysicalDeviceDataWrapper GetPhysicalDeviceData() const noexcept { return this->m_physicalDeviceData; }
 

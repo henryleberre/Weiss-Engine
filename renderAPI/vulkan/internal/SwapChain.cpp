@@ -10,7 +10,7 @@ namespace VK       {
 		this->CreateSwapChain();
 	}
 
-	void VKSwapChain::operator=(VKSwapChain&& other) noexcept
+	VKSwapChain& VKSwapChain::operator=(VKSwapChain&& other) noexcept
 	{
 		this->m_images = std::move(other.m_images);
 		this->m_imageViews = std::move(other.m_imageViews);
@@ -18,6 +18,8 @@ namespace VK       {
 		this->m_pObject = std::move(other.m_pObject);
 		this->m_pSurface = std::move(other.m_pSurface);
 		this->m_surfaceFormat = std::move(other.m_surfaceFormat);
+
+		return *this;
 	}
 
 	VKSwapChain::~VKSwapChain()
