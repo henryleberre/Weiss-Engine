@@ -22,9 +22,10 @@ namespace D3D12    {
 		this->m_textureIndices = other.m_textureIndices;
 	}
 
-	D3D12RenderPipeline::D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc,
+	D3D12RenderPipeline::D3D12RenderPipeline(D3D12Device& pDevice, const RenderPipelineDesc& pipelineDesc,
 											 std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures, std::vector<D3D12TextureSampler*> pTextureSamplers)
-		: m_constantBufferIndices(pipelineDesc.constantBufferIndices), m_textureIndices(pipelineDesc.textureIndices)
+		: m_pDevice(&pDevice), m_constantBufferIndices(pipelineDesc.constantBufferIndices), m_textureIndices(pipelineDesc.textureIndices),
+		  m_pConstantBuffers(pConstantBuffers), m_pTextures(pTextures), m_pTextureSamplers(pTextureSamplers)
 	{
 		// Specify Compilation Flags
 		UINT compileFlags = 0u;
@@ -244,9 +245,11 @@ namespace D3D12    {
 		return *this;
 	}
 
-	void D3D12RenderPipeline::Bind(D3D12DeviceObjectWrapper& pDevice, D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
-								   std::vector<Texture*> pTextures, const size_t frameIndex) noexcept
+	void D3D12RenderPipeline::Bind(D3D12CommandList& pCommandList, const size_t frameIndex) noexcept
 	{
+		for (uint32_t cbIndex : this->m_constantBufferIndices)
+			dynamic_cast<D3D12ConstantBuffer*>(this->m_pConstantBuffers[cbIndex])->UpdateIfNeeded(frameIndex);
+
 		pCommandList->SetGraphicsRootSignature(this->m_pRootSignature);
 		pCommandList->SetPipelineState(this->m_pObject);
 		pCommandList->SetDescriptorHeaps(1u, this->m_gpuDescHeaps[frameIndex].GetPtr());

@@ -63,7 +63,7 @@ namespace D3D12    {
 	{
 		D3D12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
-		this->m_renderPipelines[drawable.pipelineIndex].Bind(this->m_pDevice, pGfxCommandList, this->m_pConstantBuffers, this->m_pTextures, this->currentFrameIndex);
+		this->m_renderPipelines[drawable.pipelineIndex].Bind(pGfxCommandList, this->currentFrameIndex);
 		dynamic_cast<D3D12VertexBuffer*>(this->m_pVertexBuffers[drawable.vertexBufferIndex])->Bind();
 
 		if (drawable.indexBufferIndex.has_value()) {
@@ -80,8 +80,8 @@ namespace D3D12    {
 		// Wait For Next Frame
 		this->currentFrameIndex = this->m_pSwapChain->GetCurrentBackBufferIndex();
 
-		D3D12RenderTarget& renderTarget = this->m_pRenderTargets[this->currentFrameIndex];
-		D3D12CommandList& pGfxCommandList = this->m_commandSubmitter.GetCommandList();
+		D3D12RenderTarget& renderTarget    = this->m_pRenderTargets[this->currentFrameIndex];
+		D3D12CommandList&  pGfxCommandList = this->m_commandSubmitter.GetCommandList();
 
 		pGfxCommandList.TransitionResource(renderTarget, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 

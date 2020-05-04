@@ -69,6 +69,8 @@ namespace D3D12    {
 		std::array<D3D12_CONSTANT_BUFFER_VIEW_DESC, WEISS__FRAME_BUFFER_COUNT> m_constantBufferViews;
 		std::array<D3D12CommittedResource,          WEISS__FRAME_BUFFER_COUNT> m_pUploadHeaps;
 
+		std::array<bool, WEISS__FRAME_BUFFER_COUNT> m_bNeedsUpdating;
+
 	public:
 		D3D12ConstantBuffer() = default;
 
@@ -80,7 +82,12 @@ namespace D3D12    {
 
 		size_t GetSlot() const noexcept;
 
+		void UpdateIfNeeded(const size_t frameIndex);
+
 		virtual void Update() override;
+
+	private:
+		void UpdateHeap(const size_t heapIndex);
 	};
 
 }; // D3D12
