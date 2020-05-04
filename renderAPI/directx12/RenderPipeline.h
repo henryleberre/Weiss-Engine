@@ -25,18 +25,23 @@ namespace D3D12    {
 
 		D3D12DescriptorHeap m_gpuDescHeaps[WEISS__FRAME_BUFFER_COUNT];
 
+		D3D12Device* m_pDevice = nullptr;
+
+		std::vector<Texture*>             m_pTextures;
+		std::vector<ConstantBuffer*>      m_pConstantBuffers;
+		std::vector<D3D12TextureSampler*> m_pTextureSamplers;
+
 	public:
 		D3D12RenderPipeline();
 
 		D3D12RenderPipeline(D3D12RenderPipeline&& other);
 
-		D3D12RenderPipeline(D3D12DeviceObjectWrapper& pDevice, const RenderPipelineDesc& pipelineDesc,
+		D3D12RenderPipeline(D3D12Device& pDevice, const RenderPipelineDesc& pipelineDesc,
 							std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures, std::vector<D3D12TextureSampler*> pTextureSamplers);
 
 		D3D12RenderPipeline& operator=(D3D12RenderPipeline&& other) noexcept;
 
-		void Bind(D3D12DeviceObjectWrapper& pDevice, D3D12CommandListObjectWrapper& pCommandList, std::vector<ConstantBuffer*>& pConstantBuffers,
-				  std::vector<Texture*> pTextures, const size_t frameIndex) noexcept;
+		void Bind(D3D12CommandList& pCommandList, const size_t frameIndex) noexcept;
 	};
 
 }; // D3D12

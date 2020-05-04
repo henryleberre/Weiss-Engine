@@ -13,6 +13,8 @@ namespace VK       {
 		other.m_pipeline = VK_NULL_HANDLE;
 
 		this->m_pDevice = other.m_pDevice;
+
+		return *this;
 	}
 
 	VKRenderPipeline::VKRenderPipeline(const VKDevice& device, const VKSwapChain& swapChain, const RenderPipelineDesc& pipelineDesc,

@@ -87,12 +87,14 @@
 #include <map>
 #include <list>
 #include <array>
+#include <queue>
 #include <thread>
 #include <chrono>
 #include <string>
 #include <vector>
 #include <memory>
 #include <bitset>
+#include <numeric>
 #include <codecvt>
 #include <variant>
 #include <fstream>

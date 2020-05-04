@@ -118,21 +118,33 @@ namespace D3D12    {
 
 	size_t D3D12ConstantBuffer::GetSlot() const noexcept { return this->m_slot; }
 
+	void D3D12ConstantBuffer::UpdateIfNeeded(const size_t frameIndex)
+	{
+		if (this->m_bNeedsUpdating[frameIndex])
+			this->UpdateHeap(frameIndex);
+	}
+
 	void D3D12ConstantBuffer::Update()
 	{
+		std::fill(this->m_bNeedsUpdating.begin(), this->m_bNeedsUpdating.end(), true);
+	}
+
+	void D3D12ConstantBuffer::UpdateHeap(const size_t heapIndex)
+	{
+		this->m_bNeedsUpdating[heapIndex] = false;
+
 		CD3DX12_RANGE readRange(0, 0);
 		CD3DX12_RANGE writtenRange(0, this->m_objSize);
 
-		for (size_t i = 0; i < WEISS__FRAME_BUFFER_COUNT; i++)
-		{
-			uint8_t* gpuDestAddr;
-			if (FAILED(this->m_pUploadHeaps[i]->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
-				throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
+		D3D12CommittedResource& uploadHeap = this->m_pUploadHeaps[heapIndex];
 
-			memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
+		uint8_t* gpuDestAddr;
+		if (FAILED(uploadHeap->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
+			throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
 
-			this->m_pUploadHeaps[i]->Unmap(0, &writtenRange);
-		}
+		memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
+
+		uploadHeap->Unmap(0, &writtenRange);
 	}
 
 }; // D3D12
