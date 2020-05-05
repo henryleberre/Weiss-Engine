@@ -21,14 +21,13 @@ namespace WS {
 			this->m_windowHandle->Update();
 
 			this->m_renderHandle->BeginDrawing();
-			this->OnDraw();
 			this->m_renderHandle->EndDrawing();
 
-			this->OnUpdate();
+			this->OnFrame();
 			this->m_renderHandle->Present(false);
 
 			// Temporary
-			std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)(1 / (float)fps * 100u)));
+			std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)(1 / (float)fps * 1000u)));
 		}
 	}
 
