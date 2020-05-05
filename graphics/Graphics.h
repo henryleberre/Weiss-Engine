@@ -21,8 +21,7 @@ namespace WS {
 
 		void Run(const size_t fps);
 
-		virtual void OnDraw() = 0;
-		virtual void OnUpdate() = 0;
+		virtual void OnFrame() = 0;
 
 		~GraphicsEngine() = default;
 	};
