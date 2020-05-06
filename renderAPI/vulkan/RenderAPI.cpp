@@ -10,6 +10,11 @@ namespace VK       {
 		
 	}
 
+	VKRenderAPI::~VKRenderAPI()
+	{
+		VKRenderPass::DestroyRenderPasses(this->m_device);
+	}
+
 	void VKRenderAPI::InitRenderAPI(Window* pWindow, const uint16_t maxFps)
 	{
 		this->m_instance  = VKInstance("App Made With Weiss Engine");
@@ -17,7 +22,8 @@ namespace VK       {
 		this->m_device    = VKDevice(this->m_instance, this->m_surface);
 		this->m_swapChain = VKSwapChain(this->m_device, this->m_surface);
 
-		VKRenderPipeline::CreateRenderPasses(this->m_device, this->m_swapChain);
+		VKRenderPass::CreateRenderPasses(this->m_device, this->m_swapChain);
+		this->m_swapChain.CreateFrameBuffers();
 	}
 
 	void VKRenderAPI::InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs)

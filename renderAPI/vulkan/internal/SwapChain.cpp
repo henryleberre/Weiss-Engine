@@ -9,6 +9,7 @@ namespace VK       {
 	{
 		this->CreateSwapChain();
 		this->CreateImagesAndViews();
+		this->CreateFrameBuffers();
 	}
 
 	VKSwapChain& VKSwapChain::operator=(VKSwapChain&& other) noexcept
@@ -19,10 +20,38 @@ namespace VK       {
 		this->m_pObject = std::move(other.m_pObject);
 		this->m_pSurface = std::move(other.m_pSurface);
 		this->m_surfaceFormat = std::move(other.m_surfaceFormat);
+		this->m_renderPassFrameBuffers = std::move(other.m_renderPassFrameBuffers);
 
 		other.m_pObject = nullptr;
 
 		return *this;
+	}
+
+	void VKSwapChain::CreateFrameBuffers()
+	{
+		for (std::vector<VkFramebuffer>& frameBuffers : this->m_renderPassFrameBuffers)
+			frameBuffers.resize(this->m_images.size());
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.width = this->m_imageExtent2D.width;
+		framebufferInfo.height = this->m_imageExtent2D.height;
+		framebufferInfo.layers = 1;
+
+		this->m_renderPassFrameBuffers[0].resize(this->m_imageViews.size());
+		for (size_t i = 0; i < this->m_renderPassFrameBuffers[0].size(); i++)
+		{
+			VkImageView attachments[] = {
+				this->m_imageViews[i]
+			};
+
+			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.renderPass = VKRenderPass::s_colorRenderPass;
+
+			if (VK_FAILED(vkCreateFramebuffer(*this->m_pDevice, &framebufferInfo, nullptr, &this->m_renderPassFrameBuffers[0][i])))
+				throw std::runtime_error("[VULKAN] Failed To Create A Frame Buffer");
+		}
 	}
 
 	[[nodiscard]] VkExtent2D VKSwapChain::GetImageExtent() const noexcept
@@ -43,6 +72,11 @@ namespace VK       {
 
 		if (this->m_pObject != VK_NULL_HANDLE)
 			vkDestroySwapchainKHR(*this->m_pDevice, this->m_pObject, nullptr);
+
+		for (std::vector<VkFramebuffer>& frameBuffers : this->m_renderPassFrameBuffers)
+			for (VkFramebuffer& frameBuffer : frameBuffers)
+				if (frameBuffer != VK_NULL_HANDLE)
+					vkDestroyFramebuffer(*this->m_pDevice, frameBuffer, nullptr);
 	}
 
 	VkPresentModeKHR VKSwapChain::PickPresentingMode() const

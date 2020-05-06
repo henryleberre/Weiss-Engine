@@ -26,12 +26,6 @@ namespace VK       {
 		~VKRenderPipeline();
 
 	private:
-		static VkRenderPass m_colorRenderPass;
-
-	public:
-		static void CreateRenderPasses(const VKDevice& device, const VKSwapChain& swapChain);
-
-	private:
 		static VkShaderModule CreateShaderModule(const VKDevice& device, const char* filename);
 	};
 

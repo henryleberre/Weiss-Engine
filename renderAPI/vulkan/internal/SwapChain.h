@@ -2,6 +2,7 @@
 
 #include "Device.h"
 #include "Surface.h"
+#include "RenderPass.h"
 #include "ObjectWrapper.h"
 #include "../../common/Include.h"
 
@@ -13,8 +14,10 @@ namespace VK       {
 
 	class VKSwapChain : public VKSwapChainObjectWrapper {
 	private:
-		std::vector<VkImage>     m_images;
-		std::vector<VkImageView> m_imageViews;
+		std::vector<VkImage>       m_images;
+		std::vector<VkImageView>   m_imageViews;
+
+		std::array<std::vector<VkFramebuffer>, 1u> m_renderPassFrameBuffers;
 
 		VkSurfaceFormatKHR m_surfaceFormat;
 
@@ -28,6 +31,8 @@ namespace VK       {
 		VKSwapChain(VKDevice& pDevice, VKSurface& pSurface);
 
 		VKSwapChain& operator=(VKSwapChain&& other) noexcept;
+
+		void CreateFrameBuffers();
 
 		[[nodiscard]] VkExtent2D         GetImageExtent() const noexcept;
 		[[nodiscard]] VkSurfaceFormatKHR GetFormat()      const noexcept;

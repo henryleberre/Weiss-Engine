@@ -144,7 +144,7 @@ namespace VK       {
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = nullptr; // Optional
 		pipelineInfo.layout     = this->m_layout;
-		pipelineInfo.renderPass = VKRenderPipeline::m_colorRenderPass;
+		pipelineInfo.renderPass = VKRenderPass::s_colorRenderPass;
 		pipelineInfo.subpass    = 0;
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional
@@ -160,38 +160,6 @@ namespace VK       {
 	{
 		vkDestroyPipeline(*this->m_pDevice, this->m_pipeline, nullptr);
 		vkDestroyPipelineLayout(*this->m_pDevice, this->m_layout, nullptr);
-	}
-
-	void VKRenderPipeline::CreateRenderPasses(const VKDevice& device, const VKSwapChain& swapChain)
-	{
-		VkAttachmentDescription colorAttachment{};
-		colorAttachment.format  = swapChain.GetFormat().format;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachment.loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference colorAttachmentRef{};
-		colorAttachmentRef.attachment = 0;
-		colorAttachmentRef.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments    = &colorAttachmentRef;
-
-		VkRenderPassCreateInfo renderPassInfo{};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments    = &colorAttachment;
-		renderPassInfo.subpassCount    = 1;
-		renderPassInfo.pSubpasses      = &subpass;
-
-		if (VK_FAILED(vkCreateRenderPass(device, &renderPassInfo, nullptr, &VKRenderPipeline::m_colorRenderPass)))
-			throw std::runtime_error("[VULKAN] Failed To Create Render Pass");
 	}
 
 	VkShaderModule VKRenderPipeline::CreateShaderModule(const VKDevice& device, const char* filename)
@@ -217,8 +185,6 @@ namespace VK       {
 
 		return shaderModule;
 	}
-
-	VkRenderPass VKRenderPipeline::m_colorRenderPass = VK_NULL_HANDLE;
 
 }; // VK
 }; // Internal
