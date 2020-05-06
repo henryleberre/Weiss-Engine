@@ -18,6 +18,8 @@ namespace VK       {
 	public:
 		VKRenderAPI();
 
+		~VKRenderAPI();
+
 		virtual void InitRenderAPI(Window* pWindow, const uint16_t maxFps) override;
 		virtual void InitPipelines(const std::vector<RenderPipelineDesc>& pipelineDescs) override;
 
