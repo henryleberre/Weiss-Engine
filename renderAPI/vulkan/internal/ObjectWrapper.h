@@ -28,9 +28,9 @@ namespace VK       {
 			return *this;
 		}
 
-		T* GetPtr() noexcept { return this->m_pObject; }
+		T* GetPtr() const noexcept { return this->m_pObject; }
 
-		T* operator->() { return &this->m_pObject; }
+		T* operator->() const { return &this->m_pObject; }
 
 		operator       T& ()       noexcept { return this->m_pObject; }
 		operator const T& () const noexcept { return this->m_pObject; }

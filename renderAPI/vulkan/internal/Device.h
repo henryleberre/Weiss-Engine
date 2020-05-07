@@ -2,6 +2,8 @@
 
 #include "Surface.h"
 #include "Instance.h"
+#include "Semaphore.h"
+#include "CommandBuffer.h"
 #include "ObjectWrapper.h"
 
 namespace WS       {
@@ -9,13 +11,21 @@ namespace Internal {
 namespace VK       {
 
 	class VKDevice;
+	class VKSemaphore;
+	class VKCommandBuffer;
 
 	typedef VKObjectWrapper<VkQueue> VKQueueObjectWrapper;
 
 	class VKQueue : public VKQueueObjectWrapper {
 	public:
+		VKSemaphore m_semaphore;
+
+	public:
 		VKQueue() = default;
+		VKQueue(const VKQueue& other) noexcept;
 		VKQueue(VKDevice& device, const size_t queueIndex);
+
+		void Submit(const std::vector<VkCommandBuffer>& commandBuffers) const;
 
 		void operator=(VKQueue& other);
 		VKQueue& operator=(VKQueue&& other);
@@ -59,6 +69,8 @@ namespace VK       {
 
 		VKDevice& operator=(VKDevice&& device) noexcept;
 
+		[[nodiscard]] inline VKQueue GetGraphicsQueue() const noexcept { return this->m_graphicsQueue; }
+		[[nodiscard]] inline VKQueue GetPresentQueue()  const noexcept { return this->m_presentQueue;  }
 		[[nodiscard]] inline VKPhysicalDeviceDataWrapper GetPhysicalDeviceData() const noexcept { return this->m_physicalDeviceData; }
 
 		~VKDevice();

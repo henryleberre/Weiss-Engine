@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../common/Include.h"
+
 namespace WS       {
 namespace Internal {
 

@@ -48,7 +48,7 @@ namespace VK       {
 
 	void VKRenderAPI::Present(const bool vSync)
 	{
-
+		this->m_swapChain.Present();
 	}
 
 	size_t VKRenderAPI::CreateVertexBuffer(const size_t nVertices, const size_t vertexSize)
