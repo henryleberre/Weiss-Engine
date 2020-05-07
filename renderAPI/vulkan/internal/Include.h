@@ -4,6 +4,7 @@
 #include "Surface.h"
 #include "Instance.h"
 #include "SwapChain.h"
+#include "Semaphore.h"
 #include "RenderPass.h"
 #include "CommandPool.h"
 #include "CommandBuffer.h"

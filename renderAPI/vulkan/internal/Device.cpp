@@ -4,21 +4,50 @@ namespace WS       {
 namespace Internal {
 namespace VK       {
 
+	VKQueue::VKQueue(const VKQueue& other) noexcept
+	{
+		this->m_pObject   = other.m_pObject;
+		this->m_semaphore = other.m_semaphore;
+	}
+
 	VKQueue::VKQueue(VKDevice& device, const size_t queueIndex)
 	{
+		this->m_semaphore = VKSemaphore(device);
+
 		vkGetDeviceQueue(device, queueIndex, 0, &this->m_pObject);
+	}
+
+	void VKQueue::Submit(const std::vector<VkCommandBuffer>& commandBuffers) const
+	{
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1u;
+		submitInfo.pWaitSemaphores    = this->m_semaphore.GetPtr();
+		submitInfo.pWaitDstStageMask  = waitStages;
+		submitInfo.commandBufferCount = commandBuffers.size();
+		submitInfo.pCommandBuffers    = commandBuffers.data();
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = this->m_semaphore.GetPtr();
+
+		if (VK_FAILED(vkQueueSubmit(this->m_pObject, 1, &submitInfo, VK_NULL_HANDLE)))
+			throw std::runtime_error("[VULKAN] Failed To Submit Queue");
 	}
 
 	void VKQueue::operator=(VKQueue& other)
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = VK_NULL_HANDLE;
+
+		this->m_semaphore = std::move(other.m_semaphore);
 	}
 
 	VKQueue& VKQueue::operator=(VKQueue&& other)
 	{
 		this->m_pObject = other.m_pObject;
 		other.m_pObject = VK_NULL_HANDLE;
+
+		this->m_semaphore = std::move(other.m_semaphore);
 
 		return *this;
 	}

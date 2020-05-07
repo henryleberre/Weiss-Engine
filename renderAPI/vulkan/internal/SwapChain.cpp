@@ -7,6 +7,10 @@ namespace VK       {
 	VKSwapChain::VKSwapChain(VKDevice& pDevice, VKSurface& pSurface)
 		: m_pDevice(&pDevice), m_pSurface(&pSurface)
 	{
+		this->m_presentQueue = pDevice.GetPresentQueue();
+
+		this->m_semaphore = VKSemaphore(pDevice);
+
 		this->CreateSwapChain();
 		this->CreateImagesAndViews();
 		this->CreateFrameBuffers();
@@ -14,44 +18,73 @@ namespace VK       {
 
 	VKSwapChain& VKSwapChain::operator=(VKSwapChain&& other) noexcept
 	{
+		this->m_nImages = std::move(other.m_nImages);
 		this->m_images = std::move(other.m_images);
 		this->m_imageViews = std::move(other.m_imageViews);
 		this->m_pDevice = std::move(other.m_pDevice);
 		this->m_pObject = std::move(other.m_pObject);
 		this->m_pSurface = std::move(other.m_pSurface);
 		this->m_surfaceFormat = std::move(other.m_surfaceFormat);
-		this->m_renderPassFrameBuffers = std::move(other.m_renderPassFrameBuffers);
+		this->m_colorFrameBuffers = std::move(other.m_colorFrameBuffers);
+		this->m_currentImageIndex = std::move(other.m_currentImageIndex);
+		this->m_semaphore = std::move(other.m_semaphore);
+		this->m_presentQueue = std::move(other.m_presentQueue);
 
-		other.m_pObject = nullptr;
+		other.m_pObject = VK_NULL_HANDLE;
 
 		return *this;
 	}
 
 	void VKSwapChain::CreateFrameBuffers()
 	{
-		for (std::vector<VkFramebuffer>& frameBuffers : this->m_renderPassFrameBuffers)
-			frameBuffers.resize(this->m_images.size());
+		m_colorFrameBuffers.resize(this->m_images.size());
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.width = this->m_imageExtent2D.width;
+		framebufferInfo.width  = this->m_imageExtent2D.width;
 		framebufferInfo.height = this->m_imageExtent2D.height;
 		framebufferInfo.layers = 1;
 
-		this->m_renderPassFrameBuffers[0].resize(this->m_imageViews.size());
-		for (size_t i = 0; i < this->m_renderPassFrameBuffers[0].size(); i++)
+		this->m_colorFrameBuffers.resize(this->m_imageViews.size());
+		for (size_t i = 0; i < this->m_colorFrameBuffers.size(); i++)
 		{
 			VkImageView attachments[] = {
 				this->m_imageViews[i]
 			};
 
 			framebufferInfo.pAttachments = attachments;
-			framebufferInfo.renderPass = VKRenderPass::s_colorRenderPass;
+			framebufferInfo.renderPass   = VKRenderPass::s_colorRenderPass;
 
-			if (VK_FAILED(vkCreateFramebuffer(*this->m_pDevice, &framebufferInfo, nullptr, &this->m_renderPassFrameBuffers[0][i])))
+			if (VK_FAILED(vkCreateFramebuffer(*this->m_pDevice, &framebufferInfo, nullptr, &this->m_colorFrameBuffers[i])))
 				throw std::runtime_error("[VULKAN] Failed To Create A Frame Buffer");
 		}
+	}
+
+	void VKSwapChain::GetNextImage()
+	{
+		if (VK_FAILED(vkAcquireNextImageKHR(*this->m_pDevice, this->m_pObject, UINT64_MAX, this->m_semaphore, VK_NULL_HANDLE, &this->m_currentImageIndex)))
+			throw std::runtime_error("[VULKAN] Failed To Acquire Next Swap Chain Image");
+	}
+
+	void VKSwapChain::Present()
+	{
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores    = this->m_semaphore.GetPtr();
+		presentInfo.swapchainCount     = 1;
+		presentInfo.pSwapchains   = &this->m_pObject;
+		presentInfo.pImageIndices = &this->m_currentImageIndex;
+		presentInfo.pResults = nullptr;
+		presentInfo.sType    = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+		if (VK_FAILED(vkQueuePresentKHR(this->m_presentQueue, &presentInfo)))
+			throw std::runtime_error("[VULKAN] Failed To Present Swap Chain Frame Buffer");
+	}
+
+	[[nodiscard]] uint32_t VKSwapChain::GetCurrentImageIndex() const noexcept
+	{
+		return this->m_currentImageIndex;
 	}
 
 	[[nodiscard]] VkExtent2D VKSwapChain::GetImageExtent() const noexcept
@@ -64,6 +97,11 @@ namespace VK       {
 		return this->m_surfaceFormat;
 	}
 
+	[[nodiscard]] VkFramebuffer VKSwapChain::GetColorFrameBuffer(const size_t frameIndex) const noexcept
+	{
+		return this->m_colorFrameBuffers[frameIndex];
+	}
+
 	VKSwapChain::~VKSwapChain()
 	{
 		for (VkImageView& imageView : this->m_imageViews)
@@ -73,10 +111,9 @@ namespace VK       {
 		if (this->m_pObject != VK_NULL_HANDLE)
 			vkDestroySwapchainKHR(*this->m_pDevice, this->m_pObject, nullptr);
 
-		for (std::vector<VkFramebuffer>& frameBuffers : this->m_renderPassFrameBuffers)
-			for (VkFramebuffer& frameBuffer : frameBuffers)
-				if (frameBuffer != VK_NULL_HANDLE)
-					vkDestroyFramebuffer(*this->m_pDevice, frameBuffer, nullptr);
+		for (VkFramebuffer& frameBuffer : m_colorFrameBuffers)
+			if (frameBuffer != VK_NULL_HANDLE)
+				vkDestroyFramebuffer(*this->m_pDevice, frameBuffer, nullptr);
 	}
 
 	VkPresentModeKHR VKSwapChain::PickPresentingMode() const
@@ -175,13 +212,12 @@ namespace VK       {
 
 	void VKSwapChain::CreateImagesAndViews()
 	{
-		uint32_t imageCount;
-		vkGetSwapchainImagesKHR(*this->m_pDevice, this->m_pObject, &imageCount, nullptr);
-		this->m_images.resize(imageCount);
-		vkGetSwapchainImagesKHR(*this->m_pDevice, this->m_pObject, &imageCount, this->m_images.data());
+		vkGetSwapchainImagesKHR(*this->m_pDevice, this->m_pObject, &this->m_nImages, nullptr);
+		this->m_images.resize(this->m_nImages);
+		this->m_imageViews.resize(this->m_nImages);
+		vkGetSwapchainImagesKHR(*this->m_pDevice, this->m_pObject, &this->m_nImages, this->m_images.data());
 
-		this->m_imageViews.resize(imageCount);
-		for (size_t i = 0; i < imageCount; i++)
+		for (size_t i = 0; i < this->m_nImages; i++)
 		{
 			VkImageViewCreateInfo createInfo{};
 			createInfo.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -192,11 +228,11 @@ namespace VK       {
 			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.subresourceRange.aspectMask   = VK_IMAGE_ASPECT_COLOR_BIT;
-			createInfo.subresourceRange.baseMipLevel = 0;
-			createInfo.subresourceRange.levelCount   = 1;
+			createInfo.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+			createInfo.subresourceRange.baseMipLevel   = 0;
+			createInfo.subresourceRange.levelCount     = 1;
 			createInfo.subresourceRange.baseArrayLayer = 0;
-			createInfo.subresourceRange.layerCount   = 1;
+			createInfo.subresourceRange.layerCount     = 1;
 
 			if (VK_FAILED(vkCreateImageView(*this->m_pDevice, &createInfo, nullptr, &this->m_imageViews[i])))
 				throw std::runtime_error("[VULKAN] Failed To Create An Image View");
