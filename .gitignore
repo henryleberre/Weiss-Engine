@@ -4,6 +4,7 @@ x86/
 .vs/
 *.png
 *.sln
+*.bat
 .git/
 *.obj
 *.jpg
@@ -12,6 +13,7 @@ Debug/
 *.hlsl
 *.user
 mcart/
+.vscode/
 Release/
 *.vcxproj
 *.filters
