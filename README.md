@@ -1,6 +1,6 @@
 # Weiss
 
-> Weiss II is cross-platform and api-agnostic rendering engine built with c++17. It is intended to be a wrapper around low-level apis to make the developpement of 2D and 3D applications simpler and faster.
+> Weiss II is cross-platform, api-agnostic and header-only rendering engine built with c++17. It is intended to be a wrapper around low-level apis to make the developpement of 2D and 3D applications simpler and faster.
 
 ## Current Support
 
@@ -32,8 +32,8 @@ Building :
 
 + Setup the following directories :
   + Library Directories
-    + VulkanSDK/Lib
-    + VulkanSDK/Lib32
+    + VulkanSDK/Lib   (for x64)
+    + VulkanSDK/Lib32 (for x86)
   + Include Directories
     + VulkanSDK/Include
     + Glad/include
