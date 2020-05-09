@@ -101,12 +101,7 @@
 	#undef NOMINMAX
 
 	// Windows Macros
-	#define MESSAGE_BOX_ERROR(errorMsg)                                                                                                                                                                                                                                                                            \
-	{                                                                                                                                                                                                                                                                                                          \
-		MessageBox(NULL, (std::string("Error in File: ") + std::string(__FILE__) + std::string("\nAt line: ") + std::to_string(__LINE__) + std::string("\nIn Function: ") + std::string(__FUNCTION__) + std::string("\nError: ") + std::string(errorMsg)).c_str(), "Weiss Engine Error", MB_ABORTRETRYIGNORE); \
-	}
-
-	#define ENABLE_CONSOLE()                                    \
+	#define WIN_ENABLE_CONSOLE()                            \
 	{                                                       \
 		AllocConsole();                                     \
 		freopen_s((FILE **)stdout, "CONOUT$", "w", stdout); \
@@ -121,7 +116,14 @@
 
 #pragma comment(lib, "vulkan-1.lib")
 
-// Standard C++17 Library Includes
+/*
+ * // ////////////////////////////--\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
+ * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+ * // ||------------------C++17 STL Includes------------------|| \\
+ * // |\______________________________________________________/| \\
+ * // \\\\\\\\\\\\\\\\\\\\\\\\\\\\--//////////////////////////// \\
+ */
+
 #include <map>
 #include <list>
 #include <array>
@@ -144,6 +146,28 @@
 #include <algorithm>
 #include <functional>
 
+/*
+ * // //////////////////--\\\\\\\\\\\\\\\\\\ \\
+ * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+ * // ||--------------UNDEFS--------------|| \\
+ * // |\__________________________________/| \\
+ * // \\\\\\\\\\\\\\\\\\--////////////////// \\
+ */
+
+#ifdef _CRT_SECURE_NO_WARNINGS
+
+	#undef _CRT_SECURE_NO_WARNINGS
+
+#endif // _CRT_SECURE_NO_WARNINGS
+
+/*
+ * // ////////////////////////////--\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
+ * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+ * // ||--------------RELEASE / DEBUG MODE CHECK--------------|| \\
+ * // |\______________________________________________________/| \\
+ * // \\\\\\\\\\\\\\\\\\\\\\\\\\\\--//////////////////////////// \\
+ */
+
 #if defined(_NDEBUG) || defined(NDEBUG)
 
 	#define __WEISS__RELEASE_MODE
@@ -154,17 +178,46 @@
 
 #endif
 
-#ifdef _CRT_SECURE_NO_WARNINGS
+/*
+ * // //////////////////////-\\\\\\\\\\\\\\\\\\\\\\ \\
+ * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+ * // ||--------------HELPER MACROS--------------|| \\
+ * // |\_________________________________________/| \\
+ * // \\\\\\\\\\\\\\\\\\\\\\-////////////////////// \\
+ */
 
-	#undef _CRT_SECURE_NO_WARNINGS
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
-#endif // _CRT_SECURE_NO_WARNINGS
+#define VK_FAILED(vkResult) ((vkResult) != VK_SUCCESS)
 
+#ifdef __WEISS__OS_WINDOWS
+
+	#define DX_FAILED(hResult)  FAILED(hResult)
+	#define WIN_FAILED(hResult) FAILED(hResult)
+
+	#define WS_ERROR_MESSAGE(message) MessageBoxA(NULL, message, "Weiss Engine Error", MB_TOPMOST | MB_ICONERROR);
+
+#endif // __WEISS__OS_WINDOWS
+
+/*
+ * // ///////////////////////-\\\\\\\\\\\\\\\\\\\\\\\ \\
+ * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+ * // ||--------------WEISS NAMESPACE--------------|| \\
+ * // |\___________________________________________/| \\
+ * // \\\\\\\\\\\\\\\\\\\\\\\-/////////////////////// \\
+ *
+ * The "WS" namespace contains all of Weiss's classes, functions and variables
+ * in order to avoid namespace leaks and conflicts with other libraries
+ */
 namespace WS
 {
-	#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
-
-	#define VK_FAILED(vkResult) ((vkResult) != VK_SUCCESS)
+	/*
+	* // ////////////////////-\\\\\\\\\\\\\\\\\\\\ \\
+	* // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+	* // ||--------------CONSTANTS--------------|| \\
+	* // |\_____________________________________/| \\
+	* // \\\\\\\\\\\\\\\\\\\\-//////////////////// \\
+	*/
 
 	constexpr const float PI             = 3.14159265359f;
 	constexpr const float TWO_PI         = 2.0f * PI;
@@ -178,6 +231,14 @@ namespace WS
 	constexpr const float QUARTER_TAU = HALF_PI;
 
 	constexpr const size_t WEISS__FRAME_BUFFER_COUNT = 2u;
+
+	/*
+	* // //////////////////-\\\\\\\\\\\\\\\\\\ \\
+	* // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+	* // ||--------------ENUMS--------------|| \\
+	* // |\_________________________________/| \\
+	* // \\\\\\\\\\\\\\\\\\-////////////////// \\
+	*/
 
 	enum class ShaderInputElementType
 	{
@@ -269,6 +330,10 @@ namespace WS
 
 	struct Colorf32
 	{
+		/*
+		 * The union of the two anonymous structs lets the caller
+		 * use either shorter or longer names for the same color values
+		 */
 		union {
 			struct
 			{
@@ -3012,7 +3077,25 @@ namespace WS {
 
 #else // end of #ifdef __WEISS__OS_WINDOWS
 
-		std::cout << message;
+		switch (logType)
+		{
+		case LOG_TYPE::LOG_NORMAL:
+			std::cout << "\x1B[1;37m";
+			break;
+		case LOG_TYPE::LOG_SUCCESS:
+			std::cout << "\x1B[1;32m";
+			break;
+		case LOG_TYPE::LOG_WARNING:
+			std::cout << "\x1B[0;33m";
+			break;
+		case LOG_TYPE::LOG_ERROR:
+			std::cout << "\x1B[1;31m";
+			break;
+		default:
+			throw std::runtime_error("[LOG] Your Selected LOG_TYPE Could Not Be Resolved");
+		}
+
+		std::cout << message << '\n' << "\x1B[0m";
 
 #endif 
 	}
@@ -3082,10 +3165,10 @@ namespace WS {
 				Microsoft::WRL::ComPtr<IWICImagingFactory>    factory;
 				Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frameDecoder;
 
-				if (FAILED(CoInitialize(NULL)))
+				if (DX_FAILED(CoInitialize(NULL)))
 					throw std::runtime_error("[COM] Failed To Init COM");
 
-				if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+				if (DX_FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
 					throw std::runtime_error("[WIC] Could Not Create IWICImagingFactory");
 
 				// Convert from char* to wchar_t*
@@ -3093,25 +3176,25 @@ namespace WS {
 				wchar_t* filenameW = new wchar_t[length];
 				mbstowcs(filenameW, filename, length);
 
-				if (FAILED(factory->CreateDecoderFromFilename(filenameW, NULL, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &bitmapDecoder)))
+				if (DX_FAILED(factory->CreateDecoderFromFilename(filenameW, NULL, GENERIC_READ, WICDecodeMetadataCacheOnLoad, &bitmapDecoder)))
 					throw std::runtime_error("[WIC] Could Not Read / Open Image");
 
-				if (FAILED(bitmapDecoder->GetFrame(0, &frameDecoder)))
+				if (DX_FAILED(bitmapDecoder->GetFrame(0, &frameDecoder)))
 					throw std::runtime_error("[WIC] Could Not Get First Frame Of Image");
 
-				if (FAILED(frameDecoder->GetSize((UINT*)&this->m_width, (UINT*)&this->m_height)))
+				if (DX_FAILED(frameDecoder->GetSize((UINT*)&this->m_width, (UINT*)&this->m_height)))
 					throw std::runtime_error("[WIC] Could Not Get Image Width/Height");
 
 				this->m_nPixels = this->m_width * this->m_height;
 
-				if (FAILED(WICConvertBitmapSource(GUID_WICPixelFormat32bppRGBA, frameDecoder.Get(), &decodedConvertedFrame)))
+				if (DX_FAILED(WICConvertBitmapSource(GUID_WICPixelFormat32bppRGBA, frameDecoder.Get(), &decodedConvertedFrame)))
 					throw std::runtime_error("[WIC] Could Not Create Bitmap Converter");
 
 				this->m_buff = std::make_unique<Coloru8[]>(this->m_nPixels * sizeof(Coloru8));
 
 				const WICRect sampleRect{ 0, 0, this->m_width, this->m_height };
 
-				if (FAILED(decodedConvertedFrame->CopyPixels(&sampleRect, this->m_width * sizeof(Coloru8), this->m_nPixels * sizeof(Coloru8), (BYTE*)this->m_buff.get())))
+				if (DX_FAILED(decodedConvertedFrame->CopyPixels(&sampleRect, this->m_width * sizeof(Coloru8), this->m_nPixels * sizeof(Coloru8), (BYTE*)this->m_buff.get())))
 					throw std::runtime_error("[WIC] Could Not Copy Pixels From Bitmap");
 			}
 
@@ -3143,7 +3226,7 @@ namespace WS {
 
 			void WindowsImage::Write(const char* filename) const
 			{
-				if (FAILED(CoInitialize(NULL)))
+				if (DX_FAILED(CoInitialize(NULL)))
 					throw std::runtime_error("[COM] Failed To Init COM");
 
 				Microsoft::WRL::ComPtr<IWICImagingFactory>    factory;
@@ -3151,17 +3234,17 @@ namespace WS {
 				Microsoft::WRL::ComPtr<IWICBitmapFrameEncode> bitmapFrame;
 				Microsoft::WRL::ComPtr<IWICStream>            outputStream;
 
-				if (FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
+				if (DX_FAILED(CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory))))
 					throw std::runtime_error("[WIC] Could Not Create IWICImagingFactory");
 
-				if (FAILED(factory->CreateStream(&outputStream)))
+				if (DX_FAILED(factory->CreateStream(&outputStream)))
 					throw std::runtime_error("[WIC] Failed To Create Output Stream");
 
 				// Convert from char* to wchar_t*
 				const size_t length = mbstowcs(nullptr, filename, 0);
 				wchar_t* filenameW = new wchar_t[length];
 				mbstowcs(filenameW, filename, length);
-				if (FAILED(outputStream->InitializeFromFilename(filenameW, GENERIC_WRITE)))
+				if (DX_FAILED(outputStream->InitializeFromFilename(filenameW, GENERIC_WRITE)))
 					throw std::runtime_error("[WIC] Failed To Initialize Output Stream From Filename");
 
 				char fileExtension[10u]; // assumes the extension has less than 10-1=9 characters
@@ -3180,23 +3263,23 @@ namespace WS {
 				if (extensionToREFUGUIDMap.find(fileExtension) == std::end(extensionToREFUGUIDMap))
 					throw std::runtime_error("[WIC] Your Image Extension Is Not Supported");
 
-				if (FAILED(factory->CreateEncoder(extensionToREFUGUIDMap.at(fileExtension), NULL, &bitmapEncoder)))
+				if (DX_FAILED(factory->CreateEncoder(extensionToREFUGUIDMap.at(fileExtension), NULL, &bitmapEncoder)))
 					throw std::runtime_error("[WIC] Failed To Create Bitmap Encoder");
 
-				if (FAILED(bitmapEncoder->Initialize(outputStream.Get(), WICBitmapEncoderNoCache)))
+				if (DX_FAILED(bitmapEncoder->Initialize(outputStream.Get(), WICBitmapEncoderNoCache)))
 					throw std::runtime_error("[WIC] Failed To Initialize Bitmap ");
 
-				if (FAILED(bitmapEncoder->CreateNewFrame(&bitmapFrame, NULL)))
+				if (DX_FAILED(bitmapEncoder->CreateNewFrame(&bitmapFrame, NULL)))
 					throw std::runtime_error("[WIC] Failed To Create A New Frame");
 
-				if (FAILED(bitmapFrame->Initialize(NULL)))
+				if (DX_FAILED(bitmapFrame->Initialize(NULL)))
 					throw std::runtime_error("[WIC] Failed To Initialize A Bitmap's Frame");
 
-				if (FAILED(bitmapFrame->SetSize(this->m_width, this->m_height)))
+				if (DX_FAILED(bitmapFrame->SetSize(this->m_width, this->m_height)))
 					throw std::runtime_error("[WIC] Failed To Set A Bitmap's Frame's Size");
 
 				WICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppBGRA;
-				if (FAILED(bitmapFrame->SetPixelFormat(&pixelFormat)))
+				if (DX_FAILED(bitmapFrame->SetPixelFormat(&pixelFormat)))
 					throw std::runtime_error("[WIC] Failed To Set Pixel Format On A Bitmap Frame's");
 
 				if (!IsEqualGUID(pixelFormat, GUID_WICPixelFormat32bppBGRA))
@@ -3204,13 +3287,13 @@ namespace WS {
 
 				const UINT stride = this->m_width * sizeof(Coloru8);
 				const UINT bufferSize = this->m_nPixels * sizeof(Coloru8);
-				if (FAILED(bitmapFrame->WritePixels(this->m_height, stride, bufferSize, (BYTE*)this->m_buff.get())))
+				if (DX_FAILED(bitmapFrame->WritePixels(this->m_height, stride, bufferSize, (BYTE*)this->m_buff.get())))
 					throw std::runtime_error("[WIC] Failed To Write Pixels To A Bitmap's Frame");
 
-				if (FAILED(bitmapFrame->Commit()))
+				if (DX_FAILED(bitmapFrame->Commit()))
 					throw std::runtime_error("[WIC] Failed To Commit A Bitmap's Frame");
 
-				if (FAILED(bitmapEncoder->Commit()))
+				if (DX_FAILED(bitmapEncoder->Commit()))
 					throw std::runtime_error("[WIC] Failed To Commit Bitmap Encoder");
 			}
 		}; // namespace WIN
@@ -4745,6 +4828,7 @@ namespace WS {
 			void VKRenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 			{
 				this->m_commandBuffer.BeginColorRenderPass(this->m_swapChain);
+				//vkCmdDraw(this->m_commandBuffer, 3u, 0u, 0u, 0u);
 			}
 
 			void VKRenderAPI::BeginDrawing()
@@ -4755,6 +4839,7 @@ namespace WS {
 
 			void VKRenderAPI::EndDrawing()
 			{
+				this->m_commandBuffer.EndRenderPass();
 				this->m_commandBuffer.EndRecording();
 			}
 
@@ -4846,13 +4931,13 @@ namespace WS {
 				Microsoft::WRL::ComPtr<IDXGIAdapter> dxgiAdapter;
 				Microsoft::WRL::ComPtr<IDXGIFactory> dxgiFactory;
 
-				if (FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice))))
+				if (DX_FAILED(pDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice))))
 					throw std::runtime_error("Could Not Get IDXGIDevice From D3D11Device");
 
-				if (FAILED(dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf())))
+				if (DX_FAILED(dxgiDevice->GetAdapter(dxgiAdapter.GetAddressOf())))
 					throw std::runtime_error("Could Not Get DXGIAdapter From DXGIDevice");
 
-				if (FAILED(dxgiAdapter->GetParent(__uuidof(IDXGIFactory), &dxgiFactory)))
+				if (DX_FAILED(dxgiAdapter->GetParent(__uuidof(IDXGIFactory), &dxgiFactory)))
 					throw std::runtime_error("Could Not Get DXGIAdapter's Parent");
 
 				DXGI_SWAP_CHAIN_DESC scd{};
@@ -4872,7 +4957,7 @@ namespace WS {
 				scd.SwapEffect   = DXGI_SWAP_EFFECT_DISCARD;
 				scd.Flags = 0;
 
-				if (FAILED(dxgiFactory->CreateSwapChain(pDevice, &scd, &this->m_pObject)))
+				if (DX_FAILED(dxgiFactory->CreateSwapChain(pDevice, &scd, &this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 11] Failed To Create Swap Chain");
 			}
 
@@ -4886,7 +4971,7 @@ namespace WS {
 
 			void D3D11SwapChain::Present(const bool vSync)
 			{
-				if (FAILED(this->m_pObject->Present(vSync ? 1u : 0u, 0u)))
+				if (DX_FAILED(this->m_pObject->Present(vSync ? 1u : 0u, 0u)))
 					throw std::runtime_error("Failed To Swap Buffers");
 			}
 
@@ -4902,10 +4987,10 @@ namespace WS {
 			{
 				Microsoft::WRL::ComPtr<ID3D11Resource> pBackBuffer;
 
-				if (FAILED(pSwapChain->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer)))
+				if (DX_FAILED(pSwapChain->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer)))
 					throw std::runtime_error("[DIRECTX 11] Could Not Get BackBuffer");
 
-				if (FAILED(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 11] Could Not Create RenderTargetView");
 			}
 
@@ -4947,7 +5032,7 @@ namespace WS {
 				dsDesc.BackFace.StencilPassOp       = D3D11_STENCIL_OP_KEEP;
 				dsDesc.BackFace.StencilFunc         = D3D11_COMPARISON_ALWAYS;
 
-				if (FAILED(pDevice->CreateDepthStencilState(&dsDesc, &this->m_pDepthStencilState)))
+				if (DX_FAILED(pDevice->CreateDepthStencilState(&dsDesc, &this->m_pDepthStencilState)))
 					throw std::runtime_error("Could Not Create DepthStencilState");
 
 				Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthStencil;
@@ -4962,7 +5047,7 @@ namespace WS {
 				descDepth.Usage     = D3D11_USAGE_DEFAULT;
 				descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-				if (FAILED(pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil)))
+				if (DX_FAILED(pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil)))
 					throw std::runtime_error("Could Not Create Texture2D");
 
 				D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
@@ -4970,7 +5055,7 @@ namespace WS {
 				descDSV.ViewDimension      = D3D11_DSV_DIMENSION_TEXTURE2D;
 				descDSV.Texture2D.MipSlice = 0u;
 
-				if (FAILED(pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &this->m_pDepthStencilView)))
+				if (DX_FAILED(pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDSV, &this->m_pDepthStencilView)))
 					throw std::runtime_error("Could Not Create DepthStencilView");
 			}
 
@@ -5106,7 +5191,7 @@ namespace WS {
 				this->m_vertexData.resize(bd.ByteWidth);
 				std::memset(this->m_vertexData.data(), 0, bd.ByteWidth);
 
-				if (FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
 					throw std::runtime_error("Unable To Create Vertex Buffer");
 			}
 
@@ -5131,7 +5216,7 @@ namespace WS {
 			void D3D11VertexBuffer::Update()
 			{
 				D3D11_MAPPED_SUBRESOURCE resource;
-				if (FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
+				if (DX_FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
 					throw std::runtime_error("Could Not Map Vertex Buffer Memory");
 
 				std::memcpy(resource.pData, this->m_vertexData.data(), this->m_vertexData.size());
@@ -5162,7 +5247,7 @@ namespace WS {
 				this->m_indexData.resize(bd.ByteWidth);
 				std::memset(this->m_indexData.data(), 0, bd.ByteWidth);
 
-				if (FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
 					throw std::runtime_error("Unable To Create Index Buffer");
 			}
 
@@ -5185,7 +5270,7 @@ namespace WS {
 			void D3D11IndexBuffer::Update()
 			{
 				D3D11_MAPPED_SUBRESOURCE resource;
-				if (FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
+				if (DX_FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource)))
 					throw std::runtime_error("Could Not Map Index Buffer Memory");
 
 				std::memcpy(resource.pData, this->m_indexData.data(), this->m_indexData.size());
@@ -5215,7 +5300,7 @@ namespace WS {
 				this->m_constantBufferData.resize(bd.ByteWidth);
 				std::memset(this->m_constantBufferData.data(), 0, bd.ByteWidth);
 
-				if (FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateBuffer(&bd, nullptr, &this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 11] Unable To Create Constant Buffer");
 			}
 
@@ -5239,7 +5324,7 @@ namespace WS {
 			void D3D11ConstantBuffer::Update()
 			{
 				D3D11_MAPPED_SUBRESOURCE resource;
-				if (FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &resource)))
+				if (DX_FAILED((*this->m_pDeviceContext)->Map(this->m_pObject, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &resource)))
 					throw std::runtime_error("[DIRECTX 11] Failed To Map Constant Buffer Memory");
 
 				std::memcpy(resource.pData, this->m_constantBufferData.data(), this->m_objSize);
@@ -5271,7 +5356,7 @@ namespace WS {
 				texture2DDescriptor.BindFlags = useMipmaps ? D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET : D3D11_BIND_SHADER_RESOURCE;
 				texture2DDescriptor.MiscFlags = useMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 
-				if (FAILED(pDevice->CreateTexture2D(&texture2DDescriptor, nullptr, &this->m_texture2D)))
+				if (DX_FAILED(pDevice->CreateTexture2D(&texture2DDescriptor, nullptr, &this->m_texture2D)))
 					throw std::runtime_error("[DIRECTX 11] Failed To Create Texture");
 
 				D3D11_SHADER_RESOURCE_VIEW_DESC SRVDescriptor = {};
@@ -5280,7 +5365,7 @@ namespace WS {
 				SRVDescriptor.Texture2D.MostDetailedMip = 0;
 				SRVDescriptor.Texture2D.MipLevels       = useMipmaps ? -1 : 1;
 
-				if (FAILED(pDevice->CreateShaderResourceView(this->m_texture2D.Get(), &SRVDescriptor, &this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateShaderResourceView(this->m_texture2D.Get(), &SRVDescriptor, &this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 11] Failed To Create Shader Resource View");
 			}
 
@@ -5342,7 +5427,7 @@ namespace WS {
 				samplerDescriptor.MinLOD = 0.0f;
 				samplerDescriptor.MaxLOD = D3D11_FLOAT32_MAX;
 
-				if (FAILED(pDevice->CreateSamplerState(&samplerDescriptor, &this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateSamplerState(&samplerDescriptor, &this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 11] Failed To Create Sampler State");
 			}
 
@@ -5561,7 +5646,7 @@ namespace WS {
 			D3D12Adapter::D3D12Adapter()
 			{
 				IDXGIFactory4* dxgiFactory;
-				if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory))))
+				if (DX_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory))))
 					throw std::runtime_error("[DIRECTX 12] Failed To Create DXGIFactory1");
 
 				int adapterIndex = 0;
@@ -5601,7 +5686,7 @@ namespace WS {
 
 			D3D12Device::D3D12Device(D3D12AdapterObjectWrapper& pAdapter)
 			{
-				if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&this->m_pObject))))
+				if (DX_FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&this->m_pObject))))
 					throw std::runtime_error("[D3D12] Failed To Create Device");
 
 #ifdef __WEISS__DEBUG_MODE
@@ -5694,7 +5779,7 @@ namespace WS {
 				desc.Flags    = D3D12_COMMAND_QUEUE_FLAG_NONE;
 				desc.NodeMask = 0;
 
-				if (FAILED(pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&this->m_pObject))))
+				if (DX_FAILED(pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&this->m_pObject))))
 					throw std::runtime_error("[D3D12] Could Not Create Command Queue");
 			}
 
@@ -5720,7 +5805,7 @@ namespace WS {
 
 		#endif // __WEISS__DEBUG_MODE
 
-				if (FAILED(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4))))
+				if (DX_FAILED(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&dxgiFactory4))))
 					throw std::runtime_error("[D3D12] Could Not Create DXGIFactory2");
 			
 				DXGI_MODE_DESC backBufferDesc = {};
@@ -5741,7 +5826,7 @@ namespace WS {
 				swapChainDesc.Windowed     = true; 
 				swapChainDesc.Flags        = D3D12SwapChain::IsTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
-				if (FAILED(dxgiFactory4->CreateSwapChain(pCommandQueue, &swapChainDesc, (IDXGISwapChain**) &this->m_pObject)))
+				if (DX_FAILED(dxgiFactory4->CreateSwapChain(pCommandQueue, &swapChainDesc, (IDXGISwapChain**) &this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 12] Failed To Create Swap Chain");
 			}
 
@@ -5755,7 +5840,7 @@ namespace WS {
 
 			void D3D12SwapChain::Present(const bool vSync) const
 			{
-				if (FAILED(this->m_pObject->Present(vSync ? 1u : 0u, 0u)))
+				if (DX_FAILED(this->m_pObject->Present(vSync ? 1u : 0u, 0u)))
 					throw std::runtime_error("[DIRECTX 12] Presentation Failed");
 			}
 
@@ -5766,13 +5851,13 @@ namespace WS {
 				Microsoft::WRL::ComPtr<IDXGIFactory4> factory4;
 				Microsoft::WRL::ComPtr<IDXGIFactory5> factory5;
 
-				if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
+				if (DX_FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&factory4))))
 					throw std::runtime_error("[DIRECTX 12] Failed To Check Tearing (While Running CreateDXGIFactory1)");
 
-				if (FAILED(factory4.As(&factory5)))
+				if (DX_FAILED(factory4.As(&factory5)))
 					throw std::runtime_error("[DIRECTX 12] Failed To Check Tearing (While Running CreateDXGIFactory1)");
 
-				if (FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingSupported, sizeof(isTearingSupported))))
+				if (DX_FAILED(factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &isTearingSupported, sizeof(isTearingSupported))))
 					return false;
 
 				return true;
@@ -5793,7 +5878,7 @@ namespace WS {
 				desc.Type  = type;
 				desc.Flags = flags;
 
-				if (FAILED(pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&this->m_pObject))))
+				if (DX_FAILED(pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&this->m_pObject))))
 					throw std::runtime_error("[D3D12] Could Not Create Descriptor Heap");
 			}
 
@@ -5849,7 +5934,7 @@ namespace WS {
 
 			void D3D12CommandAllocator::Reset() const
 			{
-				if (FAILED(this->m_pObject->Reset()))
+				if (DX_FAILED(this->m_pObject->Reset()))
 					throw std::runtime_error("[DIRECTX 12] Could Not Reset Command Allocator");
 			}
 
@@ -5865,7 +5950,7 @@ namespace WS {
 									   D3D12CommandAllocatorObjectWrapper& pCommandAllocator,
 									   const D3D12_COMMAND_LIST_TYPE& type)
 			{
-				if (FAILED(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, NULL, IID_PPV_ARGS(&this->m_pObject))))
+				if (DX_FAILED(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, NULL, IID_PPV_ARGS(&this->m_pObject))))
 					throw std::runtime_error("[DIRECTX 12] Failed To Create Command List");
 			}
 
@@ -5879,13 +5964,13 @@ namespace WS {
 
 			void D3D12CommandList::Close()
 			{
-				if (FAILED(this->m_pObject->Close()))
+				if (DX_FAILED(this->m_pObject->Close()))
 					throw std::runtime_error("[DIRECTX 12] Failed To Close Command List");
 			}
 
 			void D3D12CommandList::Reset(D3D12CommandAllocatorObjectWrapper& pCommandAllocator) const
 			{
-				if (FAILED(this->m_pObject->Reset(pCommandAllocator, NULL)))
+				if (DX_FAILED(this->m_pObject->Reset(pCommandAllocator, NULL)))
 					throw std::runtime_error("[DIRECTX 12] Failed To Reset Command List");
 			}
 
@@ -5909,7 +5994,7 @@ namespace WS {
 				dsvHeapDesc.Type  = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 				dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-				if (FAILED(pDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(this->m_pDescriptorHeap.GetPtr()))))
+				if (DX_FAILED(pDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(this->m_pDescriptorHeap.GetPtr()))))
 					throw std::runtime_error("[DIRECTX 12] Failed To Create Descriptor Heap For Depth Buffer");
 
 				D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
@@ -5922,7 +6007,7 @@ namespace WS {
 				depthOptimizedClearValue.DepthStencil.Depth   = 1.0f;
 				depthOptimizedClearValue.DepthStencil.Stencil = 0;
 
-				if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
+				if (DX_FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE,
 															&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, pWindow->GetClientWidth(), pWindow->GetClientHeight(), 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
 															D3D12_RESOURCE_STATE_DEPTH_WRITE, &depthOptimizedClearValue,
 															IID_PPV_ARGS(this->m_pDepthStencilBuffer.GetPtr()))))
@@ -5967,10 +6052,10 @@ namespace WS {
 				rootSignatureDesc.Desc_1_1.pStaticSamplers   = samplers.data();
 				rootSignatureDesc.Desc_1_1.NumStaticSamplers = static_cast<UINT>(samplers.size());
 
-				if (FAILED(D3D12SerializeVersionedRootSignature(&rootSignatureDesc, &pSignature, &pError)))
+				if (DX_FAILED(D3D12SerializeVersionedRootSignature(&rootSignatureDesc, &pSignature, &pError)))
 					throw std::runtime_error("[DIRECTX 12] Failed To Serialize Root Signature");
 
-				if (FAILED(pDevice->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), IID_PPV_ARGS(&this->m_pObject))))
+				if (DX_FAILED(pDevice->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), IID_PPV_ARGS(&this->m_pObject))))
 					throw std::runtime_error("[DIRECTX 12] Failed To Create Root Signature");
 			}
 
@@ -5996,7 +6081,7 @@ namespace WS {
 				: m_originalState(states), m_currentState(states)
 			{
 				
-				if (FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(heapType), flags, descPtr, states,
+				if (DX_FAILED(pDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(heapType), flags, descPtr, states,
 															nullptr, IID_PPV_ARGS(&this->m_pObject))))
 				{
 					const std::string errorString = "[DIRECTX 12] Failed To Create A Committed Resource Named " + std::string(name);
@@ -6167,7 +6252,7 @@ namespace WS {
 				D3D12CommittedResource& uploadHeap = this->m_pUploadHeaps[heapIndex];
 
 				uint8_t* gpuDestAddr;
-				if (FAILED(uploadHeap->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
+				if (DX_FAILED(uploadHeap->Map(0, &readRange, reinterpret_cast<void**>(&gpuDestAddr))))
 					throw std::runtime_error("[DIRECTX 12] Failed To Map Constant Buffer Memory");
 
 				memcpy((void*)gpuDestAddr, this->m_constantBufferData.data(), this->m_objSize);
@@ -6315,7 +6400,7 @@ namespace WS {
 					mbstowcs_s(&convertedCharP, vsFilenameW, strlen(pipelineDesc.vsFilename) + 1u, pipelineDesc.vsFilename, _TRUNCATE);
 				}
 
-				if (FAILED(D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
+				if (DX_FAILED(D3DCompileFromFile(vsFilenameW, nullptr, nullptr, "main", "vs_5_0", compileFlags,
 						0, &pVertexShaderByteCode, &pErrorBuff)))
 				{
 		#ifdef __WEISS__DEBUG_MODE
@@ -6338,7 +6423,7 @@ namespace WS {
 					mbstowcs_s(&convertedCharP, psFilenameW, strlen(pipelineDesc.psFilename) + 1u, pipelineDesc.psFilename, _TRUNCATE);
 				}
 
-				if (FAILED(D3DCompileFromFile(psFilenameW, nullptr, nullptr, "main", "ps_5_0", compileFlags,
+				if (DX_FAILED(D3DCompileFromFile(psFilenameW, nullptr, nullptr, "main", "ps_5_0", compileFlags,
 					0, &pPixelShaderByteCode, &pErrorBuff)))
 				{
 		#ifdef __WEISS__DEBUG_MODE
@@ -6467,7 +6552,7 @@ namespace WS {
 				psoDesc.pRootSignature = this->m_pRootSignature;
 
 				// create the pso
-				if (FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
+				if (DX_FAILED(pDevice->CreateGraphicsPipelineState(&psoDesc, __uuidof(ID3D12PipelineState), (void**)&this->m_pObject)))
 					throw std::runtime_error("[DIRECTX 12] Failed To Create Graphics Pipeline State");
 
 				for (size_t frameIndex = 0u; frameIndex < WEISS__FRAME_BUFFER_COUNT; frameIndex++)
@@ -6566,7 +6651,7 @@ namespace WS {
 				D3D12Fence& pFence     = *this->m_pFences[frameIndex];
 				UINT64&     fenceValue = this->m_fenceValues[frameIndex];
 
-				if (FAILED(pCommandQueue->Signal(pFence, fenceValue)))
+				if (DX_FAILED(pCommandQueue->Signal(pFence, fenceValue)))
 					throw std::runtime_error("[DIRECTX 12] Failed To Signal The Fence");
 			}
 
@@ -6576,7 +6661,7 @@ namespace WS {
 				UINT64&     fenceValue = this->m_fenceValues[frameIndex];
 
 				if (pFence->GetCompletedValue() < fenceValue) {
-					if (FAILED(pFence->SetEventOnCompletion(fenceValue, pFence.GetEvent())))
+					if (DX_FAILED(pFence->SetEventOnCompletion(fenceValue, pFence.GetEvent())))
 						throw std::runtime_error("[DIRECTX 12] Failed To Set Event On Completion For Fence");
 
 					WaitForSingleObject(pFence.GetEvent(), INFINITE);
@@ -6972,6 +7057,23 @@ namespace WS {
 	}
 
 }; // WS
+
+/*
+ * // /////////////////////////////////--\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
+ * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+ * // ||-----------------------------UNDEFS-----------------------------|| \\
+ * // |\________________________________________________________________/| \\
+ * // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\--///////////////////////////////// \\ 
+ */
+
+#ifdef __WEISS__OS_WINDOWS
+
+	#undef DX_FAILED
+	#undef WIN_FAILED
+
+#endif // __WEISS__OS_WINDOWS
+
+#undef VK_FAILED
 
 /*
  * // //////////////////////////////////-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
