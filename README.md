@@ -21,7 +21,6 @@ Dependencies :
 
 + Install the [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
 + Download the [d3dx12.h file](https://github.com/microsoft/DirectX-Graphics-Samples/blob/master/Libraries/D3DX12/d3dx12.h) from microsoft's official github
-+ Install [GLAD](https://glad.dav1d.de/) for OpenGL
 + Download & Install the [DirectX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 
 Building :
@@ -30,14 +29,7 @@ Building :
 
   ```git clone https://github.com/PolarToCartesian/Weiss-II```
 
-+ Setup the following directories :
-  + Library Directories
-    + VulkanSDK/Lib   (for x64)
-    + VulkanSDK/Lib32 (for x86)
-  + Include Directories
-    + VulkanSDK/Include
-    + Glad/include
-    + d3dx12.h file's directory
++ you can run the correct batch or shell script for you platform to build a simple application with Weiss.
 
 ## Test Code
 
@@ -48,7 +40,7 @@ This code should run without any errors and show a colored triangle using direct
 
 
 ```c++
-#include "Weiss-II/Include.h"
+#include "Weiss.hpp"
 
 struct Vertex {
 	Vec3f position;
