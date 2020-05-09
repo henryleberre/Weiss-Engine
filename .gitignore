@@ -4,3 +4,9 @@ d3dx12/
 bin/
 res/
 *.cpp
+*.sln
+*.filters
+*.user
+*.vcxproj
+x64/
+.vs/
