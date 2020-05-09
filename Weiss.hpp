@@ -126,6 +126,7 @@
 #include <list>
 #include <array>
 #include <queue>
+#include <mutex>
 #include <thread>
 #include <chrono>
 #include <string>
@@ -205,6 +206,17 @@ namespace WS
 		DIRECTX11,
 		DIRECTX12,
 		VULKAN
+	};
+
+	/*
+	 * We have to prexif the codes with LOG_ because the "ERROR"
+	 * Keyword is defined by a windows header "wingdi.h"
+	 */
+	enum class LOG_TYPE {
+		LOG_NORMAL,
+		LOG_SUCCESS,
+		LOG_WARNING,
+		LOG_ERROR
 	};
 
 	struct Rect
@@ -896,13 +908,35 @@ namespace WS
 	[[nodiscard]] inline Vec3f GetTriangleSurfaceNormal(const Vec3f &a, const Vec3f &b, const Vec3f &c);
 
 	/*
+	 * The "LOG" static class implements Thread Safe Logging Functions
+	 * that can be colored (see LOG_TYPE enum class)
+	 */ 
+
+	class LOG
+	{
+	private:
+		static std::mutex m_sPrintMutex;
+
+	private:
+		template <typename T>
+		static void __Print(const T& message, const LOG_TYPE logType = LOG_TYPE::LOG_NORMAL);
+
+	public:
+		template <typename T>
+		static inline void Print(const T& message, const LOG_TYPE logType = LOG_TYPE::LOG_NORMAL, const bool bBypassMutex = false);
+
+		template <typename T>
+		static inline void Println(const T& message, const LOG_TYPE logType = LOG_TYPE::LOG_NORMAL);
+
+	};
+
+	/*
 	 * Any object, function or variable in the "Internal" namespace shall
 	 * not be used by a user of the library and only used by the Weiss Engine
 	 */
 
 	namespace Internal
 	{
-
 		/* 
 		 * We use a per platform image loading system to use
 		 * their platform's preexisting libraries to improve
@@ -2840,6 +2874,10 @@ namespace WS
 
 }; // WS
 
+// LOG Static Class
+std::mutex   WS::LOG::m_sPrintMutex = std::mutex();
+
+// VKRenderPass Class
 VkRenderPass WS::Internal::VK::VKRenderPass::s_colorRenderPass = VK_NULL_HANDLE;
 
 /* 
@@ -2931,7 +2969,82 @@ namespace WS {
 
 #endif // __WEISS__OS_WINDOWS
 
+	/*
+	 * // /////////////////////////////-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
+	 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+	 * // ||--------------------------LOG--------------------------|| \\
+	 * // |\_______________________________________________________/| \\
+	 * // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\-///////////////////////////// \\
+	 */
+
+	template <typename T>
+	static void LOG::__Print(const T& message, const LOG_TYPE logType)
+	{
+#ifdef __WEISS__OS_WINDOWS
+	
+		WORD textAttributes;
+
+		switch (logType)
+		{
+		case LOG_TYPE::LOG_NORMAL:
+			textAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+			break;
+		case LOG_TYPE::LOG_SUCCESS:
+			textAttributes = FOREGROUND_INTENSITY | FOREGROUND_GREEN;
+			break;
+		case LOG_TYPE::LOG_WARNING:
+			textAttributes = FOREGROUND_RED | FOREGROUND_GREEN;
+			break;
+		case LOG_TYPE::LOG_ERROR:
+			textAttributes = FOREGROUND_INTENSITY | FOREGROUND_RED;
+			break;
+		default:
+			throw std::runtime_error("[LOG] Your Selected LOG_TYPE Could Not Be Resolved");
+		}
+
+		// Set Text Color
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), textAttributes);
+
+		std::cout << message;
+
+		// Reset Text Color To White
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+#else // end of #ifdef __WEISS__OS_WINDOWS
+
+		std::cout << message;
+
+#endif 
+	}
+
+	template <typename T>
+	static inline void LOG::Print(const T& message, const LOG_TYPE logType, const bool bBypassMutex)
+	{
+		if (!bBypassMutex)
+		{
+			// Lock The Mutex
+			std::lock_guard<std::mutex> lock(LOG::m_sPrintMutex);
+
+			__Print(message, logType);
+		}
+		else
+		{
+			__Print(message, logType);
+		}
+	}
+
+	template <typename T>
+	static inline void LOG::Println(const T& message, const LOG_TYPE logType)
+	{
+		// Lock The Mutex
+		std::lock_guard<std::mutex> lock(LOG::m_sPrintMutex);
+
+		__Print(message, logType);
+		__Print('\n',    logType);
+	}
+
 	namespace Internal {
+
 		namespace WIN {
 
 			/*
