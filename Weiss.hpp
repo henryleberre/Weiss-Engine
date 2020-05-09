@@ -1753,6 +1753,8 @@ namespace WS
 
 				VKObjectWrapper(T& obj) : m_object(obj) {  }
 
+				~VKObjectWrapper() { this->m_object = VK_NULL_HANDLE; }
+
 				VKObjectWrapper<T> &operator=(VKObjectWrapper<T>&& other) noexcept;
 
 				inline       T* GetPtr()       noexcept { return &this->m_object; }
@@ -1817,8 +1819,6 @@ namespace WS
 
 				VKSemaphore(const VKDevice& device);
 
-				VKSemaphore& operator=(const VKSemaphore &other) noexcept;
-
 				VKSemaphore& operator=(VKSemaphore &&other) noexcept;
 
 				~VKSemaphore();
@@ -1863,7 +1863,7 @@ namespace WS
 
 				uint32_t m_currentImageIndex = 0u;
 
-				std::unique_ptr<VKQueue> m_pPresentQueue;
+				const VKQueue* m_pPresentQueue;
 
 			public:
 				VKSwapChain() = default;
@@ -1878,10 +1878,10 @@ namespace WS
 
 				void Present();
 
-				inline [[nodiscard]] uint32_t           GetCurrentImageIndex()                       const noexcept { return this->m_currentImageIndex;             }
-				inline [[nodiscard]] VkExtent2D         GetImageExtent()                             const noexcept { return this->m_imageExtent2D;                 }
-				inline [[nodiscard]] VkSurfaceFormatKHR GetFormat()                                  const noexcept { return this->m_surfaceFormat;                 }
-				inline [[nodiscard]] VkFramebuffer      GetColorFrameBuffer(const size_t frameIndex) const noexcept { return this->m_colorFrameBuffers[frameIndex]; }
+				[[nodiscard]] inline uint32_t           GetCurrentImageIndex()                       const noexcept { return this->m_currentImageIndex;             }
+				[[nodiscard]] inline VkExtent2D         GetImageExtent()                             const noexcept { return this->m_imageExtent2D;                 }
+				[[nodiscard]] inline VkSurfaceFormatKHR GetFormat()                                  const noexcept { return this->m_surfaceFormat;                 }
+				[[nodiscard]] inline VkFramebuffer      GetColorFrameBuffer(const size_t frameIndex) const noexcept { return this->m_colorFrameBuffers[frameIndex]; }
 
 				~VKSwapChain();
 
@@ -1923,6 +1923,8 @@ namespace WS
 			private:
 				const VKDevice *m_pDevice = nullptr;
 
+				const VKQueue* m_pGraphicsQueue;
+
 			public:
 				VKCommandBuffer() = default;
 
@@ -1939,6 +1941,8 @@ namespace WS
 				void EndRenderPass();
 
 				void EndRecording() const;
+
+				void Submit(const VKSemaphore& swapChainImageAvailableSemaphore) const;
 
 				~VKCommandBuffer() = default;
 			};
@@ -1957,15 +1961,11 @@ namespace WS
 			public:
 				VKQueue() = default;
 
-				VKQueue(const VKQueue &other) noexcept;
-
 				VKQueue(VKDevice &device, const size_t queueIndex);
 
 				void Submit(const std::vector<VkCommandBuffer> &commandBuffers) const;
 
-				void operator=(VKQueue &other);
-
-				VKQueue& operator=(VKQueue &&other);
+				VKQueue& operator=(VKQueue &&other) noexcept;
 			};
 
 			struct VKPhysicalDeviceDataWrapper
@@ -2020,8 +2020,8 @@ namespace WS
 
 				VKDevice &operator=(VKDevice &&device) noexcept;
 
-				[[nodiscard]] inline const VKQueue& GetGraphicsQueue() const noexcept { return this->m_graphicsQueue; }
-				[[nodiscard]] inline const VKQueue& GetPresentQueue()  const noexcept { return this->m_presentQueue;  }
+				[[nodiscard]] inline const VKQueue* GetGraphicsQueuePtr() const noexcept { WS::LOG::Println(this->m_graphicsQueue.m_object); return &this->m_graphicsQueue; }
+				[[nodiscard]] inline const VKQueue* GetPresentQueuePtr()  const noexcept { WS::LOG::Println(this->m_presentQueue.m_object); return &this->m_presentQueue;  }
 				[[nodiscard]] inline const VKPhysicalDeviceDataWrapper& GetPhysicalDeviceData() const noexcept { return this->m_physicalDeviceData; }
 
 				~VKDevice() {}
@@ -3800,6 +3800,18 @@ namespace WS {
 
 		namespace VK {
 
+			static VKAPI_ATTR VkBool32 VKAPI_CALL validationLayerCallback(
+				VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+				VkDebugUtilsMessageTypeFlagsEXT messageType,
+				const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+				void* pUserData) {
+
+				WS::LOG::Print("validation layer: ", WS::LOG_TYPE::LOG_ERROR);
+				WS::LOG::Println(pCallbackData->pMessage, WS::LOG_TYPE::LOG_ERROR);
+
+				return VK_FALSE;
+			}
+
 			/*
 			 * // ////////////////////////////////////--\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
 			 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
@@ -3864,6 +3876,24 @@ namespace WS {
 				createInfo.enabledExtensionCount   = static_cast<uint32_t>(requiredExtensions.size());
 				createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
+#ifdef __WEISS__DEBUG_MODE
+
+				std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+
+				createInfo.enabledLayerCount   = validationLayers.size();
+				createInfo.ppEnabledLayerNames = validationLayers.data();
+
+				VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+				debugCreateInfo = {};
+				debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+				debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+				debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+				debugCreateInfo.pfnUserCallback = validationLayerCallback;
+
+				createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+
+#endif // __WEISS__DEBUG_MODE
+
 				if (VK_FAILED(vkCreateInstance(&createInfo, nullptr, &this->m_object)))
 					throw std::runtime_error("[VULKAN] Failed To Create Instance");
 			}
@@ -3902,7 +3932,7 @@ namespace WS {
 #ifdef __WEISS__DEBUG_MODE
 
 				extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
+				
 #endif // __WEISS__DEBUG_MODE
 
 #ifdef __WEISS__OS_WINDOWS
@@ -3933,6 +3963,8 @@ namespace WS {
 				createInfo.hwnd      = reinterpret_cast<const WS::WIN::WindowsWindow*>(pWindow)->GetHandle();
 				createInfo.hinstance = GetModuleHandle(NULL);
 
+				this->m_dimensions = { pWindow->GetClientWidth(), pWindow->GetClientHeight() };
+
 				if (VK_FAILED(vkCreateWin32SurfaceKHR(*this->m_pInstance, &createInfo, nullptr, &this->m_object)))
 					throw std::runtime_error("[VULKAN] Failed To Create Window Surface");
 
@@ -3944,6 +3976,8 @@ namespace WS {
 				this->m_pInstance = other.m_pInstance;
 				this->m_object = other.m_object;
 				other.m_object = VK_NULL_HANDLE;
+
+				this->m_dimensions = other.m_dimensions;
 
 				return *this;
 			}
@@ -3972,14 +4006,6 @@ namespace WS {
 					throw std::runtime_error("[VULKAN] Failed To Create Sempahore");
 			}
 
-			VKSemaphore& VKSemaphore::operator=(const VKSemaphore& other) noexcept
-			{
-				this->m_object  = std::move(other.m_object);
-				this->m_pDevice = std::move(other.m_pDevice);
-
-				return *this;
-			}
-
 			VKSemaphore& VKSemaphore::operator=(VKSemaphore&& other) noexcept
 			{
 				this->m_object = std::move(other.m_object);
@@ -3994,6 +4020,8 @@ namespace WS {
 			{
 				if (this->m_object != VK_NULL_HANDLE)
 					vkDestroySemaphore(*this->m_pDevice, this->m_object, nullptr);
+
+				this->m_object = VK_NULL_HANDLE;
 			}
 
 			/*
@@ -4052,11 +4080,10 @@ namespace WS {
 			VKSwapChain::VKSwapChain(VKDevice& pDevice, VKSurface& pSurface)
 				: m_pDevice(&pDevice), m_pSurface(&pSurface)
 			{
-				this->m_pPresentQueue = std::make_unique<VKQueue>(pDevice.GetPresentQueue());
+				this->m_pPresentQueue = pDevice.GetPresentQueuePtr();
 
 				this->CreateSwapChain();
 				this->CreateImagesAndViews();
-				this->CreateFrameBuffers();
 			}
 
 			VKSwapChain& VKSwapChain::operator=(VKSwapChain&& other) noexcept
@@ -4071,6 +4098,7 @@ namespace WS {
 				this->m_colorFrameBuffers = std::move(other.m_colorFrameBuffers);
 				this->m_currentImageIndex = std::move(other.m_currentImageIndex);
 				this->m_pPresentQueue = std::move(other.m_pPresentQueue);
+				this->m_imageExtent2D = std::move(other.m_imageExtent2D);
 
 				other.m_object = VK_NULL_HANDLE;
 
@@ -4113,7 +4141,7 @@ namespace WS {
 			{
 				VkPresentInfoKHR presentInfo{};
 				presentInfo.waitSemaphoreCount = 1;
-				presentInfo.pWaitSemaphores    = this->m_pPresentQueue->m_semaphore.GetPtr();
+				presentInfo.pWaitSemaphores    = this->m_pDevice->GetGraphicsQueuePtr()->m_semaphore.GetPtr();
 				presentInfo.swapchainCount     = 1;
 				presentInfo.pSwapchains   = &this->m_object;
 				presentInfo.pImageIndices = &this->m_currentImageIndex;
@@ -4122,6 +4150,8 @@ namespace WS {
 
 				if (VK_FAILED(vkQueuePresentKHR(*this->m_pPresentQueue, &presentInfo)))
 					throw std::runtime_error("[VULKAN] Failed To Present Swap Chain Frame Buffer");
+
+				vkQueueWaitIdle(*this->m_pPresentQueue);
 			}
 
 			VKSwapChain::~VKSwapChain()
@@ -4274,7 +4304,6 @@ namespace WS {
 			{
 				VkCommandPoolCreateInfo poolInfo{};
 				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-				poolInfo.flags = 0;
 				poolInfo.queueFamilyIndex = queueFamilyIndex;
 
 				if (VK_FAILED(vkCreateCommandPool(device, &poolInfo, nullptr, &this->m_object)))
@@ -4315,12 +4344,15 @@ namespace WS {
 
 				if (VK_FAILED(vkAllocateCommandBuffers(device, &allocInfo, &this->m_object)))
 					throw std::runtime_error("[VULKAN] Failed To Create Command Buffer");
+
+				this->m_pGraphicsQueue = device.GetPresentQueuePtr();
 			}
 
 			VKCommandBuffer& VKCommandBuffer::operator=(VKCommandBuffer&& other) noexcept
 			{
 				this->m_object = other.m_object;
 				other.m_object = VK_NULL_HANDLE;
+				this->m_pGraphicsQueue = other.m_pGraphicsQueue;
 
 				this->m_pDevice = other.m_pDevice;
 
@@ -4370,6 +4402,27 @@ namespace WS {
 					throw std::runtime_error("[VULKAN] Failed To End Command Buffer Recording");
 			}
 			
+			void VKCommandBuffer::Submit(const VKSemaphore& swapChainImageAvailableSemaphore) const
+			{
+				VkSubmitInfo submitInfo{};
+				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+				VkSemaphore waitSemaphores[] = { swapChainImageAvailableSemaphore.m_object };
+				VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+				submitInfo.waitSemaphoreCount = 1;
+				submitInfo.pWaitSemaphores    = waitSemaphores;
+				submitInfo.pWaitDstStageMask  = waitStages;
+				submitInfo.commandBufferCount = 1;
+				submitInfo.pCommandBuffers    = this->GetPtr();
+
+				VkSemaphore signalSemaphores[]  = { this->m_pGraphicsQueue->m_semaphore.m_object };
+				submitInfo.signalSemaphoreCount = 1;
+				submitInfo.pSignalSemaphores    = signalSemaphores;
+
+				if (VK_FAILED(vkQueueSubmit(*this->m_pGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE)))
+					throw std::runtime_error("[VULKAN] Failed To Submit Draw Command Buffer");
+			}
+
 			/*
 			 * // //////////////////////////////-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ \\
 			 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
@@ -4377,12 +4430,6 @@ namespace WS {
 			 * // |\_________________________________________________________/| \\
 			 * // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-////////////////////////////// \\ 
 			 */
-
-			VKQueue::VKQueue(const VKQueue& other) noexcept
-			{
-				this->m_object    = other.m_object;
-				this->m_semaphore = other.m_semaphore;
-			}
 
 			VKQueue::VKQueue(VKDevice& device, const size_t queueIndex)
 			{
@@ -4393,6 +4440,7 @@ namespace WS {
 
 			void VKQueue::Submit(const std::vector<VkCommandBuffer>& commandBuffers) const
 			{
+				std::cout << this->m_semaphore.m_object << '\n';
 				VkSubmitInfo submitInfo{};
 				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 				VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
@@ -4408,15 +4456,7 @@ namespace WS {
 					throw std::runtime_error("[VULKAN] Failed To Submit Queue");
 			}
 
-			void VKQueue::operator=(VKQueue& other)
-			{
-				this->m_object = other.m_object;
-				other.m_object = VK_NULL_HANDLE;
-
-				this->m_semaphore = std::move(other.m_semaphore);
-			}
-
-			VKQueue& VKQueue::operator=(VKQueue&& other)
+			VKQueue& VKQueue::operator=(VKQueue&& other) noexcept
 			{
 				this->m_object = other.m_object;
 				other.m_object = VK_NULL_HANDLE;
@@ -4497,10 +4537,10 @@ namespace WS {
 
 			VKDevice& VKDevice::operator=(VKDevice&& device) noexcept
 			{
-				this->m_graphicsQueue = device.m_graphicsQueue;
+				this->m_graphicsQueue = std::move(device.m_graphicsQueue);
 				this->m_physicalDeviceData = device.m_physicalDeviceData;
-				this->m_presentQueue = device.m_presentQueue;
-				this->m_queues  = device.m_queues;
+				this->m_graphicsQueue = std::move(device.m_graphicsQueue);
+				this->m_presentQueue = std::move(device.m_presentQueue);
 				this->m_object  = device.m_object;
 				device.m_object = nullptr;
 
@@ -4813,10 +4853,11 @@ namespace WS {
 				this->m_surface   = VKSurface(&this->m_instance, pWindow);
 				this->m_device    = VKDevice(this->m_instance, this->m_surface);
 				this->m_swapChain = VKSwapChain(this->m_device, this->m_surface);
-				this->m_commandPool   = VKCommandPool(this->m_device, this->m_device.GetPhysicalDeviceData().m_queueIndices[0].value());
+				this->m_commandPool   = VKCommandPool(this->m_device, this->m_device.GetPhysicalDeviceData().m_graphicsQueueIndex.value());
 				this->m_commandBuffer = VKCommandBuffer(this->m_device, this->m_commandPool);
 
 				VKRenderPass::CreateRenderPasses(this->m_device, this->m_swapChain);
+
 				this->m_swapChain.CreateFrameBuffers();
 			}
 
@@ -4841,6 +4882,7 @@ namespace WS {
 			{
 				this->m_commandBuffer.EndRenderPass();
 				this->m_commandBuffer.EndRecording();
+				this->m_commandBuffer.Submit(this->m_device.GetPresentQueuePtr()->m_semaphore);
 			}
 
 			void VKRenderAPI::Present(const bool vSync)
