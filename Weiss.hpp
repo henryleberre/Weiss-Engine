@@ -1918,6 +1918,33 @@ namespace WS
 			};
 
 			/*
+			 * // ///////////////////////-\\\\\\\\\\\\\\\\\\\\\\\ \\
+			 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+			 * // ||------------------VKFence------------------|| \\
+			 * // |\___________________________________________/| \\
+			 * // \\\\\\\\\\\\\\\\\\\\\\\-/////////////////////// \\
+			 */
+
+			class VKFence : public VKObjectWrapper<VkFence> {
+			private:
+				const VKDevice* m_pDevice = nullptr;
+			
+			public:
+				VKFence() = default;
+
+				VKFence(const VKDevice& device);
+
+				VKFence& operator=(VKFence&& other) noexcept;
+
+				inline void Wait()  const;
+				inline void Reset() const;
+
+				inline void WaitAndReset() const;
+
+				~VKFence();
+			};
+
+			/*
 			 * // /////////////////////////-\\\\\\\\\\\\\\\\\\\\\\\\\ \\
 			 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
 			 * // ||------------------VKSwapChain------------------|| \\
@@ -1952,11 +1979,13 @@ namespace WS
 
 				void GetNextFrameBuffer();
 
-				void Present(bool useVsync);
+				void Present(bool useVsync, const VkSemaphore& waitSemaphore);
 
 				VKSwapChain& operator=(VKSwapChain&& other) noexcept;
 
-				[[nodiscard]] inline VkExtent2D GetImageExtent()    const noexcept;
+				[[nodiscard]] inline VkSemaphore        GetFrameBufferFetchedSemaphore() const noexcept;
+				[[nodiscard]] inline VkFramebuffer      GetCurrentFrameBuffer() const noexcept;
+				[[nodiscard]] inline VkExtent2D         GetImageExtent() const noexcept;
 				[[nodiscard]] inline VkSurfaceFormatKHR GetFormat() const noexcept;
 
 				~VKSwapChain();
@@ -2011,7 +2040,7 @@ namespace WS
 			public:
 				VKRenderPipeline() = default;
 
-				VKRenderPipeline(VKRenderPipeline&& other);
+				VKRenderPipeline(VKRenderPipeline&& other) noexcept;
 
 				VKRenderPipeline(const VKDevice& device, const VKSwapChain& swapChain, const RenderPipelineDesc& pipelineDesc,
 								 std::vector<ConstantBuffer*>& pConstantBuffers, std::vector<Texture*> pTextures, std::vector<VKTextureSampler> textureSamplers);
@@ -2058,6 +2087,9 @@ namespace WS
 			private:
 				const VKDevice* m_pDevice = nullptr;
 				const VKQueue*  m_pQueue  = nullptr;
+				
+				VKSemaphore m_submitedSemaphore;
+				VKFence     m_submitedfence;
 
 			public:
 				VKCommandBuffer() = default;
@@ -2065,6 +2097,22 @@ namespace WS
 				VKCommandBuffer(const VKDevice& device, const VKCommandPool& commandPool, const VKQueue& queue);
 
 				VKCommandBuffer& operator=(VKCommandBuffer&& other) noexcept;
+			
+				void BeginRecording() const;
+
+				void BeginRenderPass(const VKSwapChain& swapChain, const VkFramebuffer& frameBuffer, const VkRenderPass& renderPass) const noexcept;
+
+				void EndRenderPass();
+
+				void EndRecording() const;
+
+				void Submit(const VkSemaphore& waitSemaphore) const;
+
+				void BindPipeline(const VKRenderPipeline& pipeline);
+
+				void WaitForCompletion();
+
+				[[nodiscard]] inline VkSemaphore GetSubmittedSemaphore() const noexcept;
 			};
 
 			/*
@@ -4259,6 +4307,59 @@ namespace WS {
 			}
 
 			/*
+			 * // //////////////////--\\\\\\\\\\\\\\\\\\\ \\
+			 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
+			 * // ||--------------VKFence--------------|| \\
+			 * // |\___________________________________/| \\
+			 * // \\\\\\\\\\\\\\\\\\--/////////////////// \\
+			 */
+
+			VKFence::VKFence(const VKDevice& device)
+				: m_pDevice(&device)
+			{
+				VkFenceCreateInfo fenceInfo{};
+				fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+				fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+				if (VK_FAILED(vkCreateFence(device, &fenceInfo, nullptr, &this->m_object)))
+					throw std::runtime_error("[VULKAN] Failed To Create Fence");
+
+				this->Reset();
+			}
+
+			VKFence& VKFence::operator=(VKFence&& other) noexcept
+			{
+				std::swap(this->m_object, other.m_object);
+
+				this->m_pDevice = std::move(other.m_pDevice);
+
+				return *this;
+			}
+
+			inline void VKFence::Wait() const
+			{
+				if (VK_FAILED(vkWaitForFences(*this->m_pDevice, 1u, &this->m_object, VK_TRUE, UINT64_MAX)))
+					throw std::runtime_error("[VULKAN] Failed To Wait For Fence");
+			}
+
+			inline void VKFence::Reset() const
+			{
+				if (VK_FAILED(vkResetFences(*this->m_pDevice, 1u, &this->m_object)))
+					throw std::runtime_error("[VULKAN] Failed To Reset Fence");
+			}
+
+			inline void VKFence::WaitAndReset() const
+			{
+				this->Wait();
+				this->Reset();
+			}
+
+			VKFence::~VKFence()
+			{
+				vkDestroyFence(*this->m_pDevice, this->m_object, nullptr);
+			}
+
+			/*
 			 * // ////////////////////--\\\\\\\\\\\\\\\\\\\\\ \\
 			 * // |/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾\| \\
 			 * // ||--------------VKSwapChain--------------|| \\
@@ -4286,6 +4387,7 @@ namespace WS {
 					createInfo.preTransform = VkSurfaceTransformFlagBitsKHR::VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 					createInfo.compositeAlpha = VkCompositeAlphaFlagBitsKHR::VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 					createInfo.presentMode = this->PickPresentMode(device, surface);
+					createInfo.clipped = VK_TRUE;
 					createInfo.clipped = VK_TRUE;
 					createInfo.oldSwapchain = VK_NULL_HANDLE;
 
@@ -4376,12 +4478,12 @@ namespace WS {
 					throw std::runtime_error("[VULKAN] Failed To Acquire Next Swap Chain Frame Buffer");
 			}
 
-			void VKSwapChain::Present(bool useVsync)
+			void VKSwapChain::Present(bool useVsync, const VkSemaphore& waitSemaphore)
 			{
 				VkPresentInfoKHR presentInfo{};
 				presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 				presentInfo.waitSemaphoreCount = 1;
-				presentInfo.pWaitSemaphores    = this->m_frameBufferFetchedSemaphore.GetPtr();
+				presentInfo.pWaitSemaphores    = &waitSemaphore;
 				presentInfo.swapchainCount = 1;
 				presentInfo.pSwapchains    = &this->m_object;
 				presentInfo.pImageIndices  = &this->m_currentImageIndex;
@@ -4409,8 +4511,10 @@ namespace WS {
 				return *this;
 			}
 
-			[[nodiscard]] inline VkExtent2D VKSwapChain::GetImageExtent()    const noexcept { return this->m_imageExtent2D; }
-			[[nodiscard]] inline VkSurfaceFormatKHR VKSwapChain::GetFormat() const noexcept { return this->m_surfaceFormat; }
+			[[nodiscard]] inline VkSemaphore        VKSwapChain::GetFrameBufferFetchedSemaphore() const noexcept { return this->m_frameBufferFetchedSemaphore;             }
+			[[nodiscard]] inline VkFramebuffer      VKSwapChain::GetCurrentFrameBuffer()          const noexcept { return this->m_frameBuffers[this->m_currentImageIndex]; }
+			[[nodiscard]] inline VkExtent2D         VKSwapChain::GetImageExtent()                 const noexcept { return this->m_imageExtent2D;                           }
+			[[nodiscard]] inline VkSurfaceFormatKHR VKSwapChain::GetFormat()                      const noexcept { return this->m_surfaceFormat;                           }
 
 			VKSwapChain::~VKSwapChain()
 			{
@@ -4515,7 +4619,7 @@ namespace WS {
 			 * // \\\\\\\\\\\\\\\\\\\\\-////////////////////// \\
 			 */
 
-			VKRenderPipeline::VKRenderPipeline(VKRenderPipeline&& other)
+			VKRenderPipeline::VKRenderPipeline(VKRenderPipeline&& other) noexcept
 			{
 				std::swap(this->m_object, other.m_object);
 
@@ -4757,6 +4861,9 @@ namespace WS {
 
 				if (VK_FAILED(vkAllocateCommandBuffers(device, &allocInfo, &this->m_object)))
 					throw std::runtime_error("[VULKAN] Failed To Create Command Buffer");
+
+				this->m_submitedSemaphore = VKSemaphore(device);
+				this->m_submitedfence     = VKFence(device);
 			}
 
 			VKCommandBuffer& VKCommandBuffer::operator=(VKCommandBuffer&& other) noexcept
@@ -4766,8 +4873,81 @@ namespace WS {
 				this->m_pDevice = other.m_pDevice;
 				this->m_pQueue  = other.m_pQueue;
 
+				this->m_submitedSemaphore = std::move(other.m_submitedSemaphore);
+				this->m_submitedfence     = std::move(other.m_submitedfence);
+
 				return *this;
 			}
+
+			void VKCommandBuffer::BeginRecording() const
+			{
+				VkCommandBufferBeginInfo beginInfo{};
+				beginInfo.flags = 0;
+				beginInfo.pInheritanceInfo = nullptr;
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+				if (VK_FAILED(vkBeginCommandBuffer(this->m_object, &beginInfo)))
+					throw std::runtime_error("[VULKAN] Failed To Begin Command Buffer Recording");
+			}
+
+			void VKCommandBuffer::BeginRenderPass(const VKSwapChain& swapChain, const VkFramebuffer& frameBuffer, const VkRenderPass& renderPass) const noexcept
+			{
+				VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+				VkRenderPassBeginInfo renderPassInfo{};
+				renderPassInfo.renderPass  = renderPass;
+				renderPassInfo.framebuffer = frameBuffer;
+				renderPassInfo.clearValueCount   = 1;
+				renderPassInfo.pClearValues      = &clearColor;
+				renderPassInfo.renderArea.offset = { 0, 0 };
+				renderPassInfo.renderArea.extent = swapChain.GetImageExtent();
+				renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+
+				vkCmdBeginRenderPass(this->m_object, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+			}
+
+			void VKCommandBuffer::EndRenderPass()
+			{
+				vkCmdEndRenderPass(this->m_object);
+			}
+
+			void VKCommandBuffer::EndRecording() const
+			{
+				if (VK_FAILED(vkEndCommandBuffer(this->m_object)))
+					throw std::runtime_error("[VULKAN] Failed To End Command Buffer Recording");
+			}
+
+			void VKCommandBuffer::Submit(const VkSemaphore& waitSemaphore) const
+			{
+				VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+
+				VkSubmitInfo submitInfo{};
+				submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				submitInfo.waitSemaphoreCount   = 1;
+				submitInfo.pWaitSemaphores      = &waitSemaphore;
+				submitInfo.pWaitDstStageMask    = waitStages;
+				submitInfo.commandBufferCount   = 1;
+				submitInfo.pCommandBuffers      = &this->m_object;
+				submitInfo.signalSemaphoreCount = 1;
+				submitInfo.pSignalSemaphores    = this->m_submitedSemaphore.GetPtr();
+
+				this->m_submitedfence.Reset();
+
+				if (VK_FAILED(vkQueueSubmit(*this->m_pQueue, 1, &submitInfo, this->m_submitedfence)))
+					throw std::runtime_error("[VULKAN] Failed To Submit CommandBuffer");
+			}
+
+			void VKCommandBuffer::BindPipeline(const VKRenderPipeline& pipeline)
+			{
+				vkCmdBindPipeline(this->m_object, VK_PIPELINE_BIND_POINT_GRAPHICS, *pipeline.GetPtr());
+			}
+
+			void VKCommandBuffer::WaitForCompletion()
+			{
+				this->m_submitedfence.Wait();
+			}
+
+			[[nodiscard]] inline VkSemaphore VKCommandBuffer::GetSubmittedSemaphore() const noexcept { return this->m_submitedSemaphore; }
 
 			/*
 			 * // ///////////////////--\\\\\\\\\\\\\\\\\\\\ \\
@@ -4806,22 +4986,29 @@ namespace WS {
 
 			void VKRenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 			{
-
+				this->m_commandBuffer.BindPipeline(this->m_renderPipelines[drawable.pipelineIndex]);
+				vkCmdDraw(this->m_commandBuffer, 3u, 1u, 0u, 0u);
 			}
 
 			void VKRenderAPI::BeginDrawing()
 			{
 				this->m_swapChain.GetNextFrameBuffer();
+
+				this->m_commandBuffer.BeginRecording();
+				this->m_commandBuffer.BeginRenderPass(this->m_swapChain, this->m_swapChain.GetCurrentFrameBuffer(), VKRenderPass::m_renderPasses[0]);
 			}
 
 			void VKRenderAPI::EndDrawing()
 			{
-
+				this->m_commandBuffer.EndRenderPass();
+				this->m_commandBuffer.EndRecording();
+				this->m_commandBuffer.Submit(this->m_swapChain.GetFrameBufferFetchedSemaphore());
 			}
 
 			void VKRenderAPI::Present(const bool vSync)
 			{
-				this->m_swapChain.Present(vSync);
+				this->m_commandBuffer.WaitForCompletion();
+				this->m_swapChain.Present(vSync, this->m_commandBuffer.GetSubmittedSemaphore());
 			}
 
 			size_t VKRenderAPI::CreateVertexBuffer(const size_t nVertices, const size_t vertexSize)
