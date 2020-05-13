@@ -107,8 +107,32 @@
 		freopen_s((FILE **)stdout, "CONOUT$", "w", stdout); \
 	}
 
+#elif defined(__ANDROID__)
+
+	#define WEISS__OS_ANDROID
+
+#elif defined(__linux__)
+
+	#define WEISS__OS_LINUX
+
+#elif defined(__APPLE__) && defined(__MACH__)
+
+	#include <TargetConditionals.h>
+
+	#if TARGET_IPHONE_SIMULATOR
+		#define __WEISS__OS_IOS
+	#elif TARGET_OS_IPHONE == 1
+		#define __WEISS__OS_IOS
+	#elif TARGET_OS_MAC == 1
+		#defined __WEISS__OS_OSX
+	#else
+		#error You Target Apple Device's OS Could Not Be Resolved
+	#endif
+
 #else
+
 	#error The Weiss Engine Is Not (Yet) Supported On Your Platform
+
 #endif
 
 // Vulkan Includes
@@ -1968,6 +1992,7 @@ namespace WS
 				VkExtent2D         m_imageExtent2D{};
 				VkSurfaceFormatKHR m_surfaceFormat{};
 
+				VKFence     m_fence;
 				VKSemaphore m_frameBufferFetchedSemaphore;
 
 			public:
@@ -2134,6 +2159,8 @@ namespace WS
 				VKQueue         m_presentQueue;
 				VKCommandPool   m_commandPool;
 				VKCommandBuffer m_commandBuffer;
+
+				bool a = false;
 
 				std::vector<VKTextureSampler> m_textureSamplers;
 				std::vector<VKRenderPipeline> m_renderPipelines;
@@ -3904,6 +3931,8 @@ namespace WS {
 				{
 					WS::LOG::Println(WS::LOG_TYPE::LOG_WARNING, "[VULKAN] Deleting Object Of Handle (", this->m_object, ")");
 					this->m_object = VK_NULL_HANDLE;
+				} else {
+					WS::LOG::Println(WS::LOG_TYPE::LOG_NORMAL, "[VULKAN] Deleting Object Of Handle (", this->m_object, ")");
 				}
 			}
 
@@ -3920,6 +3949,7 @@ namespace WS {
 																		  const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 																		  void* pUserData)
 			{
+				WS_ERROR_MESSAGE(pCallbackData->pMessage);
 				WS::LOG::Println(WS::LOG_TYPE::LOG_ERROR, pCallbackData->pMessage);
 
 				return VK_FALSE;
@@ -3989,7 +4019,7 @@ namespace WS {
 				appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 				appInfo.pEngineName   = "Weiss Engine";
 				appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-				appInfo.apiVersion    = VK_API_VERSION_1_0;
+				appInfo.apiVersion    = VK_API_VERSION_1_2;
 
 				VkInstanceCreateInfo createInfo{};
 				createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -4444,6 +4474,7 @@ namespace WS {
 
 				{ // Create Synchronisation Objects
 					this->m_frameBufferFetchedSemaphore = VKSemaphore(device);
+					this->m_fence = VKFence(device);
 				}
 			}
 
@@ -4474,8 +4505,10 @@ namespace WS {
 
 			void VKSwapChain::GetNextFrameBuffer()
 			{
-				if (VK_FAILED(vkAcquireNextImageKHR(*this->m_pDevice, this->m_object, UINT64_MAX, this->m_frameBufferFetchedSemaphore, VK_NULL_HANDLE, &this->m_currentImageIndex)))
+				if (VK_FAILED(vkAcquireNextImageKHR(*this->m_pDevice, this->m_object, UINT64_MAX, this->m_frameBufferFetchedSemaphore, this->m_fence, &this->m_currentImageIndex)))
 					throw std::runtime_error("[VULKAN] Failed To Acquire Next Swap Chain Frame Buffer");
+
+				this->m_fence.WaitAndReset();
 			}
 
 			void VKSwapChain::Present(bool useVsync, const VkSemaphore& waitSemaphore)
@@ -4505,6 +4538,7 @@ namespace WS {
 				this->m_frameBuffers = std::move(other.m_frameBuffers);
 				this->m_currentImageIndex = std::move(other.m_currentImageIndex);
 				this->m_frameBufferFetchedSemaphore = std::move(other.m_frameBufferFetchedSemaphore);
+				this->m_fence = std::move(other.m_fence);
 
 				std::swap(this->m_object, other.m_object);
 
@@ -4599,12 +4633,22 @@ namespace WS {
 					subpass.colorAttachmentCount = 1;
 					subpass.pColorAttachments    = &colorAttachmentRef;
 
+					VkSubpassDependency dependency{};
+					dependency.srcSubpass    = VK_SUBPASS_EXTERNAL;
+					dependency.dstSubpass    = 0;
+					dependency.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+					dependency.srcAccessMask = 0;
+					dependency.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+					dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 					VkRenderPassCreateInfo renderPassInfo{};
 					renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 					renderPassInfo.attachmentCount = 1;
 					renderPassInfo.pAttachments    = &colorAttachment;
 					renderPassInfo.subpassCount    = 1;
 					renderPassInfo.pSubpasses      = &subpass;
+					renderPassInfo.dependencyCount = 1;
+					renderPassInfo.pDependencies = &dependency;
 
 					if (VK_FAILED(vkCreateRenderPass(device, &renderPassInfo, nullptr, &VKRenderPass::m_renderPasses[0])))
 						throw std::runtime_error("[VULKAN] Failed To Create Render Pass");
@@ -4721,14 +4765,10 @@ namespace WS {
 				colorBlending.blendConstants[2] = 0.0f;
 				colorBlending.blendConstants[3] = 0.0f;
 
-				VkDynamicState dynamicStates[] = {
-					VK_DYNAMIC_STATE_VIEWPORT
-				};
-
 				VkPipelineDynamicStateCreateInfo dynamicState{};
 				dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-				dynamicState.dynamicStateCount = sizeof(dynamicStates) / sizeof(VkDynamicState);
-				dynamicState.pDynamicStates = dynamicStates;
+				dynamicState.dynamicStateCount = 0u;
+				dynamicState.pDynamicStates = nullptr;
 
 				VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 				pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -4751,7 +4791,7 @@ namespace WS {
 				pipelineInfo.pMultisampleState = &multisampling;
 				pipelineInfo.pDepthStencilState = nullptr; // Optional
 				pipelineInfo.pColorBlendState = &colorBlending;
-				pipelineInfo.pDynamicState = nullptr; // Optional
+				pipelineInfo.pDynamicState = nullptr;
 				pipelineInfo.layout        = this->m_layout;
 				pipelineInfo.renderPass    = VKRenderPass::m_renderPasses[0];
 				pipelineInfo.subpass = 0;
@@ -4822,6 +4862,7 @@ namespace WS {
 				VkCommandPoolCreateInfo poolInfo{};
 				poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 				poolInfo.queueFamilyIndex = queueFamilyIndex;
+				poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 				if (VK_FAILED(vkCreateCommandPool(device, &poolInfo, nullptr, &this->m_object)))
 					throw std::runtime_error("[VULKAN] Failed To Create Command Pool");
@@ -4882,8 +4923,6 @@ namespace WS {
 			void VKCommandBuffer::BeginRecording() const
 			{
 				VkCommandBufferBeginInfo beginInfo{};
-				beginInfo.flags = 0;
-				beginInfo.pInheritanceInfo = nullptr;
 				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
 				if (VK_FAILED(vkBeginCommandBuffer(this->m_object, &beginInfo)))
@@ -4892,7 +4931,7 @@ namespace WS {
 
 			void VKCommandBuffer::BeginRenderPass(const VKSwapChain& swapChain, const VkFramebuffer& frameBuffer, const VkRenderPass& renderPass) const noexcept
 			{
-				VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+				VkClearValue clearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 				VkRenderPassBeginInfo renderPassInfo{};
 				renderPassInfo.renderPass  = renderPass;
@@ -4945,6 +4984,7 @@ namespace WS {
 			void VKCommandBuffer::WaitForCompletion()
 			{
 				this->m_submitedfence.Wait();
+				this->m_submitedfence.Reset();
 			}
 
 			[[nodiscard]] inline VkSemaphore VKCommandBuffer::GetSubmittedSemaphore() const noexcept { return this->m_submitedSemaphore; }
@@ -4986,12 +5026,19 @@ namespace WS {
 
 			void VKRenderAPI::Draw(const Drawable& drawable, const size_t nVertices)
 			{
-				this->m_commandBuffer.BindPipeline(this->m_renderPipelines[drawable.pipelineIndex]);
+				this->m_commandBuffer.BindPipeline(this->m_renderPipelines[0]);
 				vkCmdDraw(this->m_commandBuffer, 3u, 1u, 0u, 0u);
 			}
 
 			void VKRenderAPI::BeginDrawing()
 			{
+				if (a) {
+					this->m_commandBuffer.WaitForCompletion();
+				}
+				else {
+					a = true;
+				}
+
 				this->m_swapChain.GetNextFrameBuffer();
 
 				this->m_commandBuffer.BeginRecording();
@@ -5002,12 +5049,12 @@ namespace WS {
 			{
 				this->m_commandBuffer.EndRenderPass();
 				this->m_commandBuffer.EndRecording();
+
 				this->m_commandBuffer.Submit(this->m_swapChain.GetFrameBufferFetchedSemaphore());
 			}
 
 			void VKRenderAPI::Present(const bool vSync)
 			{
-				this->m_commandBuffer.WaitForCompletion();
 				this->m_swapChain.Present(vSync, this->m_commandBuffer.GetSubmittedSemaphore());
 			}
 
